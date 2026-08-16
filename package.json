@@ -1,0 +1,12 @@
+{
+  "name": "productivity-planner-root",
+  "version": "1.0.0",
+  "description": "Productivity Planner Root Runner",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "start": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

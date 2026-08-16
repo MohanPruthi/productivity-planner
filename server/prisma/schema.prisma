@@ -1,0 +1,134 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Track {
+  AI
+  SD
+}
+
+enum PomodoroTrack {
+  AI
+  SD
+  DSA
+}
+
+enum Difficulty {
+  Easy
+  Medium
+  Hard
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  passwordHash     String
+  name             String
+  createdAt        DateTime          @default(now())
+  planWeeks        PlanWeek[]
+  planDays         PlanDay[]
+  dsaLogs          DsaLog[]
+  pomodoroSessions PomodoroSession[]
+  dailyStudyLogs   DailyStudyLog[]
+  normalTasks      NormalTask[]
+  medSchedule      MedSchedule?
+  medLogs          MedLog[]
+}
+
+model PlanWeek {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track      Track
+  weekNumber Int
+  startDate  DateTime
+  endDate    DateTime
+  goalText   String
+  planDays   PlanDay[]
+
+  @@unique([userId, track, weekNumber])
+}
+
+model PlanDay {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planWeekId     String
+  planWeek       PlanWeek  @relation(fields: [planWeekId], references: [id], onDelete: Cascade)
+  track          Track
+  date           DateTime
+  dayLabel       String
+  isWeekend      Boolean
+  topic          String
+  discussionNote String?
+  isDone         Boolean   @default(false)
+}
+
+model DsaLog {
+  id             String     @id @default(uuid())
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date           DateTime
+  questionNumber String
+  difficulty     Difficulty
+  title          String?
+  notes          String?
+  createdAt      DateTime   @default(now())
+}
+
+model PomodoroSession {
+  id              String         @id @default(uuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track           PomodoroTrack?
+  durationMinutes Int
+  startedAt       DateTime
+  completedAt     DateTime
+  isCompleted     Boolean        @default(true)
+}
+
+model DailyStudyLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime // Normalized to midnight
+  duration  Float    @default(0) // Duration in minutes studied
+
+  @@unique([userId, date])
+}
+
+model NormalTask {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime // Normalized to midnight
+  text      String
+  isDone    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model MedSchedule {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medName      String   @default("Daily Medication")
+  startDate    DateTime @default(now())
+  durationDays Int      @default(30)
+}
+
+model MedLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime // normalized to midnight YYYY-MM-DD
+  morning   Boolean  @default(false)
+  evening   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+}
