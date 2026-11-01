@@ -280,7 +280,7 @@ const DsaLog = () => {
             <Code2 size={22} color="#ffa116" />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2 }}>
               DSA LeetCode <span className="gradient-text-dsa">Tracker</span>
             </h1>
             <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem', fontSize: '0.85rem' }}>Fast logging for daily practice questions</p>
@@ -293,7 +293,7 @@ const DsaLog = () => {
         
         {/* Rapid Form card */}
         <div className="glass-card glow-dsa">
-          <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
             <Plus size={16} color="#ffa116" />
             <span>Log Completed Question</span>
           </h3>
@@ -302,7 +302,7 @@ const DsaLog = () => {
             {formError && <div className="text-error">{formError}</div>}
             
             <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-              <label htmlFor="qNum" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Question Number *</label>
+              <label htmlFor="qNum" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Question Number *</label>
               <input
                 id="qNum"
                 ref={questionInputRef}
@@ -332,10 +332,10 @@ const DsaLog = () => {
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', maxWidth: '75%' }}>
-                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600 }}>
                       Auto-Detected Question
                     </span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 750, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={title}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={title}>
                       {title}
                     </span>
                     {previewTopics.length > 0 && (
@@ -348,7 +348,7 @@ const DsaLog = () => {
                       color: getDifficultyColor(difficulty), 
                       background: `${getDifficultyColor(difficulty)}10`,
                       borderColor: `${getDifficultyColor(difficulty)}20`,
-                      fontWeight: 800,
+                      fontWeight: 600,
                       fontSize: '0.65rem',
                       padding: '0.1rem 0.45rem'
                     }}
@@ -360,7 +360,7 @@ const DsaLog = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="notes" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Notes / Observations (Optional)</label>
+              <label htmlFor="notes" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Notes / Observations (Optional)</label>
               <textarea
                 id="notes"
                 rows="2"
@@ -393,12 +393,12 @@ const DsaLog = () => {
           
           {/* Today's Tally */}
           <div className="glass-card glow-stats-orange" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', overflow: 'hidden' }}>
-            <h3 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h3 style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Calendar size={14} color="#ffa116" />
               <span>Today's Submissions</span>
             </h3>
-            <p style={{ fontSize: '2rem', fontWeight: 800, fontFamily: 'var(--font-display)', margin: '0.25rem 0', color: 'var(--text-primary)' }}>{dailyStats.total}</p>
-            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', fontWeight: 700 }}>
+            <p style={{ fontSize: '2rem', fontWeight: 600, fontFamily: 'var(--font-display)', margin: '0.25rem 0', color: 'var(--text-primary)' }}>{dailyStats.total}</p>
+            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', fontWeight: 600 }}>
               <span className="badge" style={{ color: '#30d158', background: 'rgba(48, 209, 88, 0.1)', borderColor: 'rgba(48, 209, 88, 0.2)' }}>Easy: {dailyStats.Easy}</span>
               <span className="badge" style={{ color: '#ffcc00', background: 'rgba(255, 204, 0, 0.1)', borderColor: 'rgba(255, 204, 0, 0.2)' }}>Medium: {dailyStats.Medium}</span>
               <span className="badge" style={{ color: '#ff2d55', background: 'rgba(255, 45, 85, 0.1)', borderColor: 'rgba(255, 45, 85, 0.2)' }}>Hard: {dailyStats.Hard}</span>
@@ -408,7 +408,7 @@ const DsaLog = () => {
           {/* Running Weekly Tally */}
           <div className="glass-card glow-stats-orange" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <h3 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+              <h3 style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
                 <Code2 size={14} color="#ffa116" />
                 <span>
                   {tallyRange === 'week' ? "This Week's Tally" : tallyRange === 'month' ? "This Month's Tally" : "Overall Tally"}
@@ -441,9 +441,7 @@ const DsaLog = () => {
                         background: isActive ? 'var(--glass-bg, rgba(255, 255, 255, 0.04))' : 'transparent',
                         color: isActive ? '#ffa116' : 'var(--text-muted)',
                         cursor: 'pointer',
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
+                        fontWeight: 600,
                         transition: 'all 0.18s ease',
                         outline: 'none'
                       }}
@@ -460,15 +458,15 @@ const DsaLog = () => {
                         }
                       }}
                     >
-                      {r}
+                      {r.charAt(0).toUpperCase() + r.slice(1)}
                     </button>
                   );
                 })}
               </div>
             </div>
             
-            <p style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'var(--font-display)', margin: '0.25rem 0', color: 'var(--text-primary)' }}>{activeStats.total}</p>
-            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', fontWeight: 700 }}>
+            <p style={{ fontSize: '2.5rem', fontWeight: 600, fontFamily: 'var(--font-display)', margin: '0.25rem 0', color: 'var(--text-primary)' }}>{activeStats.total}</p>
+            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', fontWeight: 600 }}>
               <span className="badge" style={{ color: '#30d158', background: 'rgba(48, 209, 88, 0.1)', borderColor: 'rgba(48, 209, 88, 0.2)' }}>Easy: {activeStats.Easy}</span>
               <span className="badge" style={{ color: '#ffcc00', background: 'rgba(255, 204, 0, 0.1)', borderColor: 'rgba(255, 204, 0, 0.2)' }}>Medium: {activeStats.Medium}</span>
               <span className="badge" style={{ color: '#ff2d55', background: 'rgba(255, 45, 85, 0.1)', borderColor: 'rgba(255, 45, 85, 0.2)' }}>Hard: {activeStats.Hard}</span>
@@ -488,7 +486,7 @@ const DsaLog = () => {
 
       {/* History table */}
       <div>
-        <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', color: 'var(--text-primary)' }}>Submission History</h2>
+        <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-primary)' }}>Submission History</h2>
 
         <div className="dsa-filter-bar">
           <div className="dsa-search">
@@ -547,7 +545,7 @@ const DsaLog = () => {
             <>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600 }}>
                     <th style={{ padding: '1rem 1.5rem' }}>Date</th>
                     <th style={{ padding: '1rem 1.5rem' }}>Question #</th>
                     <th style={{ padding: '1rem 1.5rem' }}>Title</th>
@@ -560,7 +558,7 @@ const DsaLog = () => {
                   {logs.map(log => (
                     <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', fontSize: '0.85rem', color: 'var(--text-primary)' }} className="table-row-hover">
                       <td style={{ padding: '0.85rem 1.5rem', color: 'var(--text-secondary)' }}>{formatDate(log.date)}</td>
-                      <td style={{ padding: '0.85rem 1.5rem', fontWeight: 700 }}>#{log.questionNumber}</td>
+                      <td style={{ padding: '0.85rem 1.5rem', fontWeight: 600 }}>#{log.questionNumber}</td>
                       <td style={{ padding: '0.85rem 1.5rem', fontWeight: 500 }}>
                         {log.titleSlug ? (
                           <a
@@ -619,7 +617,7 @@ const DsaLog = () => {
               {totalLogs > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.04)', fontSize: '0.75rem', color: 'var(--text-secondary)' }} className="pagination-bar">
                   <div style={{ paddingLeft: '1.5rem' }}>
-                    Showing <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{Math.min((currentPage - 1) * limit + 1, totalLogs)}</span> to <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{Math.min(currentPage * limit, totalLogs)}</span> of <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{totalLogs}</span> questions
+                    Showing <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{Math.min((currentPage - 1) * limit + 1, totalLogs)}</span> to <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{Math.min(currentPage * limit, totalLogs)}</span> of <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{totalLogs}</span> questions
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', paddingRight: '1.5rem', paddingBottom: '1rem' }}>
                     <button
@@ -631,7 +629,7 @@ const DsaLog = () => {
                       <ChevronLeft size={12} />
                       <span>Prev</span>
                     </button>
-                    <span style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: '70px', textAlign: 'center' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', minWidth: '70px', textAlign: 'center' }}>
                       Page {currentPage} of {totalPages}
                     </span>
                     <button

@@ -320,7 +320,7 @@ const Meds = () => {
                 </form>
               ) : (
                 <>
-                  <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
+                  <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>
                     {schedule.medName} <span className="gradient-text" style={{ background: 'linear-gradient(135deg, #ff2d55, #ff9500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Course</span>
                   </h1>
                   <button 
@@ -413,7 +413,7 @@ const Meds = () => {
                   {todayLog.morning && <Check size={14} strokeWidth={3} />}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 750, fontSize: '0.9rem', color: todayLog.morning ? '#30d158' : 'var(--text-primary)' }}>Morning Pill</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: todayLog.morning ? '#30d158' : 'var(--text-primary)' }}>Morning Pill</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>Take before 12:00 PM</div>
                 </div>
               </button>
@@ -453,7 +453,7 @@ const Meds = () => {
                   {todayLog.evening && <Check size={14} strokeWidth={3} />}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 750, fontSize: '0.9rem', color: todayLog.evening ? '#30d158' : 'var(--text-primary)' }}>Dinner Pill</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: todayLog.evening ? '#30d158' : 'var(--text-primary)' }}>Dinner Pill</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>Take after 8:00 PM</div>
                 </div>
               </button>
@@ -463,18 +463,18 @@ const Meds = () => {
 
           {/* Stats Card */}
           <div className="glass-card glow-med" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0, color: 'var(--text-secondary)' }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0, color: 'var(--text-secondary)' }}>
               Course Statistics
             </h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.25rem' }}>
               <div style={{ padding: '0.85rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Perfect Days</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: '0.2rem', color: '#30d158' }}>{completedDaysCount}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Perfect Days</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 600, marginTop: '0.2rem', color: '#30d158' }}>{completedDaysCount}</div>
               </div>
               <div style={{ padding: '0.85rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Completion</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: '0.2rem', color: 'var(--text-primary)' }}>{completionPercentage}%</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Completion</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 600, marginTop: '0.2rem', color: 'var(--text-primary)' }}>{completionPercentage}%</div>
               </div>
             </div>
 
@@ -611,11 +611,11 @@ const Meds = () => {
                   }}
                   title={`Date: ${day.dateStr}`}
                 >
-                  <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Day</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0.1rem 0 0 0', color: textColor, lineHeight: 1.1 }}>{day.dayNum}</div>
+                  <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600 }}>Day</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 600, margin: '0.1rem 0 0 0', color: textColor, lineHeight: 1.1 }}>{day.dayNum}</div>
                   
                   {/* Small Date and Day name */}
-                  <div style={{ fontSize: '0.52rem', color: 'var(--text-muted)', opacity: 0.85, fontWeight: 700, textTransform: 'uppercase', marginTop: '0.05rem', letterSpacing: '0.01em', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                  <div style={{ fontSize: '0.52rem', color: 'var(--text-muted)', opacity: 0.85, fontWeight: 600, marginTop: '0.05rem', letterSpacing: '0.01em', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
                     <span>{formatDateLabel(day.dateStr)}</span>
                     <span style={{ fontSize: '0.48rem', opacity: 0.7, fontWeight: 500 }}>{formatDayName(day.dateStr)}</span>
                   </div>

@@ -303,7 +303,7 @@ const MedReminder = () => {
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ fontSize: '0.86rem', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                <span style={{ fontSize: '0.86rem', fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                   {schedule?.medName ? `${schedule.medName} Reminder` : 'Medication Reminder'}
                 </span>
               </div>

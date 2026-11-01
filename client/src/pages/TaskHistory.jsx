@@ -162,7 +162,7 @@ const CustomDatePickerButton = ({ onSelectDate, buttonStyle, label = "Custom" })
               >
                 <ChevronLeft size={13} />
               </button>
-              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {monthName}
               </span>
               <button
@@ -176,7 +176,7 @@ const CustomDatePickerButton = ({ onSelectDate, buttonStyle, label = "Custom" })
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center', marginBottom: '4px' }}>
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(w => (
-                <span key={w} style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+                <span key={w} style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-muted)' }}>
                   {w}
                 </span>
               ))}
@@ -611,7 +611,7 @@ const TaskHistory = () => {
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
+              <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>
                 Work <span className="gradient-text">Board</span>
               </h1>
               
@@ -629,7 +629,7 @@ const TaskHistory = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.2s ease'
                   }}
                   className="nav-arrow-btn"
                   title="Navigate back 1 day"
@@ -645,11 +645,10 @@ const TaskHistory = () => {
                       border: 'none',
                       color: 'var(--accent-primary)',
                       fontSize: '0.65rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
+                      fontWeight: 600,
                       cursor: 'pointer',
                       padding: '0 0.4rem',
-                      transition: 'all 0.2s ease',
+                      transition: 'all 0.2s ease'
                     }}
                     title="Jump back to Today"
                   >
@@ -669,7 +668,7 @@ const TaskHistory = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.2s ease'
                   }}
                   className="nav-arrow-btn"
                   title="Navigate forward 1 day"
@@ -752,7 +751,7 @@ const TaskHistory = () => {
                 }}
               >
                 <span style={{ 
-                  fontWeight: 800, 
+                  fontWeight: 600, 
                   fontSize: '0.9rem', 
                   color: isColToday ? 'var(--accent-primary)' : 'var(--text-primary)' 
                 }}>
@@ -860,7 +859,7 @@ const TaskHistory = () => {
                               borderRadius: '6px',
                               padding: '0.12rem 0.4rem',
                               fontSize: '0.65rem',
-                              fontWeight: 700,
+                              fontWeight: 600,
                               color: 'var(--accent-primary)',
                               cursor: 'pointer',
                               whiteSpace: 'nowrap',
@@ -957,7 +956,7 @@ const TaskHistory = () => {
                               borderRadius: '6px',
                               padding: '0.12rem 0.4rem',
                               fontSize: '0.65rem',
-                              fontWeight: 700,
+                              fontWeight: 600,
                               color: 'var(--accent-primary)',
                               cursor: 'pointer',
                               whiteSpace: 'nowrap',
@@ -1018,7 +1017,7 @@ const TaskHistory = () => {
                         onClick={() => handleAddColTaskSubmit(col.dateStr)}
                         style={{ padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.7rem' }}
                       >
-                        <span style={{ fontWeight: 700 }}>Add</span>
+                        <span style={{ fontWeight: 600 }}>Add</span>
                       </button>
                     </div>
                   </div>
@@ -1097,7 +1096,7 @@ const TaskHistory = () => {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.45rem' }}>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Full Task Description</span>
+              <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-muted)' }}>Full Task Description</span>
               <button 
                 onClick={() => setActiveTooltip(null)}
                 style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
@@ -1109,7 +1108,7 @@ const TaskHistory = () => {
 
             {activeTooltip.taskId && (
               <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>Reschedule:</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>Reschedule:</span>
                 {activeTooltip.sourceDate !== todayStr && (
                   <button
                     onClick={() => {
@@ -1125,7 +1124,7 @@ const TaskHistory = () => {
                       borderRadius: '6px',
                       padding: '0.15rem 0.45rem',
                       fontSize: '0.68rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       color: 'var(--accent-primary)',
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',

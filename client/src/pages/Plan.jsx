@@ -266,7 +266,7 @@ const Plan = ({ track }) => {
             )}
           </div>
           <div>
-            <h1 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: '1.2' }}>
+            <h1 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: '1.2' }}>
               {track === 'AI' ? (
                 <>
                   AI Learning <span style={{ background: 'linear-gradient(135deg, var(--track-ai-start), var(--track-ai-end))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Planner</span>
@@ -301,7 +301,7 @@ const Plan = ({ track }) => {
           }}
         >
           <Plus size={18} style={{ marginRight: '4px' }} />
-          <span style={{ fontWeight: 750 }}>Add Week</span>
+          <span style={{ fontWeight: 600 }}>Add Week</span>
         </button>
       </div>
 
@@ -316,7 +316,7 @@ const Plan = ({ track }) => {
             
             <div className="grid-2">
               <div className="form-group">
-                <label htmlFor="weekNum" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Week Number</label>
+                <label htmlFor="weekNum" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Week Number</label>
                 <input
                   id="weekNum"
                   type="number"
@@ -328,7 +328,7 @@ const Plan = ({ track }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="startDate" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Start Date</label>
+                <label htmlFor="startDate" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Start Date</label>
                 <input
                   id="startDate"
                   type="date"
@@ -341,7 +341,7 @@ const Plan = ({ track }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="goalText" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Weekly Goal / Focus Target</label>
+              <label htmlFor="goalText" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Weekly Goal / Focus Target</label>
               <textarea
                 id="goalText"
                 rows="3"
@@ -435,7 +435,7 @@ const Plan = ({ track }) => {
                           }}
                         ></div>
                       </div>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{completionPercent}%</span>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{completionPercent}%</span>
                     </div>
                   </div>
 
@@ -469,7 +469,7 @@ const Plan = ({ track }) => {
                       borderRight: '1px solid rgba(255, 255, 255, 0.01)',
                       borderBottom: '1px solid rgba(255, 255, 255, 0.01)'
                     }}>
-                      <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.25rem' }}>Weekly Target Goal</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.25rem' }}>Weekly Target Goal</div>
                       <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>{week.goalText || 'No goal set for this week. Focus on daily tasks.'}</p>
                     </div>
 
@@ -508,7 +508,7 @@ const Plan = ({ track }) => {
                            {/* Day Details */}
                           <div style={{ width: '120px', display: 'flex', flexDirection: 'column', gap: '0.2rem', justifyContent: 'center' }}>
                             {track !== 'AI' && (
-                              <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>{day.dayLabel}</div>
+                              <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>{day.dayLabel}</div>
                             )}
                             {track === 'SD' && (
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDateLabel(day.date)}</div>
@@ -524,7 +524,7 @@ const Plan = ({ track }) => {
                                 background: day.isWeekend ? 'rgba(255, 45, 85, 0.08)' : 'rgba(99, 102, 241, 0.08)',
                                 color: day.isWeekend ? '#ff2d55' : 'var(--accent-primary)',
                                 borderColor: day.isWeekend ? 'rgba(255, 45, 85, 0.15)' : 'rgba(99, 102, 241, 0.15)',
-                                fontWeight: 700
+                                fontWeight: 600
                               }}
                             >
                               {day.isWeekend ? 'Weekend' : 'Weekday'}

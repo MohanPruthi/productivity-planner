@@ -337,7 +337,7 @@ const Dashboard = () => {
         }}
       >
         <div>
-          <h1 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: '1.2' }}>
+          <h1 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: '1.2' }}>
             {dayLabel} <span className="gradient-text">Tasks & Overview</span>
           </h1>
           <p style={{ color: 'var(--text-secondary)', marginTop: '0.35rem', fontSize: '0.9rem' }}>{formattedDate}</p>
@@ -350,21 +350,21 @@ const Dashboard = () => {
             <button 
               className={`mirror-btn-pill ${activeDateStr === yesterdayStr ? 'checked-ai' : ''}`}
               onClick={() => setDayShortcut('yesterday')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === yesterdayStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === yesterdayStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 700 }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === yesterdayStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === yesterdayStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
             >
               Yesterday
             </button>
             <button 
               className={`mirror-btn-pill ${activeDateStr === todayStr ? 'checked-ai' : ''}`}
               onClick={() => setDayShortcut('today')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === todayStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === todayStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 700 }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === todayStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === todayStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
             >
               Today
             </button>
             <button 
               className={`mirror-btn-pill ${activeDateStr === tomorrowStr ? 'checked-ai' : ''}`}
               onClick={() => setDayShortcut('tomorrow')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === tomorrowStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === tomorrowStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 700 }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === tomorrowStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === tomorrowStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
             >
               Tomorrow
             </button>
@@ -373,8 +373,8 @@ const Dashboard = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 1.1rem', borderRadius: '12px', border: '1px solid var(--border-light)', background: 'rgba(255, 255, 255, 0.01)' }}>
             <Flame color={streak > 0 ? '#ffaa00' : 'var(--text-muted)'} size={22} className={streak > 0 ? 'flame-active' : ''} />
             <div>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Streak</div>
-              <div style={{ fontSize: '1rem', fontWeight: 800 }}>{streak} {streak === 1 ? 'day' : 'days'}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Streak</div>
+              <div style={{ fontSize: '1rem', fontWeight: 600 }}>{streak} {streak === 1 ? 'day' : 'days'}</div>
             </div>
           </div>
         </div>
@@ -385,7 +385,7 @@ const Dashboard = () => {
         {/* Tasks Checklist */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 750 }}>
+            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>
               Tasks Checklist
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -517,7 +517,7 @@ const Dashboard = () => {
                           <button 
                             onClick={() => handleSaveEditTask(task.id)}
                             className="mirror-btn-pill"
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', fontWeight: 800, whiteSpace: 'nowrap' }}
+                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}
                           >
                             Save
                           </button>
@@ -578,7 +578,7 @@ const Dashboard = () => {
               />
               <button type="submit" className="mirror-btn-pill tracker-submit" style={{ padding: '0.75rem 1.5rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Plus size={16} />
-                <span style={{ fontWeight: 750 }}>Add Task</span>
+                <span style={{ fontWeight: 600 }}>Add Task</span>
               </button>
             </form>
           </div>
@@ -616,7 +616,7 @@ const Dashboard = () => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                     <Pill size={15} color="#ff2d55" />
-                    <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                       {medSchedule.medName}
                     </span>
                   </div>
@@ -643,7 +643,7 @@ const Dashboard = () => {
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       fontSize: '0.75rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       color: morningCompleted ? '#30d158' : 'var(--text-secondary)'
                     }}
                   >
@@ -681,7 +681,7 @@ const Dashboard = () => {
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       fontSize: '0.75rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       color: eveningCompleted ? '#30d158' : 'var(--text-secondary)'
                     }}
                   >
@@ -710,7 +710,7 @@ const Dashboard = () => {
         {showDsaColumn && (
           /* DSA Tracker Column */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 750 }}>
+            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>
               DSA Logs
             </h2>
 
@@ -722,7 +722,7 @@ const Dashboard = () => {
                   <Code2 size={20} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 750, color: 'var(--text-primary)' }}>Logged Questions</h3>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Logged Questions</h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Questions solved on this day</p>
                 </div>
               </div>
@@ -774,7 +774,7 @@ const Dashboard = () => {
                             : log.difficulty === 'Medium' 
                             ? 'rgba(255, 159, 10, 0.15)' 
                             : 'rgba(255, 69, 58, 0.15)',
-                          fontWeight: 700
+                          fontWeight: 600
                         }}
                       >
                         {log.difficulty}
@@ -790,7 +790,7 @@ const Dashboard = () => {
                 onClick={() => navigate('/dsa-log')}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', fontSize: '0.85rem', marginTop: 'auto' }}
               >
-                <span style={{ fontWeight: 750 }}>Log Questions Page</span>
+                <span style={{ fontWeight: 600 }}>Log Questions Page</span>
               </button>
 
             </div>

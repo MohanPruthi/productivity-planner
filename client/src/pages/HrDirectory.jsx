@@ -385,7 +385,7 @@ const HrDirectory = () => {
             <Phone size={22} color="#007aff" />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2 }}>
               Contacts <span style={{ background: 'linear-gradient(135deg, #007aff, #0a84ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Directory</span>
             </h1>
             <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem', fontSize: '0.85rem' }}>Keep track of job outreach, interviews, and contacts</p>
@@ -477,9 +477,7 @@ const HrDirectory = () => {
                         background: isActive ? 'rgba(0, 122, 255, 0.08)' : 'transparent',
                         color: isActive ? '#007aff' : 'var(--text-muted)',
                         cursor: 'pointer',
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
+                        fontWeight: 600,
                         transition: 'all 0.18s ease',
                         flexShrink: 0
                       }}
@@ -500,9 +498,7 @@ const HrDirectory = () => {
                     gap: '0.35rem',
                     padding: '0.35rem 0.75rem',
                     fontSize: '0.65rem',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
+                    fontWeight: 600,
                     borderRadius: '6px',
                     cursor: 'pointer',
                     flexShrink: 0
@@ -561,21 +557,20 @@ const HrDirectory = () => {
                             className="input-control"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            style={{ padding: '0.2rem 0.5rem', fontSize: '1rem', fontWeight: 800, width: '100%' }}
+                            style={{ padding: '0.2rem 0.5rem', fontSize: '1rem', fontWeight: 600, width: '100%' }}
                           />
                         ) : (
                           <div>
-                            <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               <span>{contact.contactName}</span>
                               <span 
                                 className="badge" 
                                 style={{ 
                                   fontSize: '0.58rem',
-                                  fontWeight: 800,
+                                  fontWeight: 600,
                                   color: activeColor,
                                   background: `${activeColor}12`,
-                                  borderColor: `${activeColor}24`,
-                                  textTransform: 'uppercase'
+                                  borderColor: `${activeColor}24`
                                 }}
                               >
                                 {contact.isContacted ? contact.status : 'Not Contacted'}
@@ -666,7 +661,7 @@ const HrDirectory = () => {
                       {/* Contacted Sub-Status Options */}
                       {contact.isContacted && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', animation: 'modalSlideUp 0.18s ease-out' }}>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700 }}>Outreach Status:</span>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Outreach Status:</span>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             {[
                               { label: 'Retry Call', value: 'Retry Call', activeColor: '#ff9500', bg: 'rgba(255,149,0,0.1)' },
@@ -688,7 +683,7 @@ const HrDirectory = () => {
                                     borderColor: isSel ? opt.activeColor : 'var(--border-light)',
                                     background: isSel ? opt.bg : 'transparent',
                                     color: isSel ? opt.activeColor : 'var(--text-muted)',
-                                    fontWeight: 800,
+                                    fontWeight: 600,
                                     cursor: 'pointer',
                                     transition: 'all 0.15s ease'
                                   }}
@@ -715,7 +710,7 @@ const HrDirectory = () => {
                                   border: 'none',
                                   color: 'var(--text-primary)',
                                   fontSize: '0.7rem',
-                                  fontWeight: 800,
+                                  fontWeight: 600,
                                   width: '108px',
                                   outline: 'none',
                                   cursor: 'pointer',
@@ -749,7 +744,7 @@ const HrDirectory = () => {
                             href={contact.hrLinkedin} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            style={{ fontSize: '0.75rem', color: '#0a66c2', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+                            style={{ fontSize: '0.75rem', color: '#0a66c2', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}
                           >
                             <span>Profile</span>
                             <ExternalLink size={10} />
@@ -787,7 +782,7 @@ const HrDirectory = () => {
                             href={contact.companyLinkedin} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            style={{ fontSize: '0.75rem', color: '#0077b5', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+                            style={{ fontSize: '0.75rem', color: '#0077b5', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}
                           >
                             <span>Company</span>
                             <ExternalLink size={10} />
@@ -831,7 +826,7 @@ const HrDirectory = () => {
                 }}
               >
                 <span>
-                  Showing <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{Math.min(indexOfFirstItem + 1, totalContacts)}</span> to <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{Math.min(indexOfLastItem, totalContacts)}</span> of <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{totalContacts}</span> contacts
+                  Showing <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{Math.min(indexOfFirstItem + 1, totalContacts)}</span> to <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{Math.min(indexOfLastItem, totalContacts)}</span> of <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{totalContacts}</span> contacts
                 </span>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <button
@@ -852,7 +847,7 @@ const HrDirectory = () => {
                     <ChevronLeft size={12} />
                     <span>Prev</span>
                   </button>
-                  <span style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: '70px', textAlign: 'center', fontSize: '0.75rem' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', minWidth: '70px', textAlign: 'center', fontSize: '0.75rem' }}>
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
@@ -891,7 +886,7 @@ const HrDirectory = () => {
         }}>
           <div className="glass-card" style={{ width: '350px', padding: '1.25rem', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)', margin: 0 }}>
+              <h3 style={{ fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)', margin: 0 }}>
                 <Plus size={16} color="#007aff" />
                 <span>Add Contact</span>
               </h3>
@@ -907,7 +902,7 @@ const HrDirectory = () => {
               {formError && <div className="text-error" style={{ fontSize: '0.8rem' }}>{formError}</div>}
 
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Contact / Company Name *</label>
+                <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Contact / Company Name *</label>
                 <input
                   type="text"
                   className="input-control"
@@ -919,7 +914,7 @@ const HrDirectory = () => {
               </div>
 
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Phone Number (Optional)</label>
+                <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Phone Number (Optional)</label>
                 <input
                   type="text"
                   className="input-control"
@@ -930,7 +925,7 @@ const HrDirectory = () => {
               </div>
 
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Email (Optional)</label>
+                <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Email (Optional)</label>
                 <input
                   type="email"
                   className="input-control"
@@ -941,7 +936,7 @@ const HrDirectory = () => {
               </div>
 
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>HR LinkedIn Link (Optional)</label>
+                <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>HR LinkedIn Link (Optional)</label>
                 <input
                   type="url"
                   className="input-control"
@@ -952,7 +947,7 @@ const HrDirectory = () => {
               </div>
 
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Company LinkedIn Link (Optional)</label>
+                <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Company LinkedIn Link (Optional)</label>
                 <input
                   type="url"
                   className="input-control"
@@ -985,7 +980,7 @@ const HrDirectory = () => {
         <div className="modal-backdrop" style={{ zIndex: 110 }}>
           <div className="glass-card" style={{ maxWidth: '550px', width: '90%', animation: 'modalSlideUp 0.25s ease-out', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, color: 'var(--text-primary)' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 600, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, color: 'var(--text-primary)' }}>
                 <FileText size={18} color="#007aff" />
                 <span>Bulk Import Contacts</span>
               </h3>

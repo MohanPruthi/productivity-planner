@@ -266,7 +266,7 @@ const Settings = () => {
           }}>
             <SettingsIcon size={22} color="var(--accent-primary)" />
           </div>
-          <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
+          <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>
             System <span className="gradient-text">Settings</span>
           </h1>
         </div>
@@ -283,10 +283,10 @@ const Settings = () => {
         }}>
           {privacyMode ? <Lock size={15} color="var(--text-muted)" /> : <Unlock size={15} color="var(--accent-primary)" />}
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 600 }}>
               Active Mode
             </div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 800, color: privacyMode ? 'var(--text-secondary)' : 'var(--accent-primary)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: privacyMode ? 'var(--text-secondary)' : 'var(--accent-primary)' }}>
               {privacyMode ? 'Office Workspace' : 'Personal Workspace'}
             </div>
           </div>
@@ -321,7 +321,7 @@ const Settings = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <Flame size={18} color="#ff9500" />
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>
               Zen Zone Targets
             </h2>
           </div>
@@ -359,42 +359,42 @@ const Settings = () => {
           >
             {/* Daily Study Targets */}
             <div>
-              <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#ff9500', fontWeight: 800, letterSpacing: '0.06em', display: 'block', marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.72rem', color: '#ff9500', fontWeight: 600, display: 'block', marginBottom: '0.75rem' }}>
                 Daily Study Targets
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {/* Weekdays */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Weekdays</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Weekdays</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setWeekdayTarget(prev => Math.max(0, prev - 0.5))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{weekdayTarget}h</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{weekdayTarget}h</span>
                     <button 
                       type="button" 
                       onClick={() => setWeekdayTarget(prev => prev + 0.5)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}
                     >+</button>
                   </div>
                 </div>
 
                 {/* Weekends */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Weekends</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Weekends</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setWeekendTarget(prev => Math.max(0, prev - 0.5))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{weekendTarget}h</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{weekendTarget}h</span>
                     <button 
                       type="button" 
                       onClick={() => setWeekendTarget(prev => prev + 0.5)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}
                     >+</button>
                   </div>
                 </div>
@@ -403,60 +403,60 @@ const Settings = () => {
 
             {/* Pomodoro Durations */}
             <div>
-              <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#ff2d55', fontWeight: 800, letterSpacing: '0.06em', display: 'block', marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.72rem', color: '#ff2d55', fontWeight: 600, display: 'block', marginBottom: '0.75rem' }}>
                 Pomodoro Durations
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {/* Focus */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Focus Session</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Focus Session</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setPomoWorkMinutes(prev => Math.max(1, prev - 1))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{pomoWorkMinutes}m</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{pomoWorkMinutes}m</span>
                     <button 
                       type="button" 
                       onClick={() => setPomoWorkMinutes(prev => prev + 1)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >+</button>
                   </div>
                 </div>
 
                 {/* Short Break */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Short Break</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Short Break</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setPomoShortMinutes(prev => Math.max(1, prev - 1))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{pomoShortMinutes}m</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{pomoShortMinutes}m</span>
                     <button 
                       type="button" 
                       onClick={() => setPomoShortMinutes(prev => prev + 1)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >+</button>
                   </div>
                 </div>
 
                 {/* Long Break */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Long Break</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Long Break</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setPomoLongMinutes(prev => Math.max(1, prev - 1))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{pomoLongMinutes}m</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{pomoLongMinutes}m</span>
                     <button 
                       type="button" 
                       onClick={() => setPomoLongMinutes(prev => prev + 1)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >+</button>
                   </div>
                 </div>
@@ -465,7 +465,7 @@ const Settings = () => {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginTop: '0.25rem' }}>
               {zenSuccessMsg && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.82rem', fontWeight: 700 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.82rem', fontWeight: 600 }}>
                   <CheckCircle2 size={16} />
                   <span>{zenSuccessMsg}</span>
                 </div>
@@ -477,7 +477,7 @@ const Settings = () => {
                 style={{
                   padding: '0.65rem 1.8rem',
                   fontSize: '0.85rem',
-                  fontWeight: 750,
+                  fontWeight: 600,
                   borderRadius: '12px',
                   cursor: 'pointer'
                 }}
@@ -518,7 +518,7 @@ const Settings = () => {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
               <Sliders size={18} color="var(--accent-primary)" />
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>
                 Office Workspace Visibility
               </h2>
             </div>
@@ -590,7 +590,7 @@ const Settings = () => {
                           <Icon size={18} />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.92rem', fontWeight: 750 }}>
+                          <span style={{ fontSize: '0.92rem', fontWeight: 600 }}>
                             {sys.name}
                           </span>
                           {!isShownInOffice && (
@@ -720,7 +720,7 @@ const Settings = () => {
           {/* Left Title */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <KeyRound size={18} color="#007aff" />
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>
               Change Security PIN
             </h2>
           </div>
@@ -762,7 +762,7 @@ const Settings = () => {
               
               {/* 1. Current PIN */}
               <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem' }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
                   Current PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.45rem' }}>
@@ -780,7 +780,7 @@ const Settings = () => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: digit ? 'rgba(0, 122, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid #007aff' : '1px solid var(--border-light)',
@@ -795,7 +795,7 @@ const Settings = () => {
 
               {/* 2. New PIN */}
               <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem' }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
                   New PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.45rem' }}>
@@ -813,7 +813,7 @@ const Settings = () => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: digit ? 'rgba(0, 122, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid #007aff' : '1px solid var(--border-light)',
@@ -828,7 +828,7 @@ const Settings = () => {
 
               {/* 3. Confirm New PIN */}
               <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem' }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
                   Confirm PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.45rem' }}>
@@ -846,7 +846,7 @@ const Settings = () => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: digit ? 'rgba(0, 122, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid #007aff' : '1px solid var(--border-light)',
@@ -870,7 +870,7 @@ const Settings = () => {
               )}
 
               {pinSuccess && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.8rem', fontWeight: 700 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.8rem', fontWeight: 600 }}>
                   <CheckCircle2 size={16} />
                   <span>{pinSuccess}</span>
                 </div>
@@ -884,7 +884,7 @@ const Settings = () => {
                 style={{
                   padding: '0.65rem 1.8rem',
                   fontSize: '0.85rem',
-                  fontWeight: 750,
+                  fontWeight: 600,
                   borderRadius: '12px',
                   cursor: 'pointer'
                 }}
@@ -909,7 +909,7 @@ const Settings = () => {
               color: '#fbbf24',
               padding: '0.7rem 1.75rem',
               fontSize: '0.85rem',
-              fontWeight: 750,
+              fontWeight: 600,
               borderRadius: '14px',
               display: 'flex',
               alignItems: 'center',

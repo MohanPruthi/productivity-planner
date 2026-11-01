@@ -133,7 +133,7 @@ const Sidebar = () => {
       <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', marginBottom: '3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <LogoIcon />
-          <h2 className="brand-title animated-gradient-purple" style={{ margin: 0, fontSize: '1.45rem', letterSpacing: '0.08em', fontWeight: 900, textTransform: 'uppercase' }}>PLANNER</h2>
+          <h2 className="brand-title animated-gradient-purple" style={{ margin: 0, fontSize: '1.45rem', fontWeight: 600 }}>Planner</h2>
         </div>
       </div>
 

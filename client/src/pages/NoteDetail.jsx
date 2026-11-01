@@ -540,7 +540,7 @@ const NoteDetail = () => {
         <div style={{ color: 'var(--text-muted)' }}>
           <AlertCircle size={40} color="#ff3b30" />
         </div>
-        <h2 style={{ fontSize: '1.35rem', fontWeight: 700 }}>{error || 'Note not found'}</h2>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: 600 }}>{error || 'Note not found'}</h2>
         <button
           onClick={() => navigate('/notes')}
           className="note-detail-back-btn"
@@ -560,7 +560,7 @@ const NoteDetail = () => {
         <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(234, 179, 8, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#eab308' }}>
           <Lock size={28} />
         </div>
-        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0 }}>Personal Note Locked</h2>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: 600, margin: 0 }}>Personal Note Locked</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
           This note belongs to your <strong>Personal Workspace</strong>. Switch from Office space to Personal space using the lock icon in the sidebar to view and edit this note.
         </p>
@@ -693,7 +693,7 @@ const NoteDetail = () => {
               padding: '0.42rem 0.85rem',
               borderRadius: '9px',
               fontSize: '0.78rem',
-              fontWeight: 700,
+              fontWeight: 600,
               cursor: 'pointer',
               background: isPersonal ? 'rgba(234, 179, 8, 0.12)' : 'rgba(255, 255, 255, 0.04)',
               border: `1px solid ${isPersonal ? 'rgba(234, 179, 8, 0.35)' : 'rgba(255, 255, 255, 0.08)'}`,
@@ -892,7 +892,7 @@ const NoteDetail = () => {
                 <span
                   style={{
                     fontSize: '0.75rem',
-                    fontWeight: 750,
+                    fontWeight: 600,
                     color: totalTodoCount > 0 && completedTodoCount === totalTodoCount ? '#34d399' : 'var(--text-muted)',
                     background: 'rgba(255, 255, 255, 0.04)',
                     padding: '0.2rem 0.6rem',

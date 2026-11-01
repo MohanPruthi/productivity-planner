@@ -347,7 +347,7 @@ const Notes = () => {
               padding: '0.22rem 0.6rem 0.28rem',
               color: 'var(--text-secondary)',
               fontSize: '0.62rem',
-              fontWeight: 700,
+              fontWeight: 600,
               letterSpacing: '0.02em',
               borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -375,7 +375,7 @@ const Notes = () => {
             <h3
               style={{
                 fontSize: '1.05rem',
-                fontWeight: 800,
+                fontWeight: 600,
                 color: 'var(--text-primary)',
                 margin: 0,
                 whiteSpace: 'nowrap',
@@ -505,7 +505,7 @@ const Notes = () => {
               <span
                 style={{
                   fontSize: '0.66rem',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   color: totalCount > 0 && completedCount === totalCount ? '#a5b4fc' : 'var(--text-muted)',
                   background: 'rgba(255, 255, 255, 0.035)',
                   padding: '0.12rem 0.45rem',
@@ -633,7 +633,7 @@ const Notes = () => {
             <FileText size={22} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: '1.45rem', fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>
               Notes & Thoughts
             </h1>
             <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
@@ -688,7 +688,7 @@ const Notes = () => {
             style={{
               padding: '0.55rem 1.25rem',
               fontSize: '0.85rem',
-              fontWeight: 700,
+              fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
               gap: '0.45rem',
@@ -731,7 +731,7 @@ const Notes = () => {
             <FileText size={28} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0 0 0.35rem 0' }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '0 0 0.35rem 0' }}>
               {searchQuery ? 'No matching notes found' : 'No notes created yet'}
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, maxWidth: '380px' }}>
@@ -747,7 +747,7 @@ const Notes = () => {
                 style={{
                   padding: '0.65rem 1.45rem',
                   fontSize: '0.85rem',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.45rem',
@@ -769,7 +769,7 @@ const Notes = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Pin size={15} color="#eab308" fill="#eab308" style={{ transform: 'rotate(45deg)' }} />
-                <h2 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <h2 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                   Pinned ({pinnedNotes.length})
                 </h2>
               </div>
@@ -784,7 +784,7 @@ const Notes = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {pinnedNotes.length > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <h2 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <h2 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                     Others
                   </h2>
                 </div>
@@ -854,7 +854,7 @@ const Notes = () => {
                   {noteTypeInput === 'todo' ? <ListTodo size={18} /> : <FileText size={18} />}
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, letterSpacing: '-0.01em' }}>
+                  <h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: 0, letterSpacing: '-0.01em' }}>
                     {noteTypeInput === 'todo' ? 'New Todo Checklist' : 'New Note'}
                   </h2>
                   <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
@@ -889,7 +889,7 @@ const Notes = () => {
               
               {/* Format Type Selection */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                   Format Type
                 </label>
                 <div style={{ display: 'flex', gap: '0.45rem', background: 'rgba(255, 255, 255, 0.025)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)', width: 'fit-content' }}>
@@ -899,7 +899,7 @@ const Notes = () => {
                     style={{
                       padding: '0.45rem 1.1rem',
                       fontSize: '0.82rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       borderRadius: '8px',
                       border: '1px solid',
                       borderColor: noteTypeInput === 'note' ? `${colorTagInput}55` : 'transparent',
@@ -921,7 +921,7 @@ const Notes = () => {
                     style={{
                       padding: '0.45rem 1.1rem',
                       fontSize: '0.82rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       borderRadius: '8px',
                       border: '1px solid',
                       borderColor: noteTypeInput === 'todo' ? `${colorTagInput}55` : 'transparent',
@@ -942,7 +942,7 @@ const Notes = () => {
 
               {/* Title Input */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                   Heading
                 </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -957,7 +957,7 @@ const Notes = () => {
                     className="input-control"
                     style={{
                       fontSize: '1rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       padding: '0.7rem 1rem 0.7rem 2.65rem',
                       borderRadius: '11px',
                       background: 'rgba(255, 255, 255, 0.02)'
@@ -970,7 +970,7 @@ const Notes = () => {
 
               {/* Color Tag Selection */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                   Color Tag
                 </label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
@@ -1015,7 +1015,7 @@ const Notes = () => {
                     {isPersonalInput ? <Lock size={15} /> : <Globe size={15} />}
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {isPersonalInput ? 'Personal Workspace' : 'Office Workspace'}
                     </div>
                     <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.05rem' }}>
@@ -1107,7 +1107,7 @@ const Notes = () => {
                     padding: '0.5rem 1.15rem',
                     borderRadius: '8px',
                     fontSize: '0.82rem',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     cursor: submitting ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',

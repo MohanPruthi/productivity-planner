@@ -71,6 +71,7 @@
 }
 
 body {
+  font-variant-numeric: tabular-nums;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -134,7 +135,7 @@ body {
 .brand-title {
   font-family: var(--font-display);
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 600;
   color: #e0e7ff;
   text-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
 }
@@ -462,8 +463,6 @@ label {
   border-radius: 4px;
   font-size: 0.7rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   border: 1px solid transparent;
 }
 
@@ -702,8 +701,7 @@ label {
 
 .pomo-tab-label {
   font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--text-secondary);
   margin-bottom: 0.15rem;
@@ -723,7 +721,7 @@ label {
 
 .pomo-big-timer {
   font-size: 3.5rem;
-  font-weight: 800;
+  font-weight: 600;
   font-family: var(--font-display);
   letter-spacing: -0.01em;
   text-align: center;
@@ -835,7 +833,7 @@ label {
   background: linear-gradient(135deg, var(--accent-primary), #8b5cf6, var(--accent-primary));
   background-size: 200% auto;
   color: white;
-  font-weight: 700;
+  font-weight: 600;
   border-radius: 9999px; /* Pill shape */
   padding: 0.7rem 1.6rem;
   border: none;
@@ -861,7 +859,7 @@ label {
   background: var(--pomo-btn-bg, linear-gradient(135deg, var(--track-dsa-start), var(--track-dsa-end), var(--track-dsa-start)));
   background-size: 200% auto;
   color: white;
-  font-weight: 700;
+  font-weight: 600;
   border-radius: 9999px; /* Pill shape */
   padding: 0.7rem 1.6rem;
   border: none;
@@ -1058,7 +1056,7 @@ label {
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   position: relative;
   overflow: hidden;
-  font-weight: 700;
+  font-weight: 600;
   font-family: var(--font-sans);
 }
 
@@ -1327,10 +1325,8 @@ label {
 
 .premium-loader-text {
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-secondary);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   animation: pulseText 1.8s infinite ease-in-out;
 }
 
@@ -1661,7 +1657,7 @@ label {
   color: #007aff;
   box-shadow: 0 4px 15px rgba(0, 122, 255, 0.05);
   backdrop-filter: blur(8px);
-  font-weight: 800;
+  font-weight: 600;
   transition: all 0.2s ease;
 }
 .mirror-btn-pill.directory-submit:hover {
@@ -2123,7 +2119,7 @@ label {
 
 .rich-editor-canvas strong,
 .rich-editor-canvas b {
-  font-weight: 750;
+  font-weight: 600;
   color: #ffffff;
 }
 
