@@ -67,6 +67,63 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
+  const [privacyMode, setPrivacyMode] = useState(() => localStorage.getItem('privacyMode') === 'true');
+
+  const DEFAULT_WORKSPACE_VISIBILITY = {
+    dashboard: { showInOffice: true, showOnDashboard: true },
+    aiPlan: { showInOffice: true, showOnDashboard: true },
+    sdPlan: { showInOffice: true, showOnDashboard: true },
+    dsaLog: { showInOffice: false, showOnDashboard: false },
+    taskHistory: { showInOffice: true, showOnDashboard: true },
+    meds: { showInOffice: true, showOnDashboard: true },
+    hrDirectory: { showInOffice: false, showOnDashboard: true },
+    notes: { showInOffice: true, showOnDashboard: false },
+  };
+
+  const [workspaceVisibility, setWorkspaceVisibility] = useState(() => {
+    try {
+      const saved = localStorage.getItem('workspaceVisibilityConfig');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const normalized = {};
+        for (const [key, val] of Object.entries(parsed)) {
+          normalized[key] = {
+            ...val,
+            showOnDashboard: val.showOnDashboard !== undefined 
+              ? val.showOnDashboard 
+              : (val.hideFromDashboard !== undefined ? !val.hideFromDashboard : true)
+          };
+        }
+        return { ...DEFAULT_WORKSPACE_VISIBILITY, ...normalized };
+      }
+      return DEFAULT_WORKSPACE_VISIBILITY;
+    } catch {
+      return DEFAULT_WORKSPACE_VISIBILITY;
+    }
+  });
+
+  const updateWorkspaceVisibility = (systemKey, updates) => {
+    setWorkspaceVisibility(prev => {
+      const updated = {
+        ...prev,
+        [systemKey]: {
+          ...(prev[systemKey] || {}),
+          ...updates
+        }
+      };
+      localStorage.setItem('workspaceVisibilityConfig', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const togglePrivacyMode = () => {
+    setPrivacyMode(prev => {
+      const nextVal = !prev;
+      localStorage.setItem('privacyMode', String(nextVal));
+      return nextVal;
+    });
+  };
+
   const getAuthHeaders = () => {
     return {
       'Content-Type': 'application/json',
@@ -75,7 +132,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, signup, logout, getAuthHeaders }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      loading, 
+      login, 
+      signup, 
+      logout, 
+      getAuthHeaders, 
+      privacyMode, 
+      togglePrivacyMode,
+      workspaceVisibility,
+      updateWorkspaceVisibility
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   );

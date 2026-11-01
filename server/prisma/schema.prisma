@@ -29,6 +29,7 @@ model User {
   email            String            @unique
   passwordHash     String
   name             String
+  workspacePin     String?           @default("1234")
   createdAt        DateTime          @default(now())
   planWeeks        PlanWeek[]
   planDays         PlanDay[]
@@ -38,6 +39,8 @@ model User {
   normalTasks      NormalTask[]
   medSchedule      MedSchedule?
   medLogs          MedLog[]
+  hrContacts       HrContact[]
+  notes            Note[]
 }
 
 model PlanWeek {
@@ -118,7 +121,7 @@ model MedSchedule {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   medName      String   @default("Daily Medication")
   startDate    DateTime @default(now())
-  durationDays Int      @default(30)
+  durationDays Int      @default(60)
 }
 
 model MedLog {
@@ -131,4 +134,39 @@ model MedLog {
   createdAt DateTime @default(now())
 
   @@unique([userId, date])
+}
+
+model HrContact {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contactName     String
+  phoneNumber     String?
+  email           String?
+  status          String    @default("Pending") // e.g. "Pending" | "Contacted" | "Interview Scheduled" | "Rejected" | "Offered"
+  isContacted     Boolean   @default(false)
+  interviewDate   DateTime?
+  hrLinkedin      String?
+  companyLinkedin String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Note {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  content    String    @default("")
+  type       String    @default("note") // "note" or "todo"
+  checklist  Json?     @default("[]")
+  colorTag   String    @default("#6366f1")
+  isPersonal Boolean   @default(false)
+  isPinned   Boolean   @default(false)
+  pinnedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
 }

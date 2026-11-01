@@ -9,6 +9,10 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import TaskHistory from './pages/TaskHistory';
 import Meds from './pages/Meds';
+import HrDirectory from './pages/HrDirectory';
+import Notes from './pages/Notes';
+import NoteDetail from './pages/NoteDetail';
+import Settings from './pages/Settings';
 import Loader from './components/Loader';
 
 // Protected Route Wrapper
@@ -23,6 +27,19 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  return children;
+};
+
+// Workspace Visibility Protected Route Wrapper
+const WorkspaceProtectedRoute = ({ systemId, children }) => {
+  const { privacyMode, workspaceVisibility } = useAuth();
+  if (privacyMode) {
+    const config = workspaceVisibility?.[systemId];
+    // If explicitly configured to be hidden in office mode, redirect to home
+    if (config && config.showInOffice === false) {
+      return <Navigate to="/" replace />;
+    }
+  }
   return children;
 };
 
@@ -78,7 +95,9 @@ function App() {
               path="/ai-plan" 
               element={
                 <ProtectedRoute>
-                  <Plan track="AI" />
+                  <WorkspaceProtectedRoute systemId="aiPlan">
+                    <Plan track="AI" />
+                  </WorkspaceProtectedRoute>
                 </ProtectedRoute>
               } 
             />
@@ -86,7 +105,9 @@ function App() {
               path="/sd-plan" 
               element={
                 <ProtectedRoute>
-                  <Plan track="SD" />
+                  <WorkspaceProtectedRoute systemId="sdPlan">
+                    <Plan track="SD" />
+                  </WorkspaceProtectedRoute>
                 </ProtectedRoute>
               } 
             />
@@ -94,7 +115,9 @@ function App() {
               path="/dsa-log" 
               element={
                 <ProtectedRoute>
-                  <DsaLog />
+                  <WorkspaceProtectedRoute systemId="dsaLog">
+                    <DsaLog />
+                  </WorkspaceProtectedRoute>
                 </ProtectedRoute>
               } 
             />
@@ -102,7 +125,9 @@ function App() {
               path="/task-history" 
               element={
                 <ProtectedRoute>
-                  <TaskHistory />
+                  <WorkspaceProtectedRoute systemId="taskHistory">
+                    <TaskHistory />
+                  </WorkspaceProtectedRoute>
                 </ProtectedRoute>
               } 
             />
@@ -110,11 +135,54 @@ function App() {
               path="/meds" 
               element={
                 <ProtectedRoute>
-                  <Meds />
+                  <WorkspaceProtectedRoute systemId="meds">
+                    <Meds />
+                  </WorkspaceProtectedRoute>
                 </ProtectedRoute>
               } 
             />
 
+            <Route 
+              path="/hr-directory" 
+              element={
+                <ProtectedRoute>
+                  <WorkspaceProtectedRoute systemId="hrDirectory">
+                    <HrDirectory />
+                  </WorkspaceProtectedRoute>
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/notes" 
+              element={
+                <ProtectedRoute>
+                  <WorkspaceProtectedRoute systemId="notes">
+                    <Notes />
+                  </WorkspaceProtectedRoute>
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/note/:id" 
+              element={
+                <ProtectedRoute>
+                  <WorkspaceProtectedRoute systemId="notes">
+                    <NoteDetail />
+                  </WorkspaceProtectedRoute>
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* Catch-all redirect */}
             <Route path="*" element={<Navigate to="/" replace />} />

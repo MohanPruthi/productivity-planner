@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { getAuthHeaders } = useAuth();
+  const { getAuthHeaders, privacyMode, workspaceVisibility } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const dateParam = searchParams.get('date');
@@ -68,6 +68,23 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchData(activeDateStr);
+  }, [activeDateStr]);
+
+  useEffect(() => {
+    const handleMedLogUpdated = (e) => {
+      const { date, log } = e.detail || {};
+      if (date === activeDateStr && log) {
+        setTodayData(prev => ({
+          ...prev,
+          meds: {
+            ...prev?.meds,
+            todayLog: log
+          }
+        }));
+      }
+    };
+    window.addEventListener('med-log-updated', handleMedLogUpdated);
+    return () => window.removeEventListener('med-log-updated', handleMedLogUpdated);
   }, [activeDateStr]);
 
   const handleToggleTask = async (taskId, currentIsDone) => {
@@ -205,8 +222,16 @@ const Dashboard = () => {
         setTodayData(prev => ({
           ...prev,
           meds: {
-            ...prev.meds,
+            ...prev?.meds,
             todayLog: updatedLog
+          }
+        }));
+        window.dispatchEvent(new CustomEvent('med-log-updated', {
+          detail: {
+            date: activeDateStr,
+            type,
+            value: !currentValue,
+            log: updatedLog
           }
         }));
       }
@@ -265,13 +290,31 @@ const Dashboard = () => {
     day: 'numeric'
   });
 
-  const totalTasksCount = (todayData?.planDays?.length || 0) + (todayData?.normalTasks?.length || 0);
+  const filteredPlanDays = (todayData?.planDays || []).filter(day => {
+    if (privacyMode) {
+      const isHiddenFromDashboard = (sysConfig) => sysConfig?.showInOffice === false && sysConfig?.showOnDashboard === false;
+      if (day.track === 'AI' && isHiddenFromDashboard(workspaceVisibility?.aiPlan)) return false;
+      if (day.track === 'SD' && isHiddenFromDashboard(workspaceVisibility?.sdPlan)) return false;
+    }
+    return true;
+  });
+
+  const filteredNormalTasks = (todayData?.normalTasks || []).filter(task => {
+    if (privacyMode) {
+      if (workspaceVisibility?.taskHistory?.showInOffice === false && workspaceVisibility?.taskHistory?.showOnDashboard === false) return false;
+    }
+    return true;
+  });
+
+  const totalTasksCount = filteredPlanDays.length + filteredNormalTasks.length;
   const completedTasksCount = 
-    (todayData?.planDays?.filter(d => d.isDone).length || 0) + 
-    (todayData?.normalTasks?.filter(t => t.isDone).length || 0);
+    filteredPlanDays.filter(d => d.isDone).length + 
+    filteredNormalTasks.filter(t => t.isDone).length;
 
   // Daily DSA Questions
   const dailyDsaLogs = todayData?.dsaLogs || [];
+  const showMedsWidget = todayData?.meds?.schedule && !(privacyMode && workspaceVisibility?.meds?.showInOffice === false && workspaceVisibility?.meds?.showOnDashboard === false);
+  const showDsaColumn = !(privacyMode && workspaceVisibility?.dsaLog?.showInOffice === false && workspaceVisibility?.dsaLog?.showOnDashboard === false);
 
   return (
     <div className="dashboard-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -336,8 +379,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Main Grid: Checklist & DSA Widget */}
-      <div className="dashboard-main-grid">
+      <div className="dashboard-main-grid" style={!showDsaColumn ? { gridTemplateColumns: '1fr' } : {}}>
         
         {/* Tasks Checklist */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -374,7 +416,7 @@ const Dashboard = () => {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {/* Planner tasks */}
-                {todayData?.planDays?.map(day => (
+                {filteredPlanDays.map(day => (
                   <div 
                     key={day.id} 
                     style={{ 
@@ -387,6 +429,7 @@ const Dashboard = () => {
                       border: '1px solid var(--border-light)',
                       transition: 'all 0.2s'
                     }}
+                    className="task-item-dashboard"
                   >
                     <button 
                       onClick={() => handleToggleTask(day.id, day.isDone)}
@@ -422,7 +465,7 @@ const Dashboard = () => {
                 ))}
 
                 {/* Normal Tasks */}
-                {todayData?.normalTasks?.map(task => (
+                {filteredNormalTasks.map(task => (
                   <div 
                     key={task.id} 
                     style={{ 
@@ -540,9 +583,10 @@ const Dashboard = () => {
           </div>
 
           {/* Meds Checklist Widget */}
-          {todayData?.meds?.schedule && (() => {
-            const medSchedule = todayData.meds.schedule;
-            const medLogToday = todayData.meds.todayLog;
+          {showMedsWidget && (() => {
+            const medSchedule = todayData?.meds?.schedule;
+            const medLogToday = todayData?.meds?.todayLog;
+            if (!medSchedule) return null;
             
             const start = new Date(medSchedule.startDate);
             start.setHours(0,0,0,0);
@@ -662,93 +706,95 @@ const Dashboard = () => {
           })()}
         </div>
 
-        {/* DSA Tracker Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 750 }}>
-            DSA Logs
-          </h2>
+        {showDsaColumn && (
+          /* DSA Tracker Column */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 750 }}>
+              DSA Logs
+            </h2>
 
-          <div className="glass-card glow-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', height: '100%' }}>
-            
-            {/* Header info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-              <div style={{ background: 'rgba(249, 115, 22, 0.08)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f97316' }}>
-                <Code2 size={20} />
+            <div className="glass-card glow-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', height: '100%' }}>
+              
+              {/* Header info */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                <div style={{ background: 'rgba(249, 115, 22, 0.08)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f97316' }}>
+                  <Code2 size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 750, color: 'var(--text-primary)' }}>Logged Questions</h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Questions solved on this day</p>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontSize: '0.95rem', fontWeight: 750, color: 'var(--text-primary)' }}>Logged Questions</h3>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Questions solved on this day</p>
-              </div>
-            </div>
 
-            {/* Questions list */}
-            {dailyDsaLogs.length === 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.5rem', minHeight: '180px' }}>
-                <Code2 size={32} style={{ opacity: 0.25 }} />
-                <p style={{ fontSize: '0.85rem' }}>No questions logged on this date.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', overflowY: 'auto', maxHeight: '260px' }}>
-                {dailyDsaLogs.map(log => (
-                  <div 
-                    key={log.id}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '0.65rem 0.85rem',
-                      background: 'rgba(255,255,255,0.01)',
-                      border: '1px solid var(--border-light)',
-                      borderRadius: '8px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 650, color: 'var(--text-primary)' }}>
-                        #{log.questionNumber} - {log.title || 'Untitled'}
-                      </span>
-                    </div>
-
-                    <span 
-                      className="badge" 
-                      style={{ 
-                        fontSize: '0.62rem',
-                        padding: '0.1rem 0.4rem',
-                        background: log.difficulty === 'Easy' 
-                          ? 'rgba(48, 209, 88, 0.08)' 
-                          : log.difficulty === 'Medium' 
-                          ? 'rgba(255, 159, 10, 0.08)' 
-                          : 'rgba(255, 69, 58, 0.08)',
-                        color: log.difficulty === 'Easy' 
-                          ? '#30d158' 
-                          : log.difficulty === 'Medium' 
-                          ? '#ff9f0a' 
-                          : '#ff453a',
-                        borderColor: log.difficulty === 'Easy' 
-                          ? 'rgba(48, 209, 88, 0.15)' 
-                          : log.difficulty === 'Medium' 
-                          ? 'rgba(255, 159, 10, 0.15)' 
-                          : 'rgba(255, 69, 58, 0.15)',
-                        fontWeight: 700
+              {/* Questions list */}
+              {dailyDsaLogs.length === 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.5rem', minHeight: '180px' }}>
+                  <Code2 size={32} style={{ opacity: 0.25 }} />
+                  <p style={{ fontSize: '0.85rem' }}>No questions logged on this date.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', overflowY: 'auto', maxHeight: '260px' }}>
+                  {dailyDsaLogs.map(log => (
+                    <div 
+                      key={log.id}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '0.65rem 0.85rem',
+                        background: 'rgba(255,255,255,0.01)',
+                        border: '1px solid var(--border-light)',
+                        borderRadius: '8px'
                       }}
                     >
-                      {log.difficulty}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 650, color: 'var(--text-primary)' }}>
+                          #{log.questionNumber} - {log.title || 'Untitled'}
+                        </span>
+                      </div>
 
-            {/* Link to DSA logs */}
-            <button 
-              className="mirror-btn-pill dsa-submit"
-              onClick={() => navigate('/dsa-log')}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', fontSize: '0.85rem', marginTop: 'auto' }}
-            >
-              <span style={{ fontWeight: 750 }}>Log Questions Page</span>
-            </button>
+                      <span 
+                        className="badge" 
+                        style={{ 
+                          fontSize: '0.62rem',
+                          padding: '0.1rem 0.4rem',
+                          background: log.difficulty === 'Easy' 
+                            ? 'rgba(48, 209, 88, 0.08)' 
+                            : log.difficulty === 'Medium' 
+                            ? 'rgba(255, 159, 10, 0.08)' 
+                            : 'rgba(255, 69, 58, 0.08)',
+                          color: log.difficulty === 'Easy' 
+                            ? '#30d158' 
+                            : log.difficulty === 'Medium' 
+                            ? '#ff9f0a' 
+                            : '#ff453a',
+                          borderColor: log.difficulty === 'Easy' 
+                            ? 'rgba(48, 209, 88, 0.15)' 
+                            : log.difficulty === 'Medium' 
+                            ? 'rgba(255, 159, 10, 0.15)' 
+                            : 'rgba(255, 69, 58, 0.15)',
+                          fontWeight: 700
+                        }}
+                      >
+                        {log.difficulty}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
+              {/* Link to DSA logs */}
+              <button 
+                className="mirror-btn-pill dsa-submit"
+                onClick={() => navigate('/dsa-log')}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', fontSize: '0.85rem', marginTop: 'auto' }}
+              >
+                <span style={{ fontWeight: 750 }}>Log Questions Page</span>
+              </button>
+
+            </div>
           </div>
-        </div>
+        )}
 
       </div>
 

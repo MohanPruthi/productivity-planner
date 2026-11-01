@@ -15,7 +15,7 @@ async function getMedSchedule(req, res) {
           userId,
           medName: "Daily Medication",
           startDate: new Date(),
-          durationDays: 30
+          durationDays: 60
         }
       });
     }
@@ -27,7 +27,7 @@ async function getMedSchedule(req, res) {
   }
 }
 
-// Reset/restart the 30-day course
+// Reset/restart the 60-day course
 async function resetMedSchedule(req, res) {
   try {
     const userId = req.user.id;
@@ -38,13 +38,13 @@ async function resetMedSchedule(req, res) {
       update: {
         medName: medName || "Daily Medication",
         startDate: new Date(),
-        durationDays: durationDays || 30
+        durationDays: durationDays || 60
       },
       create: {
         userId,
         medName: medName || "Daily Medication",
         startDate: new Date(),
-        durationDays: durationDays || 30
+        durationDays: durationDays || 60
       }
     });
 

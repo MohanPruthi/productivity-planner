@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import PinModal from './PinModal';
 import { 
   LayoutDashboard, 
   Brain, 
@@ -10,7 +11,13 @@ import {
   User,
   History,
   Pill,
-  Compass
+  Compass,
+  SlidersHorizontal,
+  Phone,
+  Briefcase,
+  Laptop,
+  StickyNote,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 const renderThemeIcon = (currentTheme) => {
@@ -93,8 +100,9 @@ const LogoIcon = () => {
 };
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, privacyMode, togglePrivacyMode, workspaceVisibility } = useAuth();
   const location = useLocation();
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
   // Initialize theme from localStorage or default to dark
   const [theme, setTheme] = useState(() => {
@@ -114,14 +122,36 @@ const Sidebar = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
+  const handlePrivacyToggle = () => {
+    if (privacyMode) {
+      // Switching to Personal Workspace requires 4-digit PIN
+      setIsPinModalOpen(true);
+    } else {
+      // Switching to Office Workspace (privacy mode) is instant
+      togglePrivacyMode();
+    }
+  };
+
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: LayoutDashboard, color: 'var(--accent-primary)' },
-    { path: '/ai-plan', label: 'AI Plan', icon: Brain, color: 'var(--track-ai-start)' },
-    { path: '/sd-plan', label: 'SD Plan', icon: Layers, color: 'var(--track-sd-start)' },
-    { path: '/dsa-log', label: 'DSA Log', icon: Code2, color: '#ffa116' },
-    { path: '/task-history', label: 'Work Board', icon: History, color: 'var(--accent-secondary)' },
-    { path: '/meds', label: 'Meds Tracker', icon: Pill, color: '#ff2d55' },
+    { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard, color: 'var(--accent-primary)' },
+    { id: 'aiPlan', path: '/ai-plan', label: 'AI Plan', icon: Brain, color: 'var(--track-ai-start)' },
+    { id: 'sdPlan', path: '/sd-plan', label: 'SD Plan', icon: Layers, color: 'var(--track-sd-start)' },
+    { id: 'dsaLog', path: '/dsa-log', label: 'DSA Log', icon: Code2, color: '#ffa116' },
+    { id: 'taskHistory', path: '/task-history', label: 'Work Board', icon: History, color: 'var(--accent-secondary)' },
+    { id: 'meds', path: '/meds', label: 'Meds Tracker', icon: Pill, color: '#ff2d55' },
+    { id: 'hrDirectory', path: '/hr-directory', label: 'Directory', icon: Phone, color: '#007aff' },
+    { id: 'notes', path: '/notes', label: 'Notes', icon: StickyNote, color: '#eab308' },
   ];
+
+  const filteredNavItems = navItems.filter(item => {
+    if (privacyMode) {
+      const config = workspaceVisibility?.[item.id];
+      if (config && config.showInOffice === false) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <aside className="sidebar-aside">
@@ -133,9 +163,9 @@ const Sidebar = () => {
       </div>
 
       <nav className="sidebar-nav">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.path;
+          const isActive = location.pathname === item.path || (item.path === '/notes' && location.pathname.startsWith('/note'));
           return (
             <Link 
               key={item.path} 
@@ -150,18 +180,16 @@ const Sidebar = () => {
         })}
       </nav>
 
-      <div className="sidebar-footer">
-        <div className="user-profile" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
-            <div className="user-avatar" style={{ flexShrink: 0 }}>
-              <User size={18} />
-            </div>
-            <div className="user-info">
-              <span className="user-name">{user?.name}</span>
-              <span className="user-email">{user?.email}</span>
-            </div>
-          </div>
-          
+      <div className="sidebar-footer" style={{ borderTop: 'none', paddingTop: 0 }}>
+        {/* Toggle buttons container */}
+        <div style={{
+          borderTop: '1px solid var(--border-light)',
+          paddingTop: '1rem',
+          display: 'flex',
+          gap: '0.75rem',
+          alignItems: 'center',
+          width: '100%'
+        }}>
           <button 
             onClick={toggleTheme}
             style={{
@@ -195,6 +223,103 @@ const Sidebar = () => {
           >
             {renderThemeIcon(theme)}
           </button>
+
+          {/* Privacy Toggle Button */}
+          <button 
+            onClick={handlePrivacyToggle}
+            style={{
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid var(--border-light)',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              padding: '0.45rem',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              flexShrink: 0
+            }}
+            className="privacy-toggle-btn"
+            title={privacyMode ? 'Switch to Personal Workspace' : 'Switch to Office Workspace'}
+            onMouseOver={(e) => {
+              e.currentTarget.style.color = 'var(--accent-primary)';
+              e.currentTarget.style.transform = 'scale(1.12) rotate(-8deg)';
+              e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+              e.currentTarget.style.borderColor = 'var(--border-light)';
+            }}
+          >
+            {privacyMode ? <Briefcase size={18} /> : <Laptop size={18} />}
+          </button>
+
+          {/* Settings Button */}
+          <Link 
+            to="/settings"
+            style={{
+              background: location.pathname === '/settings' ? 'rgba(99, 102, 241, 0.08)' : 'rgba(255,255,255,0.02)',
+              border: location.pathname === '/settings' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid var(--border-light)',
+              color: location.pathname === '/settings' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              padding: '0.45rem',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              flexShrink: 0,
+              textDecoration: 'none'
+            }}
+            className="settings-toggle-btn"
+            title="Settings"
+            onMouseOver={(e) => {
+              e.currentTarget.style.color = 'var(--accent-primary)';
+              e.currentTarget.style.transform = 'scale(1.12) rotate(15deg)';
+              e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)';
+            }}
+            onMouseOut={(e) => {
+              if (location.pathname !== '/settings') {
+                e.currentTarget.style.color = 'var(--text-secondary)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                e.currentTarget.style.borderColor = 'var(--border-light)';
+              }
+              e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+            }}
+          >
+            <SettingsIcon size={18} />
+          </Link>
+        </div>
+
+        <PinModal 
+          isOpen={isPinModalOpen}
+          onClose={() => setIsPinModalOpen(false)}
+          onSuccess={togglePrivacyMode}
+        />
+
+        <div className="user-profile" style={{
+          borderTop: '1px solid var(--border-light)',
+          paddingTop: '1rem',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          overflow: 'hidden'
+        }}>
+          <div className="user-avatar" style={{ flexShrink: 0 }}>
+            <User size={18} />
+          </div>
+          <div className="user-info">
+            <span className="user-name">{user?.name}</span>
+            <span className="user-email">{user?.email}</span>
+          </div>
         </div>
         
         <button className="btn-logout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={logout}>
