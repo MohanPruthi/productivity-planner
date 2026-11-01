@@ -42,3 +42,24 @@ docker compose up -d
    ```bash
    npm run dev
    ```
+
+## Deploying (free)
+
+The app runs as one Render web service: Express serves the API and the built React app. Data lives in a free Neon Postgres.
+
+1. **Database:** create a free project at [neon.tech](https://neon.tech) (region: Singapore). Copy the connection string (`postgresql://...?sslmode=require`).
+2. **App:** at [render.com](https://render.com), choose **New → Blueprint**, pick this repo, and paste the Neon string as `DATABASE_URL`. `render.yaml` handles the build, start, `JWT_SECRET`, and `TZ=Asia/Kolkata`.
+3. **Reset emails (optional):** create a free [Resend](https://resend.com) account with the same email you log in with. Add its API key as `RESEND_API_KEY` in Render. Without it, password and PIN reset codes are printed in the Render logs.
+
+The schema is applied on every start with `prisma db push`, which refuses changes that would drop data.
+
+The free Render service sleeps after 15 minutes idle, so the first visit afterwards takes about a minute to wake it.
+
+### Copy local data to Neon (optional)
+
+```bash
+pg_dump --data-only --no-owner "postgresql://postgres:postgres@localhost:5432/productivity_planner" > data.sql
+psql "<neon connection string>" -f data.sql
+```
+
+Run the dump after the first deploy has created the tables.
