@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import CountUp from '../components/CountUp';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, ChevronDown, Check, Trash2, CalendarRange, Settings2, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -397,12 +398,12 @@ const Plans = () => {
               </div>
               <div className="ui-stat">
                 <div className="ui-stat-label">Overall</div>
-                <div className="ui-stat-value">{overallPercent}%</div>
+                <div className="ui-stat-value"><CountUp value={overallPercent} suffix="%" /></div>
                 <div className="ui-progress" style={{ marginTop: '0.5rem' }}><div style={{ width: `${overallPercent}%` }} /></div>
               </div>
               <div className="ui-stat">
                 <div className="ui-stat-label">{unit === 'week' ? 'Weeks' : 'Months'} planned</div>
-                <div className="ui-stat-value">{plan.periods.length}</div>
+                <div className="ui-stat-value"><CountUp value={plan.periods.length} /></div>
                 <div className="ui-stat-meta">{plan.periods.filter(p => p.planDays.every(d => d.isDone)).length} completed</div>
               </div>
             </div>

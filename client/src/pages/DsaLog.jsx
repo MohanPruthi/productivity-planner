@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import CountUp from '../components/CountUp';
 import Illustration from '../components/Illustration';
 import { useAuth } from '../context/AuthContext';
 import { Trash2, Plus, Code2, Calendar, ChevronLeft, ChevronRight, Bookmark, ExternalLink, Search, X } from 'lucide-react';
@@ -348,7 +349,7 @@ const DsaLog = () => {
           ].map(({ label, stats }) => (
             <div key={label} className="ui-stat">
               <div className="ui-stat-label">{label}</div>
-              <div className="ui-stat-value">{stats.total}</div>
+              <div className="ui-stat-value"><CountUp value={stats.total} /></div>
               <div className="dsa-tally-split">
                 <span className="easy">{stats.Easy}</span>
                 <span className="medium">{stats.Medium}</span>
