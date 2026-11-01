@@ -30,6 +30,19 @@ const Layout = ({ children }) => {
     return () => document.body.classList.remove(cls);
   }, [tone]);
 
+  // Cards light up under the cursor: feed the pointer position to the hovered card
+  useEffect(() => {
+    const onMove = (e) => {
+      const card = e.target.closest?.('.main-content .glass-card');
+      if (!card) return;
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+      card.style.setProperty('--my', `${e.clientY - rect.top}px`);
+    };
+    window.addEventListener('pointermove', onMove, { passive: true });
+    return () => window.removeEventListener('pointermove', onMove);
+  }, []);
+
   if (!user) {
     return <>{children}</>;
   }

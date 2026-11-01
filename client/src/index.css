@@ -3262,3 +3262,208 @@ label {
   border-color: var(--tone);
   box-shadow: 0 0 12px color-mix(in srgb, var(--tone) 45%, transparent);
 }
+
+/* ======================================================================
+   Neon layer: a living, page-colored backdrop, glowing edges and motion.
+   Everything keys off --tone (the current page's sidebar color, set on
+   <body> by Layout). Scoped to the sidebar and main content: Zen Zone is
+   left as it was.
+   ====================================================================== */
+
+/* --- Aurora backdrop that takes on the page color --- */
+@keyframes aurora-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  33%  { transform: translate3d(4%, -3%, 0) scale(1.08); }
+  66%  { transform: translate3d(-3%, 4%, 0) scale(0.96); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  transition: background 1.2s ease;
+}
+body::before {
+  width: 70vmax;
+  height: 70vmax;
+  top: -30vmax;
+  left: 10vw;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tone, #6366f1) 16%, transparent), transparent 65%);
+  animation: aurora-drift 26s ease-in-out infinite;
+}
+body::after {
+  width: 60vmax;
+  height: 60vmax;
+  bottom: -32vmax;
+  right: 5vw;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.10), transparent 65%);
+  animation: aurora-drift 34s ease-in-out infinite reverse;
+}
+.light-theme::before { opacity: 0.6; }
+.light-theme::after { opacity: 0.5; }
+
+/* --- Page transition: blur, rise and fade in --- */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+.page-enter {
+  animation: page-in 0.6s var(--ease-out-soft) backwards;
+}
+
+/* --- Cards: neon edge on hover, cursor spotlight, staggered entrance --- */
+.main-content .glass-card {
+  --mx: 50%;
+  --my: 50%;
+  background-image: radial-gradient(420px circle at var(--mx) var(--my),
+    color-mix(in srgb, var(--tone, #6366f1) 9%, transparent), transparent 45%);
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s var(--ease-out-soft);
+}
+.main-content .glass-card:hover {
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 38%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tone, #6366f1) 14%, transparent),
+    0 12px 40px -12px color-mix(in srgb, var(--tone, #6366f1) 35%, transparent);
+}
+.page-enter .glass-card {
+  animation: rise-in 0.6s var(--ease-out-soft) backwards;
+}
+.page-enter .glass-card:nth-child(2) { animation-delay: 60ms; }
+.page-enter .glass-card:nth-child(3) { animation-delay: 120ms; }
+.page-enter .glass-card:nth-child(4) { animation-delay: 180ms; }
+.page-enter .glass-card:nth-child(5) { animation-delay: 240ms; }
+.page-enter .glass-card:nth-child(n + 6) { animation-delay: 300ms; }
+
+/* --- Page header: glowing icon tile with a slow breathing halo --- */
+@keyframes halo {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 0%, transparent), 0 0 18px color-mix(in srgb, var(--tone) 30%, transparent); }
+  50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--tone) 8%, transparent), 0 0 28px color-mix(in srgb, var(--tone) 45%, transparent); }
+}
+.page-header-icon {
+  border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  animation: check-pop 0.5s var(--ease-spring) backwards, halo 4s ease-in-out 0.6s infinite;
+}
+.page-header-title {
+  background: linear-gradient(90deg, var(--text-primary) 55%, color-mix(in srgb, var(--tone) 70%, var(--text-primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- Primary buttons: neon glow and a shine that sweeps across on hover --- */
+.ui-btn-primary {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone, #6366f1) 60%, transparent),
+              0 6px 22px -6px color-mix(in srgb, var(--tone, #6366f1) 70%, transparent);
+}
+.ui-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--ease-out-soft);
+  pointer-events: none;
+}
+.ui-btn-primary:hover:not(:disabled)::after { transform: translateX(120%); }
+.ui-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px var(--tone, #6366f1),
+              0 8px 30px -6px color-mix(in srgb, var(--tone, #6366f1) 85%, transparent);
+}
+.ui-btn-secondary:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 50%, transparent);
+  color: var(--text-primary);
+}
+
+/* --- Sidebar: active item glows in its module color --- */
+.nav-link {
+  position: relative;
+  transition: background 0.25s ease, color 0.25s ease, box-shadow 0.35s ease, transform 0.25s var(--ease-out-soft);
+}
+.nav-link:hover { transform: translateX(3px); }
+.nav-link.active {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--active-color) 18%, transparent), transparent 85%);
+  box-shadow: -6px 0 18px -6px var(--active-color);
+}
+.nav-link.active .nav-icon,
+.nav-link.active svg {
+  color: var(--active-color);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--active-color) 70%, transparent));
+}
+
+/* --- Stat tiles: tone hairline on top and a soft glow on the number --- */
+.ui-stat {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+.ui-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--tone, #6366f1), transparent);
+  opacity: 0.7;
+}
+.ui-stat:hover { border-color: color-mix(in srgb, var(--tone, #6366f1) 35%, transparent); }
+.ui-stat-value { text-shadow: 0 0 22px color-mix(in srgb, var(--tone, #6366f1) 45%, transparent); }
+
+/* --- Progress: gradient fill with a moving sheen --- */
+@keyframes sheen {
+  from { background-position: -200% 0, 0 0; }
+  to   { background-position: 200% 0, 0 0; }
+}
+.ui-progress > div {
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent) no-repeat,
+    linear-gradient(90deg, color-mix(in srgb, var(--tone, #6366f1) 70%, #fff 0%), var(--tone, #6366f1));
+  background-size: 40% 100%, 100% 100%;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone, #6366f1) 55%, transparent);
+  animation: progress-in 0.9s var(--ease-out-soft) backwards, sheen 3.2s ease-in-out 1s infinite;
+}
+
+/* --- Checks and pills glow --- */
+.plan-check.checked { box-shadow: 0 0 12px color-mix(in srgb, var(--tone) 55%, transparent); }
+.plan-pill, .plan-tab.active { box-shadow: 0 0 14px -4px color-mix(in srgb, var(--tone) 60%, transparent); }
+.plan-day.today { box-shadow: inset 2px 0 0 var(--tone); }
+
+/* --- Section titles get a small tone marker --- */
+.ui-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: var(--tone, #6366f1);
+  box-shadow: 0 0 8px var(--tone, #6366f1);
+  vertical-align: middle;
+  align-self: center;
+}
+
+/* --- DSA heatmap: brightest days glow --- */
+.dsa-heatmap-cell.level-3 { box-shadow: 0 0 6px rgba(255, 161, 22, 0.35); }
+.dsa-heatmap-cell.level-4 { box-shadow: 0 0 10px rgba(255, 161, 22, 0.6); }
+.dsa-heatmap-cell { transition: transform 0.15s ease; }
+.dsa-heatmap-cell:hover { transform: scale(1.35); }
+
+/* --- Dialogs: tone-lit edge --- */
+.ui-dialog {
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 30%, transparent);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 40px -10px color-mix(in srgb, var(--tone, #6366f1) 45%, transparent);
+}
+
+/* --- Selection and scrollbar in the page color --- */
+::selection { background: color-mix(in srgb, var(--tone, #6366f1) 40%, transparent); }
+.main-content ::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--tone, #6366f1) 35%, transparent); border-radius: 999px; }
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+}
