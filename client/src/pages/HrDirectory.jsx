@@ -356,52 +356,25 @@ const HrDirectory = () => {
     <div className="hr-directory-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* Header Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '1.25rem 2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          borderRadius: '16px',
-          flexShrink: 0,
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', zIndex: 1 }}>
-          <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: 'rgba(0, 122, 255, 0.08)',
-            border: '1px solid rgba(0, 122, 255, 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 15px rgba(0, 122, 255, 0.15)'
-          }}>
-            <Phone size={22} color="#007aff" />
+      <header className="page-header tone-contacts">
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <Phone size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2 }}>
-              Contacts <span style={{ background: 'linear-gradient(135deg, #007aff, #0a84ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Directory</span>
-            </h1>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem', fontSize: '0.85rem' }}>Keep track of job outreach, interviews, and contacts</p>
+            <h1 className="page-header-title">Contacts</h1>
+            <p className="page-header-subtitle">Job outreach, interviews and contacts</p>
           </div>
         </div>
 
         <button 
           onClick={() => setShowBulkModal(true)}
-          className="mirror-btn-pill" 
-          style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+          className="ui-btn ui-btn-secondary"
         >
           <FileText size={15} />
-          <span>Bulk Import</span>
+          <span>Bulk import</span>
         </button>
-      </div>
+      </header>
 
       {/* Flex container for listing and drawer */}
       <div style={{ display: 'flex', gap: isDrawerOpen ? '1.5rem' : '0', width: '100%', alignItems: 'start', transition: 'all 0.3s ease' }}>

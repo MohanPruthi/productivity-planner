@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LayoutDashboard as DashboardIcon } from 'lucide-react';
 import Illustration from '../components/Illustration';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -322,26 +323,15 @@ const Dashboard = () => {
     <div className="dashboard-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* Top Header Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          boxShadow: '0 10px 30px rgba(255,255,255,0.01), inset 0 1px 0 rgba(255,255,255,0.02)',
-          borderRadius: '20px',
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: '1.2' }}>
-            {dayLabel} <span className="gradient-text">Tasks & Overview</span>
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '0.35rem', fontSize: '0.9rem' }}>{formattedDate}</p>
+      <header className="page-header tone-default">
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <DashboardIcon size={20} />
+          </div>
+          <div>
+            <h1 className="page-header-title">{dayLabel === 'Daily' ? 'Overview' : dayLabel.replace("'s", '')}</h1>
+            <p className="page-header-subtitle">{formattedDate}</p>
+          </div>
         </div>
         
         {/* Streak indicator */}
@@ -351,21 +341,21 @@ const Dashboard = () => {
             <button 
               className={`mirror-btn-pill ${activeDateStr === yesterdayStr ? 'checked-ai' : ''}`}
               onClick={() => setDayShortcut('yesterday')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === yesterdayStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === yesterdayStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === yesterdayStr ? 'var(--bg-tertiary)' : 'transparent', color: activeDateStr === yesterdayStr ? 'var(--text-primary)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
             >
               Yesterday
             </button>
             <button 
               className={`mirror-btn-pill ${activeDateStr === todayStr ? 'checked-ai' : ''}`}
               onClick={() => setDayShortcut('today')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === todayStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === todayStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === todayStr ? 'var(--bg-tertiary)' : 'transparent', color: activeDateStr === todayStr ? 'var(--text-primary)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
             >
               Today
             </button>
             <button 
               className={`mirror-btn-pill ${activeDateStr === tomorrowStr ? 'checked-ai' : ''}`}
               onClick={() => setDayShortcut('tomorrow')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === tomorrowStr ? 'var(--track-ai-start)' : 'transparent', color: activeDateStr === tomorrowStr ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === tomorrowStr ? 'var(--bg-tertiary)' : 'transparent', color: activeDateStr === tomorrowStr ? 'var(--text-primary)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
             >
               Tomorrow
             </button>
@@ -379,7 +369,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       <div className="dashboard-main-grid" style={!showDsaColumn ? { gridTemplateColumns: '1fr' } : {}}>
         
@@ -754,7 +744,7 @@ const Dashboard = () => {
                       }}
                     >
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 650, color: 'var(--text-primary)' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                           #{log.questionNumber} - {log.title || 'Untitled'}
                         </span>
                       </div>

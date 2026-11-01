@@ -581,108 +581,17 @@ const TaskHistory = () => {
     <div className="jira-board-page" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', minHeight: 'calc(100vh - 8rem)' }}>
       
       {/* Header Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '1.25rem 2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          boxShadow: '0 10px 30px rgba(255,255,255,0.01), inset 0 1px 0 rgba(255,255,255,0.02)',
-          borderRadius: '16px',
-          flexShrink: 0
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: 'rgba(99, 102, 241, 0.08)',
-            border: '1px solid rgba(99, 102, 241, 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 15px rgba(99, 102, 241, 0.15)'
-          }}>
-            <History size={22} color="var(--accent-primary)" />
+      <header className="page-header tone-board">
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <History size={20} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>
-                Work <span className="gradient-text">Board</span>
-              </h1>
-              
-              {/* Navigation controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '9999px', padding: '0.15rem 0.4rem', border: '1px solid rgba(255, 255, 255, 0.05)', userSelect: 'none' }}>
-                <button
-                  onClick={() => setBoardCenterOffset(prev => prev - 1)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    padding: '0.2rem',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                  className="nav-arrow-btn"
-                  title="Navigate back 1 day"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                
-                {boardCenterOffset !== 0 && (
-                  <button
-                    onClick={() => setBoardCenterOffset(0)}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--accent-primary)',
-                      fontSize: '0.65rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      padding: '0 0.4rem',
-                      transition: 'all 0.2s ease'
-                    }}
-                    title="Jump back to Today"
-                  >
-                    Today
-                  </button>
-                )}
-                
-                <button
-                  onClick={() => setBoardCenterOffset(prev => prev + 1)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    padding: '0.2rem',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                  className="nav-arrow-btn"
-                  title="Navigate forward 1 day"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '0.2rem', fontSize: '0.8rem' }}>
-              Drag and drop tasks between days to reschedule them
-            </p>
+            <h1 className="page-header-title">Work board</h1>
+            <p className="page-header-subtitle">Drag tasks between days to reschedule them</p>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Board columns container */}
       <div 

@@ -239,55 +239,18 @@ const DsaLog = () => {
     <div className="dsa-log-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* Header Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '1.25rem 2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          boxShadow: '0 10px 30px rgba(255,255,255,0.01), inset 0 1px 0 rgba(255,255,255,0.02)',
-          borderRadius: '16px',
-          flexShrink: 0,
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Glow Mesh background indicator */}
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'radial-gradient(circle, rgba(255, 161, 22, 0.06) 0%, transparent 70%)',
-          pointerEvents: 'none'
-        }} />
+      <header className="page-header tone-dsa">
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', zIndex: 1 }}>
-          <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: 'rgba(255, 161, 22, 0.08)',
-            border: '1px solid rgba(255, 161, 22, 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 15px rgba(255, 161, 22, 0.15)'
-          }}>
-            <Code2 size={22} color="#ffa116" />
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <Code2 size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.2 }}>
-              DSA LeetCode <span className="gradient-text-dsa">Tracker</span>
-            </h1>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem', fontSize: '0.85rem' }}>Fast logging for daily practice questions</p>
+            <h1 className="page-header-title">DSA practice</h1>
+            <p className="page-header-subtitle">Log LeetCode questions and see how you are progressing</p>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Grid: Form and Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>

@@ -612,7 +612,7 @@ const NoteDetail = () => {
             alignItems: 'center',
             gap: '0.65rem',
             fontSize: '0.85rem',
-            fontWeight: 650,
+            fontWeight: 600,
             animation: 'medToastSlideInTop 0.25s ease forwards'
           }}
         >
@@ -749,7 +749,7 @@ const NoteDetail = () => {
               alignItems: 'center',
               gap: '0.35rem',
               fontSize: '0.78rem',
-              fontWeight: 650,
+              fontWeight: 600,
               transition: 'all 0.2s ease'
             }}
             title={isPinned ? 'Unpin note' : 'Pin note to top'}
@@ -773,7 +773,7 @@ const NoteDetail = () => {
               alignItems: 'center',
               gap: '0.35rem',
               fontSize: '0.78rem',
-              fontWeight: 650,
+              fontWeight: 600,
               transition: 'all 0.2s ease'
             }}
             className="note-delete-hover"
@@ -790,7 +790,7 @@ const NoteDetail = () => {
               alignItems: 'center',
               gap: '0.45rem',
               fontSize: '0.78rem',
-              fontWeight: 650,
+              fontWeight: 600,
               padding: '0.45rem 0.8rem',
               borderRadius: '9px',
               background: saveStatus === 'saving' 
@@ -871,7 +871,7 @@ const NoteDetail = () => {
                 background: 'transparent',
                 border: 'none',
                 fontSize: '1.75rem',
-                fontWeight: 850,
+                fontWeight: 600,
                 color: 'var(--text-primary)',
                 outline: 'none',
                 letterSpacing: '-0.02em',

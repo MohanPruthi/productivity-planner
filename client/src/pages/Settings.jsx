@@ -238,37 +238,15 @@ const Settings = () => {
     <div className="settings-page" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem', width: '100%', paddingBottom: '3rem' }}>
       
       {/* Top Header Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '1.5rem 2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          boxShadow: '0 10px 30px rgba(255,255,255,0.01), inset 0 1px 0 rgba(255,255,255,0.02)',
-          borderRadius: '20px',
-          flexShrink: 0
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: 'rgba(99, 102, 241, 0.1)',
-            border: '1px solid rgba(99, 102, 241, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.18)'
-          }}>
-            <SettingsIcon size={22} color="var(--accent-primary)" />
+      <header className="page-header tone-settings">
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <SettingsIcon size={20} />
           </div>
-          <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>
-            System <span className="gradient-text">Settings</span>
-          </h1>
+          <div>
+            <h1 className="page-header-title">Settings</h1>
+            <p className="page-header-subtitle">Focus targets, office workspace and PIN</p>
+          </div>
         </div>
 
         {/* Current Workspace Status Badge */}
@@ -291,7 +269,7 @@ const Settings = () => {
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* ========================================================= */}
       {/* 1. ZEN ZONE TARGETS CARD (Accordion Dropdown)             */}
@@ -647,7 +625,7 @@ const Settings = () => {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           <ChevronRight size={14} color="var(--text-muted)" />
-                          <span style={{ fontSize: '0.8rem', fontWeight: 650, color: 'var(--text-primary)' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                             Show on Dashboard
                           </span>
                         </div>

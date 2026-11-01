@@ -595,7 +595,7 @@ const Notes = () => {
             alignItems: 'center',
             gap: '0.65rem',
             fontSize: '0.85rem',
-            fontWeight: 650,
+            fontWeight: 600,
             animation: 'medToastSlideInTop 0.25s ease forwards'
           }}
         >
@@ -605,41 +605,14 @@ const Notes = () => {
       )}
 
       {/* Top Heading Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '1.35rem 2rem', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          borderRadius: '20px'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <div 
-            style={{ 
-              width: '44px', 
-              height: '44px', 
-              borderRadius: '12px', 
-              background: 'rgba(234, 179, 8, 0.12)', 
-              border: '1px solid rgba(234, 179, 8, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#eab308'
-            }}
-          >
-            <FileText size={22} />
+      <header className="page-header tone-notes">
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <FileText size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.45rem', fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>
-              Notes & Thoughts
-            </h1>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              {privacyMode ? 'Office Space - Personal notes hidden' : 'Personal Space - All notes visible'} • {visibleNotes.length} notes
-            </p>
+            <h1 className="page-header-title">Notes</h1>
+            <p className="page-header-subtitle">{privacyMode ? 'Office workspace, personal notes hidden' : 'All notes'} · {visibleNotes.length} {visibleNotes.length === 1 ? 'note' : 'notes'}</p>
           </div>
         </div>
 
@@ -701,7 +674,7 @@ const Notes = () => {
             <span>Create Note</span>
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Main Listing Grid */}
       {visibleNotes.length === 0 ? (
@@ -1060,7 +1033,7 @@ const Notes = () => {
 
               {/* Pin to Top Checkbox / Toggle */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.35rem 0.2rem' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 650 }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                   Pin note to top
                 </span>
                 <button
@@ -1077,7 +1050,7 @@ const Notes = () => {
                     alignItems: 'center',
                     gap: '0.35rem',
                     fontSize: '0.78rem',
-                    fontWeight: 650,
+                    fontWeight: 600,
                     transition: 'all 0.2s ease'
                   }}
                 >

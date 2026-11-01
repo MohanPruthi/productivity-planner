@@ -2827,3 +2827,6 @@ label {
   .plan-day-label { width: 70px; }
   .plan-save { display: none; }
 }
+.page-header-title-row { display: flex; align-items: center; gap: 0.35rem; }
+.page-header-rename { display: flex; align-items: center; gap: 0.5rem; }
+.page-header-rename .input-control { width: 220px; height: 36px; padding: 0 0.75rem; }
