@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Calendar, Plus, ChevronDown, ChevronUp, CheckCircle2, Circle, AlertCircle, Trash2, Sparkles, Database } from 'lucide-react';
+import { Plus, ChevronDown, Check, Trash2, Sparkles, Database } from 'lucide-react';
 import Loader from '../components/Loader';
+import PageHeader from '../components/PageHeader';
+import Illustration from '../components/Illustration';
 import { API_BASE_URL } from '../config';
 
 const getLocalDateString = (d = new Date()) => {
@@ -204,393 +206,212 @@ const Plan = ({ track }) => {
     }
   };
 
-  const formatDateLabel = (dateStr) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Week dates are stored as UTC midnight: compare calendar days, not instants
+  const utcDay = (dateStr) => new Date(dateStr).toISOString().split('T')[0];
+  const todayStr = getLocalDateString();
+  const isCurrentWeek = (week) => todayStr >= utcDay(week.startDate) && todayStr <= utcDay(week.endDate);
+  const isToday = (day) => utcDay(day.date) === todayStr;
+
+  const formatShortDay = (dateStr) =>
+    new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
+  const formatDay = (dateStr) =>
+    new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
+  // Grow AI plan text areas with their content
+  const autoGrow = (el) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
   };
 
   if (loading) {
-    return <Loader text={`Structuring ${track} Course Plan...`} />;
+    return <Loader text={`Loading ${track} plan...`} />;
   }
 
+  const isAI = track === 'AI';
+  const currentWeek = weeks.find(isCurrentWeek);
+  const allDays = weeks.flatMap(w => w.planDays);
+  const overallPercent = allDays.length ? Math.round((allDays.filter(d => d.isDone).length / allDays.length) * 100) : 0;
+
   return (
-    <div className="plan-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      
-      {/* Header Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          boxShadow: track === 'AI' 
-            ? '0 10px 30px rgba(59, 130, 246, 0.02), inset 0 1px 0 rgba(255,255,255,0.02)' 
-            : '0 10px 30px rgba(16, 185, 129, 0.02), inset 0 1px 0 rgba(255,255,255,0.02)',
-          borderRadius: '20px',
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Glow Mesh background indicator */}
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: track === 'AI'
-            ? 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)'
-            : 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
-          pointerEvents: 'none'
-        }} />
+    <div className={`plan-page tone-${isAI ? 'ai' : 'sd'}`}>
+      <PageHeader
+        icon={isAI ? Sparkles : Database}
+        tone={isAI ? 'ai' : 'sd'}
+        title={isAI ? 'AI learning plan' : 'System design plan'}
+        subtitle={isAI ? 'LLM internals, evaluation and fine-tuning, week by week' : 'Distributed systems and architecture, one topic a day'}
+        actions={
+          <button className="ui-btn ui-btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
+            <Plus size={16} />
+            Add week
+          </button>
+        }
+      />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            background: track === 'AI' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(16, 185, 129, 0.08)',
-            border: `1px solid ${track === 'AI' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)'}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: track === 'AI' ? '0 0 15px rgba(59, 130, 246, 0.15)' : '0 0 15px rgba(16, 185, 129, 0.15)'
-          }}>
-            {track === 'AI' ? (
-              <Sparkles size={26} color="var(--track-ai-start)" />
-            ) : (
-              <Database size={26} color="var(--track-sd-start)" />
-            )}
+      {error && <div className="text-error">{error}</div>}
+
+      {weeks.length > 0 && (
+        <div className="ui-stat-row">
+          <div className="ui-stat">
+            <div className="ui-stat-label">This week</div>
+            <div className="ui-stat-value">
+              {currentWeek ? `${currentWeek.planDays.filter(d => d.isDone).length} of ${currentWeek.planDays.length}` : '—'}
+            </div>
+            <div className="ui-stat-meta">{currentWeek ? `Week ${currentWeek.weekNumber} done` : 'No week covers today'}</div>
           </div>
-          <div>
-            <h1 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: '1.2' }}>
-              {track === 'AI' ? (
-                <>
-                  AI Learning <span style={{ background: 'linear-gradient(135deg, var(--track-ai-start), var(--track-ai-end))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Planner</span>
-                </>
-              ) : (
-                <>
-                  System Design <span style={{ background: 'linear-gradient(135deg, var(--track-sd-start), var(--track-sd-end))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Planner</span>
-                </>
-              )}
-            </h1>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '0.35rem', fontSize: '0.9rem' }}>
-              {track === 'AI' 
-                ? 'High-intensity curriculum focused on LLM internals, evaluation, and fine-tuning' 
-                : 'Master large-scale distributed systems, database internals, and architecture paradigms'}
-            </p>
+          <div className="ui-stat">
+            <div className="ui-stat-label">Overall</div>
+            <div className="ui-stat-value">{overallPercent}%</div>
+            <div className="ui-progress" style={{ marginTop: '0.5rem' }}><div style={{ width: `${overallPercent}%` }} /></div>
           </div>
-        </div>
-
-        <button 
-          className="btn-glow-pomo btn-pill-gradient-pomo" 
-          onClick={() => setShowAddForm(!showAddForm)}
-          style={{ 
-            padding: '0.75rem 1.75rem',
-            borderRadius: '9999px',
-            '--pomo-btn-bg': track === 'AI'
-              ? 'linear-gradient(135deg, var(--track-ai-start), var(--track-ai-end))'
-              : 'linear-gradient(135deg, var(--track-sd-start), var(--track-sd-end))',
-            '--pomo-glow-color': track === 'AI'
-              ? 'rgba(59, 130, 246, 0.35)'
-              : 'rgba(6, 182, 212, 0.35)',
-            zIndex: 2
-          }}
-        >
-          <Plus size={18} style={{ marginRight: '4px' }} />
-          <span style={{ fontWeight: 600 }}>Add Week</span>
-        </button>
-      </div>
-
-      {error && <div className="text-error" style={{ fontSize: '1rem', textAlign: 'center' }}>{error}</div>}
-
-      {/* Add Week Modal Form */}
-      {showAddForm && (
-        <div className="glass-card" style={{ padding: '2rem', border: `1px solid ${track === 'AI' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(6, 182, 212, 0.2)'}`, boxShadow: track === 'AI' ? '0 10px 30px rgba(59, 130, 246, 0.05)' : '0 10px 30px rgba(6, 182, 212, 0.05)' }}>
-          <h3 style={{ fontSize: '1.25rem', marginBottom: '1.25rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>Create Study Week</h3>
-          <form onSubmit={handleCreateWeek} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {formError && <div className="text-error">{formError}</div>}
-            
-            <div className="grid-2">
-              <div className="form-group">
-                <label htmlFor="weekNum" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Week Number</label>
-                <input
-                  id="weekNum"
-                  type="number"
-                  className="input-control"
-                  value={weekNumber}
-                  onChange={(e) => setWeekNumber(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="startDate" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Start Date</label>
-                <input
-                  id="startDate"
-                  type="date"
-                  className="input-control"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="goalText" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Weekly Goal / Focus Target</label>
-              <textarea
-                id="goalText"
-                rows="3"
-                className="input-control"
-                style={{ resize: 'vertical' }}
-                placeholder="What is the key target for this week? (e.g. Master Transformers theory / Scale DB writes)"
-                value={goalText}
-                onChange={(e) => setGoalText(e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-              <button type="button" className="btn btn-secondary" style={{ padding: '0.7rem 1.6rem', borderRadius: '9999px' }} onClick={() => setShowAddForm(false)}>
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="btn-glow-pomo btn-pill-gradient-pomo" 
-                disabled={submitting}
-                style={{ 
-                  padding: '0.7rem 1.6rem',
-                  borderRadius: '9999px',
-                  '--pomo-btn-bg': track === 'AI'
-                    ? 'linear-gradient(135deg, var(--track-ai-start), var(--track-ai-end))'
-                    : 'linear-gradient(135deg, var(--track-sd-start), var(--track-sd-end))',
-                  '--pomo-glow-color': track === 'AI'
-                    ? 'rgba(59, 130, 246, 0.35)'
-                    : 'rgba(6, 182, 212, 0.35)'
-                }}
-              >
-                {submitting ? 'Creating...' : 'Create Week'}
-              </button>
-            </div>
-          </form>
+          <div className="ui-stat">
+            <div className="ui-stat-label">Weeks planned</div>
+            <div className="ui-stat-value">{weeks.length}</div>
+            <div className="ui-stat-meta">{weeks.filter(w => w.planDays.every(d => d.isDone)).length} completed</div>
+          </div>
         </div>
       )}
 
-      {/* Weeks list Accordion */}
+      {showAddForm && (
+        <form className="glass-card plan-add-form" onSubmit={handleCreateWeek}>
+          <h2 className="ui-section-title">New week</h2>
+          {formError && <div className="text-error">{formError}</div>}
+          <div className="grid-2">
+            <div className="form-group">
+              <label htmlFor="weekNum">Week number</label>
+              <input id="weekNum" type="number" className="input-control" value={weekNumber} onChange={(e) => setWeekNumber(e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="startDate">Start date</label>
+              <input id="startDate" type="date" className="input-control" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="goalText">Goal for the week</label>
+            <input
+              id="goalText"
+              type="text"
+              className="input-control"
+              placeholder={isAI ? 'Understand attention and build a tiny transformer' : 'Caching strategies and CDNs'}
+              value={goalText}
+              onChange={(e) => setGoalText(e.target.value)}
+            />
+          </div>
+          <div className="plan-add-actions">
+            <button type="button" className="ui-btn ui-btn-ghost" onClick={() => setShowAddForm(false)}>Cancel</button>
+            <button type="submit" className="ui-btn ui-btn-primary" disabled={submitting}>{submitting ? 'Creating...' : 'Create week'}</button>
+          </div>
+        </form>
+      )}
+
       {weeks.length === 0 ? (
-        <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '200px', color: 'var(--text-muted)' }}>
-          <Calendar size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-          <p>No study weeks created yet. Click "Add Week" to get started.</p>
+        <div className="glass-card plan-empty">
+          <Illustration name="plan-empty" size={150} />
+          <p className="plan-empty-title">No weeks planned yet</p>
+          <p className="plan-empty-text">Add your first week to start tracking {isAI ? 'your AI learning' : 'system design topics'}.</p>
+          <button className="ui-btn ui-btn-primary" onClick={() => setShowAddForm(true)}>
+            <Plus size={16} />
+            Add week
+          </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="plan-weeks">
           {weeks.map(week => {
             const isExpanded = activeWeekId === week.id;
-            const completedCount = week.planDays.filter(d => d.isDone).length;
-            const completionPercent = Math.round((completedCount / week.planDays.length) * 100);
+            const doneCount = week.planDays.filter(d => d.isDone).length;
+            const percent = Math.round((doneCount / week.planDays.length) * 100);
+            const current = isCurrentWeek(week);
+            const days = isAI
+              ? [...week.planDays].sort((a, b) => (a.isWeekend === b.isWeekend ? 0 : a.isWeekend ? -1 : 1))
+              : week.planDays;
 
             return (
-              <div 
-                key={week.id} 
-                className={`glass-card ${track === 'AI' ? 'glow-ai' : 'glow-sd'}`}
-                style={{ padding: '0', overflow: 'hidden' }}
-              >
-                
-                {/* Accordion Trigger Header */}
-                <div 
-                  onClick={() => setActiveWeekId(isExpanded ? null : week.id)}
-                  style={{ 
-                    padding: '1.25rem 1.5rem', 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center', 
-                    cursor: 'pointer',
-                    background: isExpanded ? 'rgba(255, 255, 255, 0.02)' : 'transparent',
-                    borderBottom: isExpanded ? '1px solid var(--border-light)' : 'none'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flex: 1 }}>
-                    <div>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Week {week.weekNumber}</h3>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        {formatDateLabel(week.startDate)} - {formatDateLabel(week.endDate)}
-                      </p>
+              <section key={week.id} className={`glass-card plan-week ${isExpanded ? 'open' : ''}`}>
+                <div className="plan-week-head" onClick={() => setActiveWeekId(isExpanded ? null : week.id)}>
+                  <div className="plan-week-title">
+                    <div className="plan-week-name">
+                      Week {week.weekNumber}
+                      {current && <span className="plan-pill">This week</span>}
                     </div>
-
-                    <div style={{ flex: 1, maxWidth: '300px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div className="progress-bar-container" style={{ margin: '0' }}>
-                        <div 
-                          className="progress-bar-fill" 
-                          style={{ 
-                            width: `${completionPercent}%`,
-                            background: track === 'AI' 
-                              ? 'linear-gradient(90deg, var(--track-ai-start), var(--track-ai-end))'
-                              : 'linear-gradient(90deg, var(--track-sd-start), var(--track-sd-end))',
-                            boxShadow: track === 'AI'
-                              ? '0 0 8px rgba(59, 130, 246, 0.5)'
-                              : '0 0 8px rgba(16, 185, 129, 0.5)'
-                          }}
-                        ></div>
-                      </div>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{completionPercent}%</span>
+                    <div className="plan-week-meta">
+                      {formatDay(week.startDate)} – {formatDay(week.endDate)}
+                      {week.goalText && <> · {week.goalText}</>}
                     </div>
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} onClick={(e) => e.stopPropagation()}>
-                    <button 
-                      onClick={() => handleDeleteWeek(week.id)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s ease', padding: '4px' }}
-                      className="btn-trash-hover"
-                      title="Delete Week"
-                    >
-                      <Trash2 size={16} />
+                  <div className="plan-week-progress">
+                    <div className="ui-progress"><div style={{ width: `${percent}%` }} /></div>
+                    <span>{doneCount}/{week.planDays.length}</span>
+                  </div>
+                  <div className="plan-week-actions" onClick={(e) => e.stopPropagation()}>
+                    <button className="ui-icon-btn danger" onClick={() => handleDeleteWeek(week.id)} title="Delete week">
+                      <Trash2 size={15} />
                     </button>
-                    <div onClick={() => setActiveWeekId(isExpanded ? null : week.id)} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '4px' }}>
-                      {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                    </div>
+                    <button className="ui-icon-btn" onClick={() => setActiveWeekId(isExpanded ? null : week.id)} title={isExpanded ? 'Collapse' : 'Expand'}>
+                      <ChevronDown size={18} className={`plan-chevron ${isExpanded ? 'up' : ''}`} />
+                    </button>
                   </div>
                 </div>
 
-                {/* Accordion Content */}
                 {isExpanded && (
-                  <div style={{ padding: '1.5rem' }}>
-                    
-                    {/* Goal detail */}
-                    <div style={{ 
-                      marginBottom: '1.5rem', 
-                      padding: '0.85rem 1.1rem', 
-                      background: track === 'AI' ? 'rgba(59, 130, 246, 0.03)' : 'rgba(16, 185, 129, 0.03)', 
-                      borderRadius: '8px', 
-                      borderLeft: `3px solid ${track === 'AI' ? 'var(--track-ai-start)' : 'var(--track-sd-start)'}`,
-                      borderTop: '1px solid rgba(255, 255, 255, 0.01)',
-                      borderRight: '1px solid rgba(255, 255, 255, 0.01)',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.01)'
-                    }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.25rem' }}>Weekly Target Goal</div>
-                      <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>{week.goalText || 'No goal set for this week. Focus on daily tasks.'}</p>
-                    </div>
-
-                    {/* Days schedule grid */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      {(track === 'AI' 
-                        ? [...week.planDays].sort((a, b) => (a.isWeekend === b.isWeekend ? 0 : a.isWeekend ? -1 : 1))
-                        : week.planDays
-                      ).map(day => (
-                        <div 
-                          key={day.id}
-                          style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '1rem', 
-                            padding: '1.25rem', 
-                            background: day.isDone ? 'rgba(255, 255, 255, 0.005)' : 'rgba(255, 255, 255, 0.02)',
-                            borderRadius: '12px',
-                            border: '1px solid var(--border-light)',
-                            position: 'relative'
-                          }}
+                  <div className="plan-days">
+                    {days.map(day => (
+                      <div key={day.id} className={`plan-day ${day.isDone ? 'done' : ''} ${!isAI && isToday(day) ? 'today' : ''}`}>
+                        <button
+                          className={`plan-check ${day.isDone ? 'checked' : ''}`}
+                          onClick={() => handleToggleDay(week.id, day.id, day.isDone)}
+                          title={day.isDone ? 'Mark as not done' : 'Mark as done'}
                         >
-                          {/* Done Checkbox */}
-                          <button
-                            onClick={() => handleToggleDay(week.id, day.id, day.isDone)}
-                            className={`mirror-checkbox ${day.isDone ? (track === 'AI' ? 'checked-ai' : 'checked-sd') : ''}`}
-                            style={{ marginTop: '0.2rem' }}
-                          >
-                            {day.isDone ? (
-                              <CheckCircle2 size={16} />
-                            ) : (
-                              <Circle size={16} style={{ opacity: 0.3 }} />
-                            )}
-                          </button>
+                          {day.isDone && <Check size={13} strokeWidth={3} />}
+                        </button>
 
-                           {/* Day Details */}
-                          <div style={{ width: '120px', display: 'flex', flexDirection: 'column', gap: '0.2rem', justifyContent: 'center' }}>
-                            {track !== 'AI' && (
-                              <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>{day.dayLabel}</div>
-                            )}
-                            {track === 'SD' && (
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDateLabel(day.date)}</div>
-                            )}
-                            <span 
-                              className="badge" 
-                              style={{ 
-                                marginTop: '0.25rem', 
-                                fontSize: '0.65rem',
-                                padding: '0.15rem 0.45rem',
-                                display: 'inline-block',
-                                width: 'fit-content',
-                                background: day.isWeekend ? 'rgba(255, 45, 85, 0.08)' : 'rgba(99, 102, 241, 0.08)',
-                                color: day.isWeekend ? '#ff2d55' : 'var(--accent-primary)',
-                                borderColor: day.isWeekend ? 'rgba(255, 45, 85, 0.15)' : 'rgba(99, 102, 241, 0.15)',
-                                fontWeight: 600
-                              }}
-                            >
-                              {day.isWeekend ? 'Weekend' : 'Weekday'}
-                            </span>
-                            {track === 'AI' && (
-                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.35rem', fontWeight: 650 }}>
-                                {day.isWeekend ? 'Sat & Sun (10h)' : 'Mon – Fri (10h)'}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Inputs: Topic */}
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {track === 'AI' ? (
-                              <textarea
-                                className="input-control"
-                                rows="5"
-                                placeholder={day.isWeekend ? "Enter weekend learning plan..." : "Enter weekday learning plan..."}
-                                style={{ 
-                                  fontSize: '0.925rem', 
-                                  padding: '0.8rem', 
-                                  lineHeight: '1.4',
-                                  resize: 'vertical',
-                                  textDecoration: day.isDone ? 'line-through' : 'none',
-                                  color: day.isDone ? 'var(--text-muted)' : 'var(--text-primary)'
-                                }}
-                                defaultValue={day.topic}
-                                onBlur={(e) => handleUpdateDayText(week.id, day.id, 'topic', e.target.value)}
-                              />
-                            ) : (
-                              <input
-                                type="text"
-                                className="input-control"
-                                placeholder="Enter daily learning topic..."
-                                style={{ 
-                                  fontSize: '0.925rem', 
-                                  padding: '0.8rem 1rem',
-                                  textDecoration: day.isDone ? 'line-through' : 'none',
-                                  color: day.isDone ? 'var(--text-muted)' : 'var(--text-primary)'
-                                }}
-                                defaultValue={day.topic}
-                                onBlur={(e) => handleUpdateDayText(week.id, day.id, 'topic', e.target.value)}
-                              />
-                            )}
-                          </div>
-
-                          {/* Autosave status indicator */}
-                          <div style={{ width: '60px', textAlign: 'center', fontSize: '0.75rem', marginTop: '0.4rem' }}>
-                            {savingStates[day.id] === 'saving' && <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>Saving...</span>}
-                            {savingStates[day.id] === 'saved' && <span style={{ color: '#30d158', fontWeight: 600 }}>Saved</span>}
-                            {savingStates[day.id] === 'error' && <span style={{ color: '#ff2d55', fontWeight: 600 }}>Error</span>}
-                          </div>
-
+                        <div className="plan-day-label">
+                          {isAI ? (
+                            <>
+                              <span>{day.isWeekend ? 'Weekend' : 'Weekdays'}</span>
+                              <small>{day.isWeekend ? 'Sat – Sun' : 'Mon – Fri'}</small>
+                            </>
+                          ) : (
+                            <>
+                              <span>{formatShortDay(day.date)}{isToday(day) && <em> · Today</em>}</span>
+                              <small>{formatDay(day.date)}</small>
+                            </>
+                          )}
                         </div>
-                      ))}
-                    </div>
 
+                        {isAI ? (
+                          <textarea
+                            className="plan-topic"
+                            rows={2}
+                            ref={autoGrow}
+                            onInput={(e) => autoGrow(e.target)}
+                            placeholder={day.isWeekend ? 'Weekend plan' : 'Weekday plan'}
+                            defaultValue={day.topic}
+                            onBlur={(e) => e.target.value !== (day.topic || '') && handleUpdateDayText(week.id, day.id, 'topic', e.target.value)}
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            className="plan-topic"
+                            placeholder="Add a topic"
+                            defaultValue={day.topic}
+                            onBlur={(e) => e.target.value !== (day.topic || '') && handleUpdateDayText(week.id, day.id, 'topic', e.target.value)}
+                          />
+                        )}
+
+                        <span className={`plan-save ${savingStates[day.id] || ''}`}>
+                          {savingStates[day.id] === 'saving' && 'Saving'}
+                          {savingStates[day.id] === 'saved' && 'Saved'}
+                          {savingStates[day.id] === 'error' && 'Not saved'}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
-
-              </div>
+              </section>
             );
           })}
         </div>
       )}
-
     </div>
   );
 };
