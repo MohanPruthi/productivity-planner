@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Settings, Play, Pause, RotateCcw, Timer, X, Flame, ChevronLeft, ChevronRight, Skull } from 'lucide-react';
+import { Play, Pause, RotateCcw, Timer, X, Flame, ChevronLeft, ChevronRight, Skull } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 const TimeLogger = () => {
@@ -31,17 +31,94 @@ const TimeLogger = () => {
     return saved ? parseInt(saved) : 15;
   });
 
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  // Normalize dates helper
+  const getLocalDateString = (d = new Date()) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
-  // Unified clock tracking states
-  const [todaySeconds, setTodaySeconds] = useState(0);
-  const [isMainClockRunning, setIsMainClockRunning] = useState(false);
+  const todayStrInit = getLocalDateString();
+
+  // Restore Main Clock persisted session if tab refreshed or woke up
+  const [isMainClockRunning, setIsMainClockRunning] = useState(() => {
+    try {
+      const savedState = localStorage.getItem('active_lockin_session');
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        if (parsed.isRunning && parsed.date === todayStrInit) {
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return false;
+  });
+
+  const [todaySeconds, setTodaySeconds] = useState(() => {
+    try {
+      const savedState = localStorage.getItem('active_lockin_session');
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        if (parsed.date === todayStrInit) {
+          if (parsed.isRunning && parsed.startTime) {
+            const elapsed = Math.floor((Date.now() - parsed.startTime) / 1000);
+            return (parsed.secondsAtStart || 0) + elapsed;
+          }
+          return parsed.secondsAtStart || 0;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return 0;
+  });
+
   const [lastSyncSeconds, setLastSyncSeconds] = useState(0);
 
-  // Pomodoro States
-  const [pomoMode, setPomoMode] = useState('work'); // 'work' | 'shortBreak' | 'longBreak'
-  const [pomoSecondsRemaining, setPomoSecondsRemaining] = useState(pomoWorkMinutes * 60);
-  const [isPomoActive, setIsPomoActive] = useState(false);
+  // Restore Pomodoro persisted session
+  const [pomoMode, setPomoMode] = useState(() => {
+    try {
+      const savedPomo = localStorage.getItem('active_pomo_session');
+      if (savedPomo) {
+        const parsed = JSON.parse(savedPomo);
+        if (parsed.mode) return parsed.mode;
+      }
+    } catch (e) {}
+    return 'work';
+  });
+
+  const [isPomoActive, setIsPomoActive] = useState(() => {
+    try {
+      const savedPomo = localStorage.getItem('active_pomo_session');
+      if (savedPomo) {
+        const parsed = JSON.parse(savedPomo);
+        if (parsed.isActive && parsed.startTime) {
+          const elapsed = Math.floor((Date.now() - parsed.startTime) / 1000);
+          const remaining = (parsed.secondsAtStart || 0) - elapsed;
+          return remaining > 0;
+        }
+      }
+    } catch (e) {}
+    return false;
+  });
+
+  const [pomoSecondsRemaining, setPomoSecondsRemaining] = useState(() => {
+    try {
+      const savedPomo = localStorage.getItem('active_pomo_session');
+      if (savedPomo) {
+        const parsed = JSON.parse(savedPomo);
+        if (parsed.startTime) {
+          const elapsed = parsed.isActive ? Math.floor((Date.now() - parsed.startTime) / 1000) : 0;
+          return Math.max(0, (parsed.secondsAtStart || 0) - elapsed);
+        }
+      }
+    } catch (e) {}
+    const defaultWork = localStorage.getItem('pomo_work') ? parseInt(localStorage.getItem('pomo_work'), 10) : 25;
+    return defaultWork * 60;
+  });
   const [pomoCycle, setPomoCycle] = useState(() => {
     const tested = localStorage.getItem('pomo_cycle_mimic_3');
     if (!tested) {
@@ -56,6 +133,47 @@ const TimeLogger = () => {
     localStorage.setItem('pomo_cycle', pomoCycle);
   }, [pomoCycle]);
 
+  // Synchronize settings when updated from Settings page
+  useEffect(() => {
+    const handleSettingsUpdated = () => {
+      const savedWeekday = localStorage.getItem('target_weekday');
+      if (savedWeekday) setWeekdayTarget(parseFloat(savedWeekday));
+      const savedWeekend = localStorage.getItem('target_weekend');
+      if (savedWeekend) setWeekendTarget(parseFloat(savedWeekend));
+      const savedWork = localStorage.getItem('pomo_work');
+      if (savedWork) {
+        const parsedWork = parseInt(savedWork, 10);
+        setPomoWorkMinutes(parsedWork);
+        if (!isPomoActive && pomoMode === 'work') {
+          setPomoSecondsRemaining(parsedWork * 60);
+        }
+      }
+      const savedShort = localStorage.getItem('pomo_short');
+      if (savedShort) {
+        const parsedShort = parseInt(savedShort, 10);
+        setPomoShortMinutes(parsedShort);
+        if (!isPomoActive && pomoMode === 'shortBreak') {
+          setPomoSecondsRemaining(parsedShort * 60);
+        }
+      }
+      const savedLong = localStorage.getItem('pomo_long');
+      if (savedLong) {
+        const parsedLong = parseInt(savedLong, 10);
+        setPomoLongMinutes(parsedLong);
+        if (!isPomoActive && pomoMode === 'longBreak') {
+          setPomoSecondsRemaining(parsedLong * 60);
+        }
+      }
+    };
+
+    window.addEventListener('zen_zone_settings_updated', handleSettingsUpdated);
+    window.addEventListener('storage', handleSettingsUpdated);
+    return () => {
+      window.removeEventListener('zen_zone_settings_updated', handleSettingsUpdated);
+      window.removeEventListener('storage', handleSettingsUpdated);
+    };
+  }, [isPomoActive, pomoMode]);
+
   // DB study log states
   const [studyLogs, setStudyLogs] = useState([]);
   const [currentDateString, setCurrentDateString] = useState('');
@@ -65,25 +183,105 @@ const TimeLogger = () => {
     const today = new Date();
     return today.getFullYear() === 2026 ? today.getMonth() : 6; // Default to July 2026
   });
-  const [calendarYear] = useState(2026);
+  const [calendarYear, setCalendarYear] = useState(2026);
 
-  const pomoStartTimeRef = useRef(null);
-  const pomoSecondsAtStartRef = useRef(0);
-  const trackingStartTimeRef = useRef(null);
-  const secondsAtStartRef = useRef(0);
+  const pomoStartTimeRef = useRef((() => {
+    try {
+      const savedPomo = localStorage.getItem('active_pomo_session');
+      if (savedPomo) {
+        const parsed = JSON.parse(savedPomo);
+        if (parsed.isActive && parsed.startTime) return parsed.startTime;
+      }
+    } catch (e) {}
+    return null;
+  })());
 
-  // Normalize dates helper
-  const getLocalDateString = (d = new Date()) => {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  const pomoSecondsAtStartRef = useRef((() => {
+    try {
+      const savedPomo = localStorage.getItem('active_pomo_session');
+      if (savedPomo) {
+        const parsed = JSON.parse(savedPomo);
+        if (parsed.secondsAtStart !== undefined) return parsed.secondsAtStart;
+      }
+    } catch (e) {}
+    return 0;
+  })());
+
+  const trackingStartTimeRef = useRef((() => {
+    try {
+      const savedLockin = localStorage.getItem('active_lockin_session');
+      if (savedLockin) {
+        const parsed = JSON.parse(savedLockin);
+        if (parsed.isRunning && parsed.startTime && parsed.date === todayStrInit) return parsed.startTime;
+      }
+    } catch (e) {}
+    return null;
+  })());
+
+  const secondsAtStartRef = useRef((() => {
+    try {
+      const savedLockin = localStorage.getItem('active_lockin_session');
+      if (savedLockin) {
+        const parsed = JSON.parse(savedLockin);
+        if (parsed.date === todayStrInit && parsed.secondsAtStart !== undefined) return parsed.secondsAtStart;
+      }
+    } catch (e) {}
+    return 0;
+  })());
+
+  const getTargetHistory = () => {
+    const saved = localStorage.getItem('target_history');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    const singleWeekday = localStorage.getItem('target_weekday') ? parseFloat(localStorage.getItem('target_weekday')) : 2.0;
+    const singleWeekend = localStorage.getItem('target_weekend') ? parseFloat(localStorage.getItem('target_weekend')) : 6.0;
+    const fallbackHistory = [{ startDate: '1970-01-01', weekday: singleWeekday, weekend: singleWeekend }];
+    localStorage.setItem('target_history', JSON.stringify(fallbackHistory));
+    return fallbackHistory;
+  };
+
+  const getTargetForDate = (dateObj) => {
+    const dateStr = getLocalDateString(dateObj);
+    const history = getTargetHistory();
+    let activeTarget = history[0];
+    for (const entry of history) {
+      if (entry.startDate <= dateStr) {
+        activeTarget = entry;
+      } else {
+        break;
+      }
+    }
+    return {
+      weekday: activeTarget.weekday,
+      weekend: activeTarget.weekend
+    };
   };
 
   const selectedDateStr = searchParams.get('date') || getLocalDateString(new Date());
 
   useEffect(() => {
     setCurrentDateString(getLocalDateString());
+    
+    // Auto-heal baseline target history if it got overwritten with 3h on transition day
+    try {
+      const savedHistory = localStorage.getItem('target_history');
+      if (savedHistory) {
+        const history = JSON.parse(savedHistory);
+        const baseline = history.find(e => e.startDate === '1970-01-01');
+        if (baseline && baseline.weekday === 3.0) {
+          baseline.weekday = 2.0;
+          baseline.weekend = 6.0;
+          localStorage.setItem('target_history', JSON.stringify(history));
+        }
+      }
+    } catch (err) {
+      console.error('Error auto-healing target history:', err);
+    }
   }, []);
 
   const [plannedDates, setPlannedDates] = useState(new Set());
@@ -126,9 +324,25 @@ const TimeLogger = () => {
         });
 
         if (todayLog) {
-          const initialSecs = Math.round(todayLog.duration * 60);
-          setTodaySeconds(initialSecs);
-          setLastSyncSeconds(initialSecs);
+          const dbSecs = Math.round(todayLog.duration * 60);
+          // Only overwrite todaySeconds if we are not actively tracking or if db has more time
+          setTodaySeconds(prev => {
+            if (isCurrentlyTracking) {
+              return Math.max(prev, dbSecs);
+            }
+            // Check if local session has later offline progress
+            try {
+              const savedLockin = localStorage.getItem('active_lockin_session');
+              if (savedLockin) {
+                const parsed = JSON.parse(savedLockin);
+                if (parsed.date === todayStr && parsed.secondsAtStart !== undefined) {
+                  return Math.max(dbSecs, parsed.secondsAtStart);
+                }
+              }
+            } catch (e) {}
+            return dbSecs;
+          });
+          setLastSyncSeconds(dbSecs);
         }
       }
     } catch (err) {
@@ -139,6 +353,23 @@ const TimeLogger = () => {
   useEffect(() => {
     fetchStudyLogs();
     fetchPlannedDates();
+  }, [selectedDateStr]);
+
+  // Synchronize calendar month/year with the selected date (e.g. from dashboard navigation)
+  useEffect(() => {
+    if (selectedDateStr) {
+      const parts = selectedDateStr.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // 0-indexed in JS Date
+        if (!isNaN(month) && month >= 0 && month <= 11) {
+          setCalendarMonth(month);
+        }
+        if (!isNaN(year)) {
+          setCalendarYear(year);
+        }
+      }
+    }
   }, [selectedDateStr]);
 
   // Save current duration to DB
@@ -171,29 +402,56 @@ const TimeLogger = () => {
   };
   const isCurrentlyTracking = isMainClockRunning || (isPomoActive && pomoMode === 'work');
 
-  // Sync start timestamps when tracking state changes
+  // Persist tracking session to localStorage whenever state changes
   useEffect(() => {
+    const todayStr = getLocalDateString();
     if (isCurrentlyTracking) {
-      trackingStartTimeRef.current = Date.now();
+      const now = Date.now();
+      trackingStartTimeRef.current = now;
       secondsAtStartRef.current = todaySeconds;
+      localStorage.setItem('active_lockin_session', JSON.stringify({
+        isRunning: true,
+        startTime: now,
+        secondsAtStart: todaySeconds,
+        date: todayStr
+      }));
     } else {
       trackingStartTimeRef.current = null;
+      localStorage.setItem('active_lockin_session', JSON.stringify({
+        isRunning: false,
+        startTime: null,
+        secondsAtStart: todaySeconds,
+        date: todayStr
+      }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCurrentlyTracking]);
 
-  // Sync start timestamps when Pomodoro state changes
+  // Persist Pomodoro session to localStorage whenever state changes
   useEffect(() => {
     if (isPomoActive) {
-      pomoStartTimeRef.current = Date.now();
+      const now = Date.now();
+      pomoStartTimeRef.current = now;
       pomoSecondsAtStartRef.current = pomoSecondsRemaining;
+      localStorage.setItem('active_pomo_session', JSON.stringify({
+        isActive: true,
+        mode: pomoMode,
+        startTime: now,
+        secondsAtStart: pomoSecondsRemaining
+      }));
     } else {
       pomoStartTimeRef.current = null;
+      localStorage.setItem('active_pomo_session', JSON.stringify({
+        isActive: false,
+        mode: pomoMode,
+        startTime: null,
+        secondsAtStart: pomoSecondsRemaining
+      }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPomoActive, pomoMode]);
 
-  // Clock ticking logic using real system time (survives tab sleep/backgrounding)
+  // Clock ticking logic using real system time (survives tab sleep/backgrounding/reloads)
   useEffect(() => {
     let interval = null;
     if (isCurrentlyTracking && trackingStartTimeRef.current) {
@@ -211,6 +469,12 @@ const TimeLogger = () => {
           setTodaySeconds(0);
           setLastSyncSeconds(0);
           setCurrentDateString(nowStr);
+          localStorage.setItem('active_lockin_session', JSON.stringify({
+            isRunning: true,
+            startTime: trackingStartTimeRef.current,
+            secondsAtStart: 0,
+            date: nowStr
+          }));
           return;
         }
 
@@ -255,18 +519,20 @@ const TimeLogger = () => {
     return () => clearInterval(pomoInterval);
   }, [isPomoActive]);
 
-  // Handle tab focus events to catch up instantly
+  // Catch up instantly on tab visibility change or window focus
   useEffect(() => {
-    const handleFocus = () => {
-      // Catch up study timer
+    const handleCatchUp = () => {
+      // Catch up study timer using exact millisecond delta
       if (isCurrentlyTracking && trackingStartTimeRef.current) {
         const elapsedMs = Date.now() - trackingStartTimeRef.current;
         const elapsedSecs = Math.floor(elapsedMs / 1000);
         const currentTotal = secondsAtStartRef.current + elapsedSecs;
         setTodaySeconds(currentTotal);
-        syncStudyTime(currentTotal);
+        if (currentTotal - lastSyncSeconds >= 10) {
+          syncStudyTime(currentTotal);
+        }
       }
-      // Catch up Pomodoro timer
+      // Catch up Pomodoro timer using exact millisecond delta
       if (isPomoActive && pomoStartTimeRef.current) {
         const elapsedMs = Date.now() - pomoStartTimeRef.current;
         const elapsedSecs = Math.floor(elapsedMs / 1000);
@@ -280,8 +546,12 @@ const TimeLogger = () => {
       }
     };
 
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    window.addEventListener('focus', handleCatchUp);
+    document.addEventListener('visibilitychange', handleCatchUp);
+    return () => {
+      window.removeEventListener('focus', handleCatchUp);
+      document.removeEventListener('visibilitychange', handleCatchUp);
+    };
   }, [isCurrentlyTracking, isPomoActive, lastSyncSeconds]);
 
   const playPomoBell = () => {
@@ -320,11 +590,25 @@ const TimeLogger = () => {
 
       if (nextCycle % 4 === 0) {
         setPomoMode('longBreak');
-        setPomoSecondsRemaining(pomoLongMinutes * 60);
+        const longSecs = pomoLongMinutes * 60;
+        setPomoSecondsRemaining(longSecs);
+        localStorage.setItem('active_pomo_session', JSON.stringify({
+          isActive: false,
+          mode: 'longBreak',
+          startTime: null,
+          secondsAtStart: longSecs
+        }));
         alert('Focus block complete! Take a long break.');
       } else {
         setPomoMode('shortBreak');
-        setPomoSecondsRemaining(pomoShortMinutes * 60);
+        const shortSecs = pomoShortMinutes * 60;
+        setPomoSecondsRemaining(shortSecs);
+        localStorage.setItem('active_pomo_session', JSON.stringify({
+          isActive: false,
+          mode: 'shortBreak',
+          startTime: null,
+          secondsAtStart: shortSecs
+        }));
         alert('Focus block complete! Take a short break.');
       }
     } else {
@@ -332,47 +616,42 @@ const TimeLogger = () => {
         setPomoCycle(0);
       }
       setPomoMode('work');
-      setPomoSecondsRemaining(pomoWorkMinutes * 60);
+      const workSecs = pomoWorkMinutes * 60;
+      setPomoSecondsRemaining(workSecs);
+      localStorage.setItem('active_pomo_session', JSON.stringify({
+        isActive: false,
+        mode: 'work',
+        startTime: null,
+        secondsAtStart: workSecs
+      }));
       alert('Break finished! Let\'s focus again.');
     }
   };
 
   const startPomo = () => {
-    if (!isPomoActive) {
-      pomoStartTimeRef.current = new Date();
-    }
     setIsPomoActive(true);
   };
 
   const resetPomo = (newMode = pomoMode) => {
     setIsPomoActive(false);
     setPomoMode(newMode);
+    let newSecs = pomoWorkMinutes * 60;
     if (newMode === 'work') {
-      setPomoSecondsRemaining(pomoWorkMinutes * 60);
+      newSecs = pomoWorkMinutes * 60;
     } else if (newMode === 'shortBreak') {
-      setPomoSecondsRemaining(pomoShortMinutes * 60);
+      newSecs = pomoShortMinutes * 60;
     } else if (newMode === 'longBreak') {
-      setPomoSecondsRemaining(pomoLongMinutes * 60);
+      newSecs = pomoLongMinutes * 60;
     }
+    setPomoSecondsRemaining(newSecs);
+    localStorage.setItem('active_pomo_session', JSON.stringify({
+      isActive: false,
+      mode: newMode,
+      startTime: null,
+      secondsAtStart: newSecs
+    }));
   };
 
-  // Save Settings
-  const handleSaveSettings = (e) => {
-    e.preventDefault();
-    localStorage.setItem('target_weekday', weekdayTarget);
-    localStorage.setItem('target_weekend', weekendTarget);
-    localStorage.setItem('pomo_work', pomoWorkMinutes);
-    localStorage.setItem('pomo_short', pomoShortMinutes);
-    localStorage.setItem('pomo_long', pomoLongMinutes);
-    
-    if (!isPomoActive) {
-      if (pomoMode === 'work') setPomoSecondsRemaining(pomoWorkMinutes * 60);
-      else if (pomoMode === 'shortBreak') setPomoSecondsRemaining(pomoShortMinutes * 60);
-      else if (pomoMode === 'longBreak') setPomoSecondsRemaining(pomoLongMinutes * 60);
-    }
-    
-    setShowSettingsModal(false);
-  };
 
   // Time Digit Renderer (Clean light-weight digits matching reference image)
   const renderReferenceDigits = (seconds, isTicking, activeColor) => {
@@ -507,13 +786,14 @@ const TimeLogger = () => {
             
             // target targetHours
             const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
-            const targetHours = isWeekend ? weekendTarget : weekdayTarget;
+            const targets = getTargetForDate(dateObj);
+            const targetHours = isWeekend ? targets.weekend : targets.weekday;
             const targetMinutes = targetHours * 60;
             
             const rawPercentage = targetMinutes > 0 ? (loggedMinutes / targetMinutes) : 0;
             const percentage = Math.min(rawPercentage, 1.0);
             const hasExtra = loggedMinutes > targetMinutes;
-            const extraPercentage = hasExtra ? Math.min((loggedMinutes - targetMinutes) / targetMinutes, 1.0) : 0;
+            const extraPercentage = (hasExtra && targetMinutes > 0) ? Math.min((loggedMinutes - targetMinutes) / targetMinutes, 1.0) : (hasExtra ? 1.0 : 0);
 
             const isToday = dateStr === getLocalDateString(new Date());
             const isSelected = dateStr === selectedDateStr;
@@ -523,7 +803,7 @@ const TimeLogger = () => {
             todayStart.setHours(0, 0, 0, 0);
             const isPastDay = dateObj < todayStart;
             const isPlanned = plannedDates.has(dateStr);
-            const isSkullDay = isPlanned && loggedMinutes === 0 && isPastDay;
+            const isSkullDay = (isPlanned || targetMinutes > 0) && loggedMinutes === 0 && isPastDay;
 
             // Activity colors (Dynamic color based on study completion percentage)
             let ringColor = 'var(--cal-ring-default, rgba(255,255,255,0.06))';
@@ -774,7 +1054,8 @@ const TimeLogger = () => {
 
   const todayDateObj = new Date();
   const isWeekendToday = todayDateObj.getDay() === 0 || todayDateObj.getDay() === 6;
-  const currentTodayTargetHours = isWeekendToday ? weekendTarget : weekdayTarget;
+  const todayTargets = getTargetForDate(todayDateObj);
+  const currentTodayTargetHours = isWeekendToday ? todayTargets.weekend : todayTargets.weekday;
 
   // Retrieve active style variables for Pomodoro Start button
   const getPomoBtnStyles = () => {
@@ -797,7 +1078,7 @@ const TimeLogger = () => {
   };
 
   // Math coordinates for Daily Lock-In Progress Tip Dot (Center 90, Radius 72)
-  const todayPercentage = Math.min(todaySeconds / (currentTodayTargetHours * 3600), 1.0);
+  const todayPercentage = currentTodayTargetHours > 0 ? Math.min(todaySeconds / (currentTodayTargetHours * 3600), 1.0) : (todaySeconds > 0 ? 1.0 : 0.0);
   const angleDeg = (todayPercentage * 360) - 90;
   const angleRad = (angleDeg * Math.PI) / 180;
   const lockinDotX = 90 + 72 * Math.cos(angleRad);
@@ -846,14 +1127,6 @@ const TimeLogger = () => {
         <h2 className="animated-gradient-orange" style={{ fontSize: '1.3rem', fontFamily: 'var(--font-display)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>
           Zen Zone
         </h2>
-        <button 
-          onClick={() => setShowSettingsModal(true)} 
-          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem' }}
-          className="settings-gear-btn"
-          title="Open settings"
-        >
-          <Settings size={18} />
-        </button>
       </div>
 
       {/* 1. Focus Logger */}
@@ -1013,6 +1286,13 @@ const TimeLogger = () => {
                 if (window.confirm('Reset today\'s study tracker to 0?')) {
                   setIsMainClockRunning(false);
                   setTodaySeconds(0);
+                  const todayStr = getLocalDateString();
+                  localStorage.setItem('active_lockin_session', JSON.stringify({
+                    isRunning: false,
+                    startTime: null,
+                    secondsAtStart: 0,
+                    date: todayStr
+                  }));
                   syncStudyTime(0);
                 }
               }}
@@ -1137,253 +1417,6 @@ const TimeLogger = () => {
           </div>
         </div>
       </div>
-
-      {/* Settings Modal (Overlay) */}
-      {showSettingsModal && (
-        <div className="modal-backdrop" style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
-          <div 
-            className="modal-content" 
-            style={{ 
-              position: 'relative', 
-              maxWidth: '400px', 
-              background: 'rgba(10, 10, 12, 0.9)',
-              border: '1.5px solid rgba(255, 45, 85, 0.15)',
-              boxShadow: '0 24px 50px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 45, 85, 0.05)',
-              padding: '1.75rem 1.5rem',
-              borderRadius: '24px'
-            }}
-          >
-            {/* Close Button */}
-            <button 
-              onClick={() => setShowSettingsModal(false)}
-              style={{ 
-                position: 'absolute', 
-                top: '1.25rem', 
-                right: '1.25rem', 
-                background: 'rgba(255,255,255,0.03)', 
-                border: '1px solid rgba(255,255,255,0.05)', 
-                borderRadius: '50%',
-                width: '28px',
-                height: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-muted)', 
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.color = '#ff2d55'; e.currentTarget.style.background = 'rgba(255, 45, 85, 0.1)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-            >
-              <X size={14} />
-            </button>
-
-            {/* Header: Shifting gradient title */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h3 
-                style={{ 
-                  fontSize: '1.35rem', 
-                  fontFamily: 'var(--font-display)', 
-                  fontWeight: 900,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  background: 'linear-gradient(to right, #ff453a, #ff9500, #ff2d55, #ff9f0a, #ff453a)',
-                  backgroundSize: '200% auto',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  animation: 'flowingGradient 4s linear infinite',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <Settings size={20} color="#ff453a" style={{ strokeWidth: 2.5 }} />
-                <span>Zone Config</span>
-              </h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Tune your target hours and Pomodoro timers</p>
-            </div>
-            
-            <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              
-              {/* TARGET HOURS SECTION */}
-              <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: '#ff9500', fontWeight: 800, letterSpacing: '0.08em', display: 'block' }}>Daily Study Targets</span>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                  {/* Weekdays Target */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Weekdays (Hrs)</label>
-                    <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.15rem' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setWeekdayTarget(prev => Math.max(0.5, prev - 0.5))}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >-</button>
-                      <input
-                        type="number"
-                        step="0.5"
-                        min="0.5"
-                        value={weekdayTarget}
-                        readOnly
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', textAlign: 'center', fontSize: '0.85rem', fontWeight: 750, outline: 'none', padding: 0 }}
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setWeekdayTarget(prev => prev + 0.5)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >+</button>
-                    </div>
-                  </div>
-
-                  {/* Weekends Target */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Weekends (Hrs)</label>
-                    <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.15rem' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setWeekendTarget(prev => Math.max(0.5, prev - 0.5))}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >-</button>
-                      <input
-                        type="number"
-                        step="0.5"
-                        min="0.5"
-                        value={weekendTarget}
-                        readOnly
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', textAlign: 'center', fontSize: '0.85rem', fontWeight: 750, outline: 'none', padding: 0 }}
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setWeekendTarget(prev => prev + 0.5)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* POMODORO DURATIONS SECTION */}
-              <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: '#ff2d55', fontWeight: 800, letterSpacing: '0.08em', display: 'block' }}>Pomodoro Durations (Min)</span>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {/* Focus duration */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Focus Session</span>
-                    <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.15rem', width: '100px' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setPomoWorkMinutes(prev => Math.max(1, prev - 1))}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >-</button>
-                      <input
-                        type="number"
-                        min="1"
-                        value={pomoWorkMinutes}
-                        readOnly
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', textAlign: 'center', fontSize: '0.82rem', fontWeight: 750, outline: 'none', padding: 0 }}
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setPomoWorkMinutes(prev => prev + 1)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >+</button>
-                    </div>
-                  </div>
-
-                  {/* Short Break */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Short Break</span>
-                    <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.15rem', width: '100px' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setPomoShortMinutes(prev => Math.max(1, prev - 1))}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >-</button>
-                      <input
-                        type="number"
-                        min="1"
-                        value={pomoShortMinutes}
-                        readOnly
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', textAlign: 'center', fontSize: '0.82rem', fontWeight: 750, outline: 'none', padding: 0 }}
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setPomoShortMinutes(prev => prev + 1)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >+</button>
-                    </div>
-                  </div>
-
-                  {/* Long Break */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Long Break</span>
-                    <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.15rem', width: '100px' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setPomoLongMinutes(prev => Math.max(1, prev - 1))}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >-</button>
-                      <input
-                        type="number"
-                        min="1"
-                        value={pomoLongMinutes}
-                        readOnly
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', textAlign: 'center', fontSize: '0.82rem', fontWeight: 750, outline: 'none', padding: 0 }}
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setPomoLongMinutes(prev => prev + 1)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '24px', height: '24px', cursor: 'pointer', fontWeight: 800 }}
-                      >+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* APPLY BUTTON */}
-              <button 
-                type="submit" 
-                style={{ 
-                  marginTop: '0.5rem',
-                  padding: '0.75rem 1.6rem',
-                  borderRadius: '9999px',
-                  background: 'var(--modal-btn-bg, rgba(255, 45, 85, 0.05))',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  border: '1px solid var(--modal-btn-border, rgba(255, 45, 85, 0.25))',
-                  boxShadow: 'var(--modal-btn-shadow, 0 4px 15px rgba(255, 45, 85, 0.1))',
-                  color: '#ff2d55',
-                  fontWeight: 800,
-                  fontSize: '0.85rem',
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                  width: '100%',
-                  cursor: 'pointer',
-                  transition: 'all 0.25s ease'
-                }}
-                onMouseOver={(e) => { 
-                  e.currentTarget.style.transform = 'translateY(-2px)'; 
-                  e.currentTarget.style.background = 'var(--modal-btn-bg-hover, rgba(255, 45, 85, 0.15))';
-                  e.currentTarget.style.borderColor = 'var(--modal-btn-border-hover, rgba(255, 45, 85, 0.4))';
-                  e.currentTarget.style.boxShadow = 'var(--modal-btn-shadow-hover, 0 6px 20px rgba(255, 45, 85, 0.25))';
-                  e.currentTarget.style.color = 'var(--modal-btn-color-hover, #ff3b30)';
-                }}
-                onMouseOut={(e) => { 
-                  e.currentTarget.style.transform = 'translateY(0)'; 
-                  e.currentTarget.style.background = 'var(--modal-btn-bg, rgba(255, 45, 85, 0.05))';
-                  e.currentTarget.style.borderColor = 'var(--modal-btn-border, rgba(255, 45, 85, 0.25))';
-                  e.currentTarget.style.boxShadow = 'var(--modal-btn-shadow, 0 4px 15px rgba(255, 45, 85, 0.1))';
-                  e.currentTarget.style.color = '#ff2d55';
-                }}
-              >
-                Apply
-              </button>
-
-            </form>
-          </div>
-        </div>
-      )}
 
     </aside>
   );

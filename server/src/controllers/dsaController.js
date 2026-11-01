@@ -91,11 +91,23 @@ async function getDsaLogs(req, res) {
       };
     }
 
+    // 1. Get total logs count for pagination
+    const totalLogs = await prisma.dsaLog.count({ where: whereClause });
+
+    // 2. Parse pagination query params
+    const pageNum = req.query.page ? parseInt(req.query.page, 10) : 1;
+    const limitNum = req.query.limit ? parseInt(req.query.limit, 10) : 10;
+    const skip = (pageNum - 1) * limitNum;
+    const totalPages = Math.ceil(totalLogs / limitNum) || 1;
+
+    // 3. Get paginated logs
     let logs = await prisma.dsaLog.findMany({
       where: whereClause,
       orderBy: {
         date: 'desc',
       },
+      skip,
+      take: limitNum,
     });
 
     // Auto-enrich any existing logs with empty titles on retrieval
@@ -145,6 +157,41 @@ async function getDsaLogs(req, res) {
       total: weeklyLogs.length,
     };
 
+    // Calculate monthly statistics
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0, 0);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const monthlyLogs = await prisma.dsaLog.findMany({
+      where: {
+        userId,
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: { difficulty: true }
+    });
+
+    const monthlyStats = {
+      Easy: monthlyLogs.filter((l) => l.difficulty === 'Easy').length,
+      Medium: monthlyLogs.filter((l) => l.difficulty === 'Medium').length,
+      Hard: monthlyLogs.filter((l) => l.difficulty === 'Hard').length,
+      total: monthlyLogs.length,
+    };
+
+    // Calculate overall statistics across all pages for this user
+    const overallLogs = await prisma.dsaLog.findMany({
+      where: { userId },
+      select: { difficulty: true }
+    });
+
+    const overallStats = {
+      Easy: overallLogs.filter((l) => l.difficulty === 'Easy').length,
+      Medium: overallLogs.filter((l) => l.difficulty === 'Medium').length,
+      Hard: overallLogs.filter((l) => l.difficulty === 'Hard').length,
+      total: overallLogs.length,
+    };
+
     // Calculate daily statistics
     const todayStart = new Date(today);
     todayStart.setHours(0, 0, 0, 0);
@@ -170,7 +217,15 @@ async function getDsaLogs(req, res) {
 
     res.json({
       logs,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        totalPages,
+        totalLogs
+      },
       weeklyStats,
+      monthlyStats,
+      overallStats,
       dailyStats,
     });
   } catch (error) {

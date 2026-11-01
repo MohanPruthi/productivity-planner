@@ -496,6 +496,7 @@ label {
   top: 0;
   overflow-y: auto;
   gap: 0.85rem;
+  z-index: 100;
 }
 
 /* Gamified Section Cards (High-Tech Glassmorphism) */
@@ -1164,10 +1165,10 @@ label {
   color: var(--track-sd-start);
 }
 .mirror-checkbox.checked-gen {
-  border-color: #f97316;
-  background: rgba(249, 115, 22, 0.08);
-  box-shadow: 0 0 12px rgba(249, 115, 22, 0.35);
-  color: #f97316;
+  border-color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.35);
+  color: var(--accent-primary);
 }
 
 /* Redefined Glow Weeks */
@@ -1406,7 +1407,10 @@ label {
 .light-theme .glass-card,
 .light-theme .timelogger-card {
   background: rgba(255, 255, 255, 0.8) !important;
-  border-color: rgba(15, 23, 42, 0.06) !important;
+  border-top-color: rgba(15, 23, 42, 0.06) !important;
+  border-right-color: rgba(15, 23, 42, 0.06) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.06) !important;
+  border-left-color: rgba(15, 23, 42, 0.06);
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04) !important;
 }
 
@@ -1638,3 +1642,693 @@ label {
   border-color: #ffa116 !important;
   box-shadow: 0 6px 20px rgba(255, 161, 22, 0.3) !important;
 }
+
+/* General task item styling for hover interaction */
+.task-item-dashboard {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.task-item-dashboard:hover {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* General directory submit button styling */
+.mirror-btn-pill.directory-submit {
+  background: rgba(0, 122, 255, 0.08);
+  border: 1px solid rgba(0, 122, 255, 0.25);
+  color: #007aff;
+  box-shadow: 0 4px 15px rgba(0, 122, 255, 0.05);
+  backdrop-filter: blur(8px);
+  font-weight: 800;
+  transition: all 0.2s ease;
+}
+.mirror-btn-pill.directory-submit:hover {
+  background: rgba(0, 122, 255, 0.18);
+  border-color: rgba(0, 122, 255, 0.45);
+  box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15);
+}
+
+/* General directory Add button styling */
+.mirror-btn-pill.directory-add-btn {
+  border: 1px solid rgba(0, 122, 255, 0.3) !important;
+  background: rgba(0, 122, 255, 0.06) !important;
+  color: #007aff !important;
+  transition: all 0.2s ease !important;
+}
+.mirror-btn-pill.directory-add-btn:hover {
+  background: rgba(0, 122, 255, 0.16) !important;
+  border-color: rgba(0, 122, 255, 0.55) !important;
+}
+
+/* Light Theme overrides */
+.light-theme .task-item-dashboard {
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+.light-theme .task-item-dashboard:hover {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(15, 23, 42, 0.05) !important;
+}
+
+.light-theme .mirror-btn-pill {
+  background: rgba(15, 23, 42, 0.02) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  color: var(--text-primary) !important;
+}
+.light-theme .mirror-btn-pill:hover {
+  background: rgba(15, 23, 42, 0.06) !important;
+  border-color: rgba(15, 23, 42, 0.25) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+}
+.light-theme .mirror-btn-pill:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  background: rgba(15, 23, 42, 0.01) !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+  box-shadow: none !important;
+}
+
+.light-theme .mirror-btn-pill.directory-submit {
+  color: #007aff !important;
+  border-color: rgba(0, 122, 255, 0.25) !important;
+  background: rgba(0, 122, 255, 0.04) !important;
+}
+.light-theme .mirror-btn-pill.directory-submit:hover {
+  background: #007aff !important;
+  color: #ffffff !important;
+  border-color: #007aff !important;
+  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3) !important;
+}
+
+.light-theme .mirror-btn-pill.directory-add-btn {
+  background: rgba(0, 122, 255, 0.04) !important;
+  border-color: rgba(0, 122, 255, 0.25) !important;
+  color: #007aff !important;
+}
+.light-theme .mirror-btn-pill.directory-add-btn:hover {
+  background: #007aff !important;
+  color: #ffffff !important;
+  border-color: #007aff !important;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25) !important;
+}
+
+/* Light Theme Card Glows overrides on Hover */
+.light-theme .glow-ai:hover { box-shadow: var(--glow-ai) !important; border-color: rgba(99, 102, 241, 0.25) !important; }
+.light-theme .glow-sd:hover { box-shadow: var(--glow-sd) !important; border-color: rgba(16, 185, 129, 0.25) !important; }
+.light-theme .glow-dsa:hover { box-shadow: var(--glow-dsa) !important; border-color: rgba(249, 115, 22, 0.25) !important; }
+.light-theme .glow-med:hover { box-shadow: var(--glow-med) !important; border-color: rgba(255, 45, 85, 0.25) !important; }
+.light-theme .glow-tracker:hover { box-shadow: var(--glow-tracker) !important; border-color: rgba(99, 102, 241, 0.25) !important; }
+
+/* Modal Close Button */
+.modal-close-btn {
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.2s ease !important;
+}
+.modal-close-btn:hover {
+  background: rgba(255, 45, 85, 0.1) !important;
+  color: #ff2d55 !important;
+  border-color: rgba(255, 45, 85, 0.2) !important;
+}
+.light-theme .modal-close-btn {
+  background: rgba(15, 23, 42, 0.04) !important;
+  color: var(--text-muted) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light-theme .modal-close-btn:hover {
+  background: rgba(255, 45, 85, 0.1) !important;
+  color: #ff2d55 !important;
+  border-color: rgba(255, 45, 85, 0.2) !important;
+}
+
+/* Zen Zone Config Section and Steppers styling */
+.settings-section-card {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: all 0.2s ease;
+}
+.settings-stepper-input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+.settings-stepper-input button {
+  transition: all 0.2s ease;
+}
+.settings-stepper-input button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.light-theme .settings-section-card {
+  background: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+}
+.light-theme .settings-section-card:hover {
+  background: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+}
+.light-theme .settings-stepper-input {
+  background: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+.light-theme .settings-stepper-input button {
+  color: var(--text-secondary) !important;
+}
+.light-theme .settings-stepper-input button:hover {
+  color: var(--text-primary) !important;
+  background: rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Date shortcut active highlight override for light mode */
+.light-theme .mirror-btn-pill.checked-ai {
+  background: var(--track-ai-start) !important;
+  color: #ffffff !important;
+  border-color: var(--track-ai-start) !important;
+}
+.light-theme .mirror-btn-pill.checked-ai:hover {
+  background: var(--track-ai-start) !important;
+  color: #ffffff !important;
+  opacity: 0.9 !important;
+}
+
+/* Pomodoro Tab button overrides for light mode */
+.light-theme .pomo-tab-col {
+  background: rgba(15, 23, 42, 0.06) !important; /* Slightly darker grey for better visibility */
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light-theme .pomo-tab-col:hover {
+  background: rgba(15, 23, 42, 0.12) !important;
+  border-color: rgba(15, 23, 42, 0.2) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+}
+.light-theme .pomo-tab-col.active-work {
+  background: rgba(249, 115, 22, 0.08) !important;
+  border-color: rgba(249, 115, 22, 0.4) !important;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.08) !important;
+}
+.light-theme .pomo-tab-col.active-short {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.08) !important;
+}
+.light-theme .pomo-tab-col.active-long {
+  background: rgba(59, 130, 246, 0.08) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.08) !important;
+}
+
+
+/* Task Backlog Responsive Layout Overrides */
+@media (max-width: 768px) {
+  .backlog-header-row {
+    display: none !important;
+  }
+  .backlog-drag-row {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem;
+    padding: 1rem 0.75rem !important;
+  }
+  .backlog-drag-row > div {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+  .backlog-date-col {
+    margin-left: 30px;
+    justify-content: flex-start !important;
+  }
+  .backlog-drag-row .reschedule-actions {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    margin-left: 30px;
+    flex-wrap: wrap;
+  }
+}
+
+/* Medication Reminder Toast Styles */
+@keyframes medToastSlideInTop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes medToastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.med-toast-close-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text-primary) !important;
+}
+
+.med-toast-action-btn:hover {
+  background: rgba(255, 45, 85, 0.14) !important;
+  border-color: rgba(255, 45, 85, 0.4) !important;
+  box-shadow: 0 4px 15px rgba(255, 45, 85, 0.18) !important;
+  transform: translateY(-1px);
+}
+
+/* Notes Page Styles */
+.notes-3col-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 1120px) {
+  .notes-3col-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .notes-3col-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.note-card-curved {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.note-card-curved:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: color-mix(in srgb, var(--note-color, #eab308) 35%, rgba(255, 255, 255, 0.15)) !important;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--note-color, #eab308) 20%, transparent), 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.light-theme .note-card-curved:hover {
+  background: #ffffff !important;
+  border-color: color-mix(in srgb, var(--note-color, #eab308) 45%, rgba(15, 23, 42, 0.12)) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--note-color, #eab308) 18%, transparent), 0 6px 15px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Custom smooth modal scrollbar */
+.custom-modal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-modal-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+.custom-modal-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+.custom-modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.note-pin-btn:hover {
+  background: rgba(234, 179, 8, 0.2) !important;
+  border-color: rgba(234, 179, 8, 0.5) !important;
+  color: #eab308 !important;
+}
+
+.note-delete-hover:hover {
+  background: rgba(255, 59, 48, 0.15) !important;
+  color: #ff3b30 !important;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Notion-style Todo row and input interactions */
+.notion-todo-row:hover {
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+.notion-todo-row:hover .notion-todo-drag-handle {
+  opacity: 0.85 !important;
+}
+.notion-todo-row:hover .notion-todo-delete-btn {
+  opacity: 0.85 !important;
+}
+.notion-todo-delete-btn:hover {
+  background: rgba(255, 59, 48, 0.2) !important;
+  color: #ff3b30 !important;
+  opacity: 1 !important;
+}
+.notion-add-todo-row:hover {
+  color: var(--text-primary) !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+}
+
+.btn-save-subtle {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+.btn-save-subtle:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+/* Note Card HTML Preview in Grid Listing */
+.note-card-html-preview {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+.note-card-html-preview h1,
+.note-card-html-preview h2,
+.note-card-html-preview h3,
+.note-card-html-preview h4 {
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  margin: 0.2rem 0 !important;
+  color: var(--text-primary) !important;
+  line-height: 1.3 !important;
+}
+.note-card-html-preview p {
+  margin: 0.2rem 0 !important;
+}
+.note-card-html-preview ul,
+.note-card-html-preview ol {
+  margin: 0.2rem 0 !important;
+  padding-left: 1.15rem !important;
+}
+.note-card-html-preview li {
+  margin: 0.1rem 0 !important;
+}
+.note-card-html-preview blockquote {
+  margin: 0.2rem 0 !important;
+  padding-left: 0.5rem !important;
+  border-left: 2px solid var(--note-color, #eab308) !important;
+  font-style: italic !important;
+  color: var(--text-muted) !important;
+}
+.note-card-html-preview pre,
+.note-card-html-preview code {
+  font-size: 0.8rem !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  padding: 0.1rem 0.3rem !important;
+  border-radius: 4px !important;
+  font-family: monospace !important;
+}
+
+/* Full Screen Rich Editor Canvas */
+.rich-editor-canvas {
+  width: 100%;
+  min-height: 480px;
+  outline: none;
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  background: transparent;
+  word-break: break-word;
+  white-space: pre-wrap;
+  padding-bottom: 6rem;
+}
+
+.rich-editor-canvas:empty:before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  opacity: 0.6;
+  pointer-events: none;
+  display: block;
+}
+
+.rich-editor-canvas h1 {
+  font-size: 1.95rem;
+  font-weight: 850;
+  margin: 1.5rem 0 0.65rem;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.rich-editor-canvas h2 {
+  font-size: 1.5rem;
+  font-weight: 780;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.rich-editor-canvas h3 {
+  font-size: 1.22rem;
+  font-weight: 720;
+  margin: 1rem 0 0.4rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.rich-editor-canvas p {
+  margin: 0.65rem 0;
+}
+
+.rich-editor-canvas strong,
+.rich-editor-canvas b {
+  font-weight: 750;
+  color: #ffffff;
+}
+
+.light-theme .rich-editor-canvas strong,
+.light-theme .rich-editor-canvas b {
+  color: #0f172a;
+}
+
+.rich-editor-canvas em,
+.rich-editor-canvas i {
+  font-style: italic;
+}
+
+.rich-editor-canvas u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rich-editor-canvas s,
+.rich-editor-canvas strike {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.rich-editor-canvas ul {
+  list-style-type: disc;
+  padding-left: 1.6rem;
+  margin: 0.75rem 0;
+}
+
+.rich-editor-canvas ol {
+  list-style-type: decimal;
+  padding-left: 1.6rem;
+  margin: 0.75rem 0;
+}
+
+.rich-editor-canvas li {
+  margin: 0.35rem 0;
+  line-height: 1.65;
+}
+
+.rich-editor-canvas blockquote {
+  border-left: 3.5px solid var(--note-accent, #eab308);
+  padding: 0.55rem 1.15rem;
+  margin: 1rem 0;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 0 10px 10px 0;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.rich-editor-canvas code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+  font-size: 0.88em;
+  color: #e2e8f0;
+}
+
+.light-theme .rich-editor-canvas code {
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+}
+
+.rich-editor-canvas pre {
+  background: rgba(10, 12, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.light-theme .rich-editor-canvas pre {
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.rich-editor-canvas pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9rem;
+}
+
+.rich-editor-canvas hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 1.75rem 0;
+}
+
+/* Rich Editor Floating Toolbar */
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(20, 22, 32, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.35rem 0.45rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  flex-wrap: wrap;
+  z-index: 20;
+}
+
+.light-theme .editor-toolbar {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+}
+
+.editor-toolbar-btn {
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.38rem 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.15s ease;
+}
+
+.editor-toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.light-theme .editor-toolbar-btn:hover {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.editor-toolbar-btn.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.light-theme .editor-toolbar-btn.active {
+  background: rgba(15, 23, 42, 0.1);
+  color: #0f172a;
+}
+
+.editor-toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0 0.25rem;
+}
+
+.light-theme .editor-toolbar-separator {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+/* Note Detail Back Navigation Button */
+.note-detail-back-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.45rem 0.9rem;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.note-detail-back-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  transform: translateX(-2px);
+}
+
+.light-theme .note-detail-back-btn {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.light-theme .note-detail-back-btn:hover {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+@keyframes savePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+
+.save-pulse-dot {
+  animation: savePulse 1.2s infinite ease-in-out;
+}
+

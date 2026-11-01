@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import TimeLogger from './TimeLogger';
+import MedReminder from './MedReminder';
 import { useAuth } from '../context/AuthContext';
 
 const Layout = ({ children }) => {
@@ -17,6 +18,7 @@ const Layout = ({ children }) => {
         {children}
       </main>
       <TimeLogger />
+      <MedReminder />
     </div>
   );
 };

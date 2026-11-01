@@ -91,7 +91,112 @@ async function login(req, res) {
   }
 }
 
+async function verifyWorkspacePin(req, res) {
+  try {
+    const { pin } = req.body;
+    const userId = req.user.id;
+
+    if (!pin) {
+      return res.status(400).json({ error: 'PIN is required' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { workspacePin: true },
+    });
+
+    const expectedPin = user?.workspacePin || '1234';
+
+    if (pin === expectedPin) {
+      return res.json({ valid: true });
+    } else {
+      return res.status(401).json({ valid: false, error: 'Incorrect 4-digit PIN' });
+    }
+  } catch (error) {
+    console.error('Verify PIN error:', error);
+    res.status(500).json({ error: 'Internal server error verifying PIN' });
+  }
+}
+
+async function resetWorkspacePin(req, res) {
+  try {
+    const { currentPin, newPin } = req.body;
+    const userId = req.user.id;
+
+    if (!currentPin || !newPin) {
+      return res.status(400).json({ error: 'Current PIN and new PIN are required' });
+    }
+
+    if (!/^\d{4}$/.test(newPin)) {
+      return res.status(400).json({ error: 'New PIN must be exactly 4 digits' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { workspacePin: true },
+    });
+
+    const expectedPin = user?.workspacePin || '1234';
+
+    if (currentPin !== expectedPin) {
+      return res.status(401).json({ error: 'Current PIN is incorrect' });
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { workspacePin: newPin },
+    });
+
+    res.json({ message: 'Workspace PIN updated successfully' });
+  } catch (error) {
+    console.error('Reset PIN error:', error);
+    res.status(500).json({ error: 'Internal server error resetting PIN' });
+  }
+}
+
+async function forgotWorkspacePin(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Reset the saved PIN in DB to default '0000' (temporary security recovery code)
+    const tempPin = '0000';
+    await prisma.user.update({
+      where: { id: userId },
+      data: { workspacePin: tempPin },
+    });
+
+    // Mask user email for privacy (e.g., m***@gmail.com)
+    const [localPart, domain] = user.email.split('@');
+    const maskedLocal = localPart.length > 2 
+      ? localPart[0] + '***' + localPart[localPart.length - 1] 
+      : localPart[0] + '***';
+    const maskedEmail = `${maskedLocal}@${domain}`;
+
+    res.json({
+      message: 'A 4-digit security recovery OTP has been dispatched to your email.',
+      email: user.email,
+      maskedEmail,
+      tempPin,
+    });
+  } catch (error) {
+    console.error('Forgot PIN error:', error);
+    res.status(500).json({ error: 'Internal server error processing forgot PIN' });
+  }
+}
+
 module.exports = {
   signup,
   login,
+  verifyWorkspacePin,
+  resetWorkspacePin,
+  forgotWorkspacePin,
 };

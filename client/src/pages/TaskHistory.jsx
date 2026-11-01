@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
@@ -15,6 +16,223 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+const CustomDatePickerButton = ({ onSelectDate, buttonStyle, label = "Custom" }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [viewDate, setViewDate] = React.useState(new Date());
+  const [coords, setCoords] = React.useState({ top: 0, left: 0 });
+  const buttonRef = React.useRef(null);
+
+  const updatePosition = React.useCallback(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const popoverHeight = 220;
+      let top = rect.top - popoverHeight - 8;
+      if (top < 10) {
+        top = rect.bottom + 8;
+      }
+      let left = rect.left + rect.width / 2 - 110;
+      left = Math.max(10, Math.min(left, window.innerWidth - 230));
+      setCoords({ top, left });
+    }
+  }, []);
+
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    if (!isOpen) {
+      updatePosition();
+    }
+    setIsOpen(!isOpen);
+  };
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isOpen, updatePosition]);
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+
+  const handlePrevMonth = (e) => {
+    e.stopPropagation();
+    setViewDate(new Date(year, month - 1, 1));
+  };
+
+  const handleNextMonth = (e) => {
+    e.stopPropagation();
+    setViewDate(new Date(year, month + 1, 1));
+  };
+
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const daysGrid = [];
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    daysGrid.push(null);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    daysGrid.push(d);
+  }
+
+  const getFormattedDateString = (dayNum) => {
+    const y = year;
+    const m = String(month + 1).padStart(2, '0');
+    const day = String(dayNum).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const monthName = viewDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={handleToggle}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.2rem',
+          cursor: 'pointer',
+          background: isOpen ? 'rgba(99, 102, 241, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+          border: isOpen ? '1px solid var(--accent-primary)' : '1px solid var(--border-light)',
+          borderRadius: '6px',
+          padding: '0.12rem 0.4rem',
+          fontSize: '0.65rem',
+          color: isOpen ? 'var(--accent-primary)' : 'var(--text-secondary)',
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+          transition: 'all 0.15s ease',
+          ...buttonStyle
+        }}
+        title="Pick custom date"
+      >
+        <Calendar size={11} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>{label}</span>
+      </button>
+
+      {isOpen && createPortal(
+        <>
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 999998,
+              background: 'transparent'
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+          />
+
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              top: `${coords.top}px`,
+              left: `${coords.left}px`,
+              width: '220px',
+              background: 'var(--bg-tertiary, #1e293b)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid var(--border-light, rgba(255, 255, 255, 0.1))',
+              borderRadius: '14px',
+              padding: '0.65rem 0.75rem',
+              boxShadow: '0 20px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.2)',
+              zIndex: 999999,
+              animation: 'fadeIn 0.15s ease-out'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px', display: 'flex' }}
+              >
+                <ChevronLeft size={13} />
+              </button>
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {monthName}
+              </span>
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px', display: 'flex' }}
+              >
+                <ChevronRight size={13} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center', marginBottom: '4px' }}>
+              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(w => (
+                <span key={w} style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+                  {w}
+                </span>
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center' }}>
+              {daysGrid.map((dayNum, idx) => {
+                if (dayNum === null) {
+                  return <div key={`empty-${idx}`} />;
+                }
+                const dateStr = getFormattedDateString(dayNum);
+                const isToday = dateStr === todayStr;
+
+                return (
+                  <button
+                    key={dateStr}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectDate(dateStr);
+                      setIsOpen(false);
+                    }}
+                    style={{
+                      padding: '0.2rem 0',
+                      borderRadius: '5px',
+                      border: isToday ? '1px solid var(--accent-primary)' : 'none',
+                      background: isToday ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+                      color: isToday ? 'var(--accent-primary)' : 'var(--text-primary)',
+                      fontSize: '0.68rem',
+                      fontWeight: isToday ? 800 : 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isToday) {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isToday) {
+                        e.currentTarget.style.background = 'transparent';
+                      }
+                    }}
+                  >
+                    {dayNum}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
+    </div>
+  );
+};
+
 const TaskHistory = () => {
   const { getAuthHeaders } = useAuth();
   const [historyData, setHistoryData] = useState([]);
@@ -28,12 +246,15 @@ const TaskHistory = () => {
   const [boardCenterOffset, setBoardCenterOffset] = useState(0);
   const [activeTooltip, setActiveTooltip] = useState(null); // { text, x, y }
 
-  const handleTaskTextClick = (e, text) => {
+  const handleTaskTextClick = (e, text, taskId = null, category = null, sourceDate = null) => {
     e.stopPropagation();
     setActiveTooltip({
       text,
       x: e.clientX,
-      y: e.clientY
+      y: e.clientY,
+      taskId,
+      category,
+      sourceDate
     });
   };
 
@@ -58,7 +279,7 @@ const TaskHistory = () => {
   tomorrow.setDate(today.getDate() + 1);
   const tomorrowStr = getLocalDateString(tomorrow);
 
-  for (let i = -2; i <= 2; i++) {
+  for (let i = -4; i <= 4; i++) {
     const d = new Date(centerDate);
     d.setDate(centerDate.getDate() + i);
     const dStr = getLocalDateString(d);
@@ -114,6 +335,78 @@ const TaskHistory = () => {
     const sourceDate = e.dataTransfer.getData('sourceDate');
 
     if (!taskId || sourceDate === targetDate) return;
+
+    // Optimistic UI Update
+    setHistoryData(prev => {
+      let movedTask = null;
+
+      // 1. Remove from source date group
+      const updated = prev.map(group => {
+        if (group.date === sourceDate) {
+          if (category === 'planDay') {
+            movedTask = group.planDays.find(d => d.id === taskId);
+            return { ...group, planDays: group.planDays.filter(d => d.id !== taskId) };
+          } else {
+            movedTask = group.normalTasks.find(t => t.id === taskId);
+            return { ...group, normalTasks: group.normalTasks.filter(t => t.id !== taskId) };
+          }
+        }
+        return group;
+      });
+
+      if (!movedTask) return prev;
+
+      // 2. Add to target date group
+      let targetGroupExists = false;
+      const final = updated.map(group => {
+        if (group.date === targetDate) {
+          targetGroupExists = true;
+          if (category === 'planDay') {
+            return { ...group, planDays: [...group.planDays, { ...movedTask, date: targetDate }] };
+          } else {
+            return { ...group, normalTasks: [...group.normalTasks, { ...movedTask, date: targetDate }] };
+          }
+        }
+        return group;
+      });
+
+      if (!targetGroupExists) {
+        final.push({
+          date: targetDate,
+          planDays: category === 'planDay' ? [{ ...movedTask, date: targetDate }] : [],
+          normalTasks: category === 'normalTask' ? [{ ...movedTask, date: targetDate }] : []
+        });
+      }
+
+      return final;
+    });
+
+    // API update
+    try {
+      const endpoint = category === 'planDay' 
+        ? `${API_BASE_URL}/api/plan/days/${taskId}` 
+        : `${API_BASE_URL}/api/normal-tasks/${taskId}`;
+      
+      const res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ date: targetDate })
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to update task date');
+      }
+    } catch (err) {
+      console.error('Error shifting task date:', err);
+      fetchHistory(); // rollback
+    }
+  };
+
+  const handleRescheduleTask = async (taskId, category, sourceDate, targetDate) => {
+    if (!taskId || !targetDate || sourceDate === targetDate) return;
 
     // Optimistic UI Update
     setHistoryData(prev => {
@@ -398,7 +691,10 @@ const TaskHistory = () => {
           flexDirection: 'row',
           gap: '1.25rem', 
           overflowX: 'auto', 
+          paddingTop: '0.65rem',
           paddingBottom: '1rem',
+          paddingLeft: '0.35rem',
+          paddingRight: '0.35rem',
           flex: 1,
           alignItems: 'stretch',
           width: '100%'
@@ -469,6 +765,8 @@ const TaskHistory = () => {
                   gap: '0.75rem', 
                   flex: 1, 
                   overflowY: 'auto',
+                  paddingTop: '0.4rem',
+                  paddingBottom: '0.4rem',
                   paddingRight: '4px',
                   minHeight: '100px'
                 }}
@@ -521,11 +819,7 @@ const TaskHistory = () => {
                         {day.track}
                       </span>
                       <p 
-                        onClick={(e) => {
-                          if (day.topic.length > 80) {
-                            handleTaskTextClick(e, day.topic);
-                          }
-                        }}
+                        onClick={(e) => handleTaskTextClick(e, day.topic, day.id, 'planDay', col.dateStr)}
                         style={{
                           fontSize: '0.8rem',
                           fontWeight: 500,
@@ -537,12 +831,46 @@ const TaskHistory = () => {
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          cursor: day.topic.length > 80 ? 'pointer' : 'default'
+                          cursor: 'pointer'
                         }}
-                        title={day.topic.length > 80 ? 'Click to show full description' : ''}
+                        title="Click to view details and reschedule options"
                       >
                         {day.topic}
                       </p>
+
+                      {col.dateStr < todayStr && !day.isDone && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.45rem', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRescheduleTask(day.id, 'planDay', col.dateStr, todayStr);
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.2rem',
+                              background: 'rgba(99, 102, 241, 0.08)',
+                              border: '1px solid rgba(99, 102, 241, 0.2)',
+                              borderRadius: '6px',
+                              padding: '0.12rem 0.4rem',
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              color: 'var(--accent-primary)',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0,
+                              transition: 'all 0.15s ease'
+                            }}
+                            title="Reschedule task to Today"
+                          >
+                            <span>→ Today</span>
+                          </button>
+
+                          <CustomDatePickerButton 
+                            onSelectDate={(dateVal) => handleRescheduleTask(day.id, 'planDay', col.dateStr, dateVal)} 
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -584,15 +912,11 @@ const TaskHistory = () => {
                     </button>
 
                     <div style={{ flex: 1 }}>
-                      <span className="badge" style={{ fontSize: '0.55rem', padding: '0.05rem 0.3rem', background: 'rgba(249, 115, 22, 0.08)', color: '#f97316', borderColor: 'rgba(249, 115, 22, 0.15)', marginBottom: '0.2rem', display: 'inline-block' }}>
+                      <span className="badge" style={{ fontSize: '0.55rem', padding: '0.05rem 0.3rem', background: 'rgba(99, 102, 241, 0.08)', color: 'var(--accent-primary)', borderColor: 'rgba(99, 102, 241, 0.15)', marginBottom: '0.2rem', display: 'inline-block' }}>
                         Gen
                       </span>
                       <p 
-                        onClick={(e) => {
-                          if (task.text.length > 80) {
-                            handleTaskTextClick(e, task.text);
-                          }
-                        }}
+                        onClick={(e) => handleTaskTextClick(e, task.text, task.id, 'normalTask', col.dateStr)}
                         style={{
                           fontSize: '0.8rem',
                           fontWeight: 500,
@@ -604,12 +928,46 @@ const TaskHistory = () => {
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          cursor: task.text.length > 80 ? 'pointer' : 'default'
+                          cursor: 'pointer'
                         }}
-                        title={task.text.length > 80 ? 'Click to show full description' : ''}
+                        title="Click to view details and reschedule options"
                       >
                         {task.text}
                       </p>
+
+                      {col.dateStr < todayStr && !task.isDone && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.45rem', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRescheduleTask(task.id, 'normalTask', col.dateStr, todayStr);
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.2rem',
+                              background: 'rgba(99, 102, 241, 0.08)',
+                              border: '1px solid rgba(99, 102, 241, 0.2)',
+                              borderRadius: '6px',
+                              padding: '0.12rem 0.4rem',
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              color: 'var(--accent-primary)',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0,
+                              transition: 'all 0.15s ease'
+                            }}
+                            title="Reschedule task to Today"
+                          >
+                            <span>→ Today</span>
+                          </button>
+
+                          <CustomDatePickerButton 
+                            onSelectDate={(dateVal) => handleRescheduleTask(task.id, 'normalTask', col.dateStr, dateVal)} 
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <button 
@@ -742,6 +1100,47 @@ const TaskHistory = () => {
               </button>
             </div>
             <p style={{ margin: 0, fontWeight: 500, color: 'var(--text-primary)' }}>{activeTooltip.text}</p>
+
+            {activeTooltip.taskId && (
+              <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>Reschedule:</span>
+                {activeTooltip.sourceDate !== todayStr && (
+                  <button
+                    onClick={() => {
+                      handleRescheduleTask(activeTooltip.taskId, activeTooltip.category, activeTooltip.sourceDate, todayStr);
+                      setActiveTooltip(null);
+                    }}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.2rem',
+                      background: 'rgba(99, 102, 241, 0.12)',
+                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                      borderRadius: '6px',
+                      padding: '0.15rem 0.45rem',
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      color: 'var(--accent-primary)',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0
+                    }}
+                    title="Reschedule task to Today"
+                  >
+                    <span>→ Today</span>
+                  </button>
+                )}
+                
+                <CustomDatePickerButton 
+                  label="Custom Date"
+                  buttonStyle={{ padding: '0.15rem 0.45rem', fontSize: '0.68rem' }}
+                  onSelectDate={(dateVal) => {
+                    handleRescheduleTask(activeTooltip.taskId, activeTooltip.category, activeTooltip.sourceDate, dateVal);
+                    setActiveTooltip(null);
+                  }}
+                />
+              </div>
+            )}
           </div>
         </>
       )}

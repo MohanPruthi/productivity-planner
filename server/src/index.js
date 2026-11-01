@@ -9,6 +9,8 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const studyRoutes = require('./routes/studyRoutes');
 const normalTaskRoutes = require('./routes/normalTaskRoutes');
 const medsRoutes = require('./routes/medsRoutes');
+const hrRoutes = require('./routes/hrRoutes');
+const notesRoutes = require('./routes/notesRoutes');
 const prisma = require('./db');
 
 const app = express();
@@ -31,6 +33,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/plan', planRoutes);
 app.use('/api/dsa-logs', dsaRoutes);
 app.use('/api/pomodoro-sessions', pomodoroRoutes);
@@ -38,6 +41,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/study-logs', studyRoutes);
 app.use('/api/normal-tasks', normalTaskRoutes);
 app.use('/api/meds', medsRoutes);
+app.use('/api/hr-contacts', hrRoutes);
+app.use('/api/notes', notesRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

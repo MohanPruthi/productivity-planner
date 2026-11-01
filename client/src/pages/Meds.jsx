@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
-import { Pill, Check, RotateCcw, Edit2, Calendar, AlertCircle } from 'lucide-react';
+import { Pill, Check, RotateCcw, Edit2, Calendar, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const PAGE_SIZE = 30;
 
 const Meds = () => {
   const { getAuthHeaders } = useAuth();
@@ -13,6 +15,7 @@ const Meds = () => {
   const [editingName, setEditingName] = useState(false);
   const [medNameInput, setMedNameInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const getLocalDateString = (d = new Date()) => {
     const year = d.getFullYear();
@@ -65,6 +68,41 @@ const Meds = () => {
     fetchData();
   }, []);
 
+  // Automatically navigate to the page containing today
+  useEffect(() => {
+    if (schedule?.startDate) {
+      const start = new Date(schedule.startDate);
+      start.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diffTime = today.getTime() - start.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      const totalCourseDays = schedule?.durationDays || 60;
+      if (diffDays >= 1 && diffDays <= totalCourseDays) {
+        setCurrentPage(Math.floor((diffDays - 1) / PAGE_SIZE));
+      }
+    }
+  }, [schedule]);
+
+  useEffect(() => {
+    const handleMedLogUpdated = (e) => {
+      const { log } = e.detail || {};
+      if (log) {
+        setLogs(prev => {
+          const normalizedDateStr = getLocalDateString(new Date(log.date));
+          const exists = prev.some(l => getLocalDateString(new Date(l.date)) === normalizedDateStr);
+          if (exists) {
+            return prev.map(l => getLocalDateString(new Date(l.date)) === normalizedDateStr ? log : l);
+          } else {
+            return [...prev, log];
+          }
+        });
+      }
+    };
+    window.addEventListener('med-log-updated', handleMedLogUpdated);
+    return () => window.removeEventListener('med-log-updated', handleMedLogUpdated);
+  }, []);
+
   const handleTogglePill = async (dateStr, type, currentValue) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/meds/log`, {
@@ -92,6 +130,15 @@ const Meds = () => {
           return [...prev, updatedLog];
         }
       });
+
+      window.dispatchEvent(new CustomEvent('med-log-updated', {
+        detail: {
+          date: dateStr,
+          type,
+          value: !currentValue,
+          log: updatedLog
+        }
+      }));
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -99,7 +146,7 @@ const Meds = () => {
   };
 
   const handleResetCourse = async () => {
-    const duration = schedule?.durationDays || 30;
+    const duration = schedule?.durationDays || 60;
     if (!window.confirm(`Are you sure you want to reset your ${duration}-day medication course? This will clear all logging history.`)) return;
     try {
       setSubmitting(true);
@@ -110,7 +157,8 @@ const Meds = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          medName: medNameInput
+          medName: medNameInput,
+          durationDays: 60
         })
       });
 
@@ -119,6 +167,7 @@ const Meds = () => {
       setSchedule(data);
       setLogs([]);
       setEditingName(false);
+      setCurrentPage(0);
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -140,7 +189,8 @@ const Meds = () => {
         },
         body: JSON.stringify({
           medName: medNameInput.trim(),
-          startDate: schedule.startDate
+          startDate: schedule.startDate,
+          durationDays: schedule.durationDays || 60
         })
       });
 
@@ -164,7 +214,8 @@ const Meds = () => {
     return <div className="error-state">Error: {error}</div>;
   }
 
-  // Calculate day index (1-30)
+  // Calculate day index (1-60)
+  const totalDuration = schedule?.durationDays || 60;
   const start = new Date(schedule.startDate);
   start.setHours(0, 0, 0, 0);
   const today = new Date();
@@ -177,7 +228,7 @@ const Meds = () => {
   const gridDays = [];
   const todayStr = getLocalDateString(today);
 
-  for (let i = 0; i < (schedule?.durationDays || 30); i++) {
+  for (let i = 0; i < totalDuration; i++) {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
     const dStr = getLocalDateString(d);
@@ -209,7 +260,14 @@ const Meds = () => {
 
   const todayLog = gridDays.find(d => d.isToday) || { morning: false, evening: false, dateStr: todayStr };
   const completedDaysCount = gridDays.filter(d => d.status === 'completed').length;
-  const completionPercentage = Math.round((completedDaysCount / 29) * 100);
+  const completionPercentage = Math.round((completedDaysCount / totalDuration) * 100);
+
+  // Pagination calculations (30 days per page)
+  const totalPages = Math.ceil(totalDuration / PAGE_SIZE);
+  const validPage = Math.min(Math.max(0, currentPage), totalPages - 1);
+  const startIndex = validPage * PAGE_SIZE;
+  const endIndex = Math.min(startIndex + PAGE_SIZE, totalDuration);
+  const displayedGridDays = gridDays.slice(startIndex, endIndex);
 
   return (
     <div className="meds-page" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', minHeight: 'calc(100vh - 8rem)' }}>
@@ -278,7 +336,7 @@ const Meds = () => {
               )}
             </div>
             <p style={{ color: 'var(--text-secondary)', marginTop: '0.2rem', fontSize: '0.8rem' }}>
-              Course schedule: 2 pills daily for {schedule?.durationDays || 30} days (Morning & After Dinner)
+              Course schedule: 2 pills daily for {totalDuration} days (Morning & After Dinner)
             </p>
           </div>
         </div>
@@ -305,11 +363,11 @@ const Meds = () => {
             <h2 style={{ fontSize: '1.15rem', fontWeight: 850, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.45rem', margin: 0 }}>
               <Calendar size={18} color="#ff2d55" />
               <span>Today's Log</span>
-              {currentDayNum >= 1 && currentDayNum <= (schedule?.durationDays || 30) ? (
+              {currentDayNum >= 1 && currentDayNum <= totalDuration ? (
                 <span className="badge" style={{ marginLeft: 'auto', background: 'rgba(255, 45, 85, 0.08)', color: '#ff2d55', borderColor: 'rgba(255, 45, 85, 0.15)' }}>
-                  Day {currentDayNum} of {schedule?.durationDays || 30}
+                  Day {currentDayNum} of {totalDuration}
                 </span>
-              ) : currentDayNum > (schedule?.durationDays || 30) ? (
+              ) : currentDayNum > totalDuration ? (
                 <span className="badge" style={{ marginLeft: 'auto', background: 'rgba(48, 209, 88, 0.08)', color: '#30d158', borderColor: 'rgba(48, 209, 88, 0.15)' }}>
                   Course Completed!
                 </span>
@@ -423,29 +481,91 @@ const Meds = () => {
             </div>
 
             {/* Course limits message */}
-            {currentDayNum > (schedule?.durationDays || 30) && (
+            {currentDayNum > totalDuration && (
               <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(48, 209, 88, 0.08)', padding: '0.75rem', borderRadius: '10px', border: '1px solid rgba(48, 209, 88, 0.15)', marginTop: '0.25rem', alignItems: 'center' }}>
                 <Check size={16} color="#30d158" style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: '0.72rem', color: '#30d158', fontWeight: 600 }}>Your {schedule?.durationDays || 30}-day course is successfully completed! Click Reset Course to start a new one.</span>
+                <span style={{ fontSize: '0.72rem', color: '#30d158', fontWeight: 600 }}>Your {totalDuration}-day course is successfully completed! Click Reset Course to start a new one.</span>
               </div>
             )}
           </div>
 
         </div>
 
-        {/* Right Side: Timeline Grid */}
+        {/* Right Side: Timeline Grid with Pagination */}
         <div className="glass-card glow-med" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 850, fontFamily: 'var(--font-display)', margin: 0 }}>
-            Course Timeline ({schedule?.durationDays || 30} Days)
-          </h2>
+          
+          {/* Header with Timeline Title and Back / Forward Page Navigation */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 850, fontFamily: 'var(--font-display)', margin: 0 }}>
+                Course Timeline ({totalDuration} Days)
+              </h2>
+              <span className="badge" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-secondary)', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
+                Days {startIndex + 1}–{endIndex}
+              </span>
+            </div>
 
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                disabled={validPage === 0}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '8px',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: validPage === 0 ? 'var(--text-muted)' : 'var(--text-primary)',
+                  cursor: validPage === 0 ? 'not-allowed' : 'pointer',
+                  opacity: validPage === 0 ? 0.35 : 1,
+                  transition: 'all 0.2s ease'
+                }}
+                className="btn-trash-hover"
+                title="Previous 30 Days"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, padding: '0 0.25rem' }}>
+                {validPage + 1} / {totalPages}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={validPage >= totalPages - 1}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '8px',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: validPage >= totalPages - 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                  cursor: validPage >= totalPages - 1 ? 'not-allowed' : 'pointer',
+                  opacity: validPage >= totalPages - 1 ? 0.35 : 1,
+                  transition: 'all 0.2s ease'
+                }}
+                className="btn-trash-hover"
+                title="Next 30 Days"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* 30-Day Grid */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(68px, 1fr))',
             gap: '0.85rem',
-            marginTop: '0.5rem'
+            marginTop: '0.25rem'
           }}>
-            {gridDays.map((day) => {
+            {displayedGridDays.map((day) => {
               // Custom borders and glows based on status
               let bg = 'var(--med-bg-future, rgba(255, 255, 255, 0.01))';
               let border = '1px solid var(--med-border-future, rgba(255, 255, 255, 0.03))';

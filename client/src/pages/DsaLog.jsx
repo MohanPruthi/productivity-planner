@@ -1,16 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, Plus, Code2, Calendar } from 'lucide-react';
+import { Trash2, Plus, Code2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 const DsaLog = () => {
   const { getAuthHeaders } = useAuth();
   const [logs, setLogs] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState({ Easy: 0, Medium: 0, Hard: 0, total: 0 });
+  const [monthlyStats, setMonthlyStats] = useState({ Easy: 0, Medium: 0, Hard: 0, total: 0 });
+  const [overallStats, setOverallStats] = useState({ Easy: 0, Medium: 0, Hard: 0, total: 0 });
   const [dailyStats, setDailyStats] = useState({ Easy: 0, Medium: 0, Hard: 0, total: 0 });
   const [tallyRange, setTallyRange] = useState('week'); // 'week' | 'month' | 'overall'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalLogs, setTotalLogs] = useState(0);
+  const limit = 10;
 
   // Form states
   const [questionNumber, setQuestionNumber] = useState('');
@@ -22,18 +30,30 @@ const DsaLog = () => {
 
   const questionInputRef = useRef(null);
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (page = 1) => {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`${API_BASE_URL}/api/dsa-logs`, {
+      const res = await fetch(`${API_BASE_URL}/api/dsa-logs?page=${page}&limit=${limit}`, {
         headers: getAuthHeaders(),
       });
       if (!res.ok) throw new Error('Failed to load DSA logs');
       const data = await res.json();
+      
+      // Self-healing: if we deleted all items on a page, load the previous page
+      if (data.logs.length === 0 && page > 1) {
+        setCurrentPage(page - 1);
+        fetchLogs(page - 1);
+        return;
+      }
+      
       setLogs(data.logs);
-      setWeeklyStats(data.weeklyStats);
-      setDailyStats(data.dailyStats);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalLogs(data.pagination?.totalLogs || 0);
+      if (data.weeklyStats) setWeeklyStats(data.weeklyStats);
+      if (data.monthlyStats) setMonthlyStats(data.monthlyStats);
+      if (data.overallStats) setOverallStats(data.overallStats);
+      if (data.dailyStats) setDailyStats(data.dailyStats);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -42,7 +62,7 @@ const DsaLog = () => {
   };
 
   useEffect(() => {
-    fetchLogs();
+    fetchLogs(1);
   }, []);
 
   // Poll to enrich titles/details of newly logged questions if fetched on-the-fly
@@ -51,19 +71,23 @@ const DsaLog = () => {
     if (!hasEmptyTitle) return;
 
     const interval = setInterval(() => {
-      // Re-fetch logs. If backend has fetched, this will retrieve and update the UI
-      fetchLogs();
+      fetchLogs(currentPage);
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [logs]);
+  }, [logs, currentPage]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setCurrentPage(newPage);
+    fetchLogs(newPage);
+  };
 
   // Debounced auto-fetch LeetCode details based on question number
   useEffect(() => {
     const qNumClean = questionNumber.trim();
     if (!qNumClean || isNaN(qNumClean)) {
       setTitle('');
-      setDifficulty('Medium');
       return;
     }
 
@@ -73,14 +97,14 @@ const DsaLog = () => {
           headers: getAuthHeaders(),
         });
         if (res.ok) {
-          const data = await res.json();
-          if (data.title) setTitle(data.title);
-          if (data.difficulty) setDifficulty(data.difficulty);
+          const details = await res.json();
+          if (details.title) setTitle(details.title);
+          if (details.difficulty) setDifficulty(details.difficulty);
         }
       } catch (err) {
         console.error('Error auto-fetching question info:', err);
       }
-    }, 450);
+    }, 600);
 
     return () => clearTimeout(timer);
   }, [questionNumber]);
@@ -111,7 +135,8 @@ const DsaLog = () => {
       if (!res.ok) throw new Error(data.error || 'Failed to log question');
 
       // Refresh data
-      await fetchLogs();
+      setCurrentPage(1);
+      await fetchLogs(1);
 
       // Reset form
       setQuestionNumber('');
@@ -138,7 +163,7 @@ const DsaLog = () => {
         headers: getAuthHeaders(),
       });
       if (!res.ok) throw new Error('Failed to delete log');
-      await fetchLogs();
+      await fetchLogs(currentPage);
     } catch (err) {
       console.error(err);
       alert('Failed to delete log');
@@ -148,38 +173,15 @@ const DsaLog = () => {
   const getDifficultyColor = (diff) => {
     switch (diff) {
       case 'Easy': return '#30d158'; // Apple activity Green
-      case 'Medium': return '#ffcc00'; // Apple Yellow
-      case 'Hard': return '#ff2d55'; // Apple Rose
-      default: return '#9ca3af';
+      case 'Medium': return '#ffcc00'; // Apple activity Yellow/Orange
+      case 'Hard': return '#ff2d55'; // Apple activity Red
+      default: return 'var(--text-secondary)';
     }
   };
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  // Compute monthly stats dynamically
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const monthlyLogs = logs.filter(log => {
-    const d = new Date(log.date);
-    return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-  });
-  const monthlyStats = {
-    Easy: monthlyLogs.filter(l => l.difficulty === 'Easy').length,
-    Medium: monthlyLogs.filter(l => l.difficulty === 'Medium').length,
-    Hard: monthlyLogs.filter(l => l.difficulty === 'Hard').length,
-    total: monthlyLogs.length
-  };
-
-  // Compute overall stats dynamically
-  const overallStats = {
-    Easy: logs.filter(l => l.difficulty === 'Easy').length,
-    Medium: logs.filter(l => l.difficulty === 'Medium').length,
-    Hard: logs.filter(l => l.difficulty === 'Hard').length,
-    total: logs.length
   };
 
   const activeStats = tallyRange === 'week'
@@ -440,61 +442,95 @@ const DsaLog = () => {
           ) : logs.length === 0 ? (
             <p style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center' }}>No questions logged yet. Go solve one!</p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  <th style={{ padding: '1rem 1.5rem' }}>Date</th>
-                  <th style={{ padding: '1rem 1.5rem' }}>Question #</th>
-                  <th style={{ padding: '1rem 1.5rem' }}>Title</th>
-                  <th style={{ padding: '1rem 1.5rem' }}>Difficulty</th>
-                  <th style={{ padding: '1rem 1.5rem' }}>Notes</th>
-                  <th style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.map(log => (
-                  <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', fontSize: '0.85rem', color: 'var(--text-primary)' }} className="table-row-hover">
-                    <td style={{ padding: '0.85rem 1.5rem', color: 'var(--text-secondary)' }}>{formatDate(log.date)}</td>
-                    <td style={{ padding: '0.85rem 1.5rem', fontWeight: 700 }}>#{log.questionNumber}</td>
-                    <td style={{ padding: '0.85rem 1.5rem', fontWeight: 500 }}>
-                      {log.title || (
-                        <span style={{ color: '#ffa116', fontStyle: 'italic', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" style={{ animation: 'orbitSwirl 1s linear infinite' }}>
-                            <circle cx="12" cy="12" r="10" opacity="0.25" />
-                            <path d="M4 12a8 8 0 0 1 8-8" />
-                          </svg>
-                          Fetching details...
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ padding: '0.85rem 1.5rem' }}>
-                      <span 
-                        className="badge" 
-                        style={{ 
-                          color: getDifficultyColor(log.difficulty), 
-                          background: `${getDifficultyColor(log.difficulty)}10`,
-                          borderColor: `${getDifficultyColor(log.difficulty)}20`
-                        }}
-                      >
-                        {log.difficulty}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.85rem 1.5rem', maxWidth: '250px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }} title={log.notes}>
-                      {log.notes || '-'}
-                    </td>
-                    <td style={{ padding: '0.85rem 1.5rem', textAlign: 'right' }}>
-                      <button 
-                        onClick={() => handleDelete(log.id)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s ease' }}
-                        className="btn-trash-hover"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
+            <>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <th style={{ padding: '1rem 1.5rem' }}>Date</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Question #</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Title</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Difficulty</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Notes</th>
+                    <th style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {logs.map(log => (
+                    <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', fontSize: '0.85rem', color: 'var(--text-primary)' }} className="table-row-hover">
+                      <td style={{ padding: '0.85rem 1.5rem', color: 'var(--text-secondary)' }}>{formatDate(log.date)}</td>
+                      <td style={{ padding: '0.85rem 1.5rem', fontWeight: 700 }}>#{log.questionNumber}</td>
+                      <td style={{ padding: '0.85rem 1.5rem', fontWeight: 500 }}>
+                        {log.title || (
+                          <span style={{ color: '#ffa116', fontStyle: 'italic', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" style={{ animation: 'orbitSwirl 1s linear infinite' }}>
+                              <circle cx="12" cy="12" r="10" opacity="0.25" />
+                              <path d="M4 12a8 8 0 0 1 8-8" />
+                            </svg>
+                            Fetching details...
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '0.85rem 1.5rem' }}>
+                        <span 
+                          className="badge" 
+                          style={{ 
+                            color: getDifficultyColor(log.difficulty), 
+                            background: `${getDifficultyColor(log.difficulty)}10`,
+                            borderColor: `${getDifficultyColor(log.difficulty)}20`
+                          }}
+                        >
+                          {log.difficulty}
+                        </span>
+                      </td>
+                      <td style={{ padding: '0.85rem 1.5rem', maxWidth: '250px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }} title={log.notes}>
+                        {log.notes || '-'}
+                      </td>
+                      <td style={{ padding: '0.85rem 1.5rem', textAlign: 'right' }}>
+                        <button 
+                          onClick={() => handleDelete(log.id)}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                          className="btn-trash-hover"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Pagination Controls */}
+              {totalLogs > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.04)', fontSize: '0.75rem', color: 'var(--text-secondary)' }} className="pagination-bar">
+                  <div style={{ paddingLeft: '1.5rem' }}>
+                    Showing <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{Math.min((currentPage - 1) * limit + 1, totalLogs)}</span> to <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{Math.min(currentPage * limit, totalLogs)}</span> of <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{totalLogs}</span> questions
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', paddingRight: '1.5rem', paddingBottom: '1rem' }}>
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="mirror-btn-pill"
+                      style={{ padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', gap: '2px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1, border: '1px solid var(--border-light)' }}
+                    >
+                      <ChevronLeft size={12} />
+                      <span>Prev</span>
+                    </button>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: '70px', textAlign: 'center' }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      className="mirror-btn-pill"
+                      style={{ padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', gap: '2px', cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer', opacity: (currentPage === totalPages || totalPages === 0) ? 0.4 : 1, border: '1px solid var(--border-light)' }}
+                    >
+                      <span>Next</span>
+                      <ChevronRight size={12} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
