@@ -3467,3 +3467,82 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   body::before, body::after { animation: none; }
 }
+
+/* ======================================================================
+   Older controls still used inside pages, brought into the themed look.
+   Scoped to the main area so Zen Zone keeps its own buttons.
+   ====================================================================== */
+.main-content .btn-primary,
+.main-content .mirror-btn-pill.dsa-submit,
+.ui-dialog .btn-primary {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  border-radius: 10px;
+  background: var(--tone, var(--accent-primary)) !important;
+  color: var(--tone-ink, #fff) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone, #6366f1) 60%, transparent),
+              0 6px 22px -6px color-mix(in srgb, var(--tone, #6366f1) 70%, transparent) !important;
+  transition: filter 0.2s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+.main-content .btn-primary:hover,
+.main-content .mirror-btn-pill.dsa-submit:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 1px var(--tone, #6366f1), 0 8px 30px -6px color-mix(in srgb, var(--tone, #6366f1) 85%, transparent) !important;
+}
+.main-content .btn-primary:active,
+.main-content .mirror-btn-pill:active { transform: scale(0.97); }
+
+.main-content .mirror-btn-pill:not(.dsa-submit) {
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-primary);
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.3s ease;
+}
+.main-content .mirror-btn-pill:not(.dsa-submit):hover {
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 55%, transparent);
+  background: color-mix(in srgb, var(--tone, #6366f1) 8%, transparent);
+  box-shadow: 0 0 18px -6px color-mix(in srgb, var(--tone, #6366f1) 60%, transparent);
+}
+
+.main-content .input-control,
+.ui-dialog .input-control {
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
+  transition: border-color 0.2s ease, box-shadow 0.25s ease, background 0.2s ease;
+}
+.main-content .input-control:hover { border-color: color-mix(in srgb, var(--tone, #6366f1) 30%, var(--border-light)); }
+
+.main-content .badge {
+  border-radius: 6px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.main-content .mirror-checkbox {
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+.main-content .mirror-checkbox:hover { border-color: var(--tone, #6366f1); }
+.main-content .mirror-checkbox.checked-gen,
+.main-content .mirror-checkbox.checked-ai,
+.main-content .mirror-checkbox.checked-sd {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tone, #6366f1) 50%, transparent);
+}
+
+/* Lists of cards on Notes and Contacts: lift on hover */
+.main-content .glass-card.note-card:hover,
+.main-content .notes-grid .glass-card:hover,
+.main-content .hr-contact-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Old per-module glow classes are replaced by the shared neon hover */
+.main-content .glow-dsa,
+.main-content .glow-med,
+.main-content .glow-tracker,
+.main-content .glow-ai,
+.main-content .glow-sd,
+.main-content .glow-stats-orange {
+  box-shadow: var(--card-shadow);
+}

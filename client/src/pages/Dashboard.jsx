@@ -363,7 +363,7 @@ const Dashboard = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 1.1rem', borderRadius: '12px', border: '1px solid var(--border-light)', background: 'rgba(255, 255, 255, 0.01)' }}>
-            <Flame color={streak > 0 ? '#ffaa00' : 'var(--text-muted)'} size={22} className={streak > 0 ? 'flame-active' : ''} />
+            <Flame color={streak > 0 ? 'var(--mod-dsa)' : 'var(--text-muted)'} size={22} className={streak > 0 ? 'flame-active' : ''} />
             <div>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Streak</div>
               <div style={{ fontSize: '1rem', fontWeight: 600 }}>{streak} {streak === 1 ? 'day' : 'days'}</div>
@@ -600,7 +600,7 @@ const Dashboard = () => {
             
             return (
               <div 
-                className="glass-card glow-med" 
+                className="tone-meds glass-card glow-med" 
                 style={{ 
                   padding: '0.85rem 1.1rem', 
                   display: 'flex', 
@@ -610,7 +610,7 @@ const Dashboard = () => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                    <Pill size={15} color="#ff2d55" />
+                    <Pill size={15} color="var(--mod-meds)" />
                     <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                       {medSchedule.medName}
                     </span>
@@ -704,7 +704,7 @@ const Dashboard = () => {
 
         {showDsaColumn && (
           /* DSA Tracker Column */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="tone-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>
               DSA Logs
             </h2>
@@ -713,7 +713,7 @@ const Dashboard = () => {
               
               {/* Header info */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                <div style={{ background: 'rgba(249, 115, 22, 0.08)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f97316' }}>
+                <div style={{ background: 'rgba(249, 115, 22, 0.08)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mod-dsa)' }}>
                   <Code2 size={20} />
                 </div>
                 <div>
