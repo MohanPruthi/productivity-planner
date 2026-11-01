@@ -1,0 +1,29 @@
+# Render Blueprint: one free web service that runs the API and serves the built client.
+# Database: a free Neon Postgres (paste its connection string as DATABASE_URL).
+services:
+  - type: web
+    name: productivity-planner
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: >-
+      cd server && npm ci --include=dev && npx prisma generate &&
+      cd ../client && npm ci --include=dev && npm run build
+    # db push applies schema changes on boot and refuses anything that would drop data
+    startCommand: cd server && npx prisma db push --skip-generate && node src/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      # Server date math is done in local time; keep it on India time
+      - key: TZ
+        value: Asia/Kolkata
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      # Optional: without it, reset codes are printed in the Render logs
+      - key: RESEND_API_KEY
+        sync: false
