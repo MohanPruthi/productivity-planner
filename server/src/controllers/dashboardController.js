@@ -52,9 +52,10 @@ async function getTodayDashboard(req, res) {
           endDate: { gte: startOfToday },
         },
         include: {
+          plan: true,
           planDays: {
             include: {
-              planWeek: true
+              planWeek: { include: { plan: true } }
             }
           }
         }
@@ -68,7 +69,7 @@ async function getTodayDashboard(req, res) {
           }
         },
         include: {
-          planWeek: true
+          planWeek: { include: { plan: true } }
         }
       }),
       prisma.dsaLog.findMany({
@@ -136,7 +137,8 @@ async function getTodayDashboard(req, res) {
 
     // Add floating tasks from currently active weeks
     activeWeeks.forEach(week => {
-      if (week.track === 'AI') {
+      // Weekday/weekend plans float to whichever matching day is today
+      if (week.plan?.layout === 'split' || week.track === 'AI') {
         const defaultWeekendStr = getLocalDateString(new Date(week.startDate));
         const defaultWeekdayDate = new Date(week.startDate);
         defaultWeekdayDate.setDate(defaultWeekdayDate.getDate() + 2);
@@ -185,7 +187,7 @@ async function getWeeklyDashboard(req, res) {
     const today = new Date();
     const { startOfWeek, endOfWeek } = getStartAndEndOfWeek(today);
 
-    // 1. Find AI and SD plan weeks matching the current date
+    // 1. Find plan periods covering the current date
     const activeWeeks = await prisma.planWeek.findMany({
       where: {
         userId,
@@ -194,18 +196,19 @@ async function getWeeklyDashboard(req, res) {
       },
       include: {
         planDays: true,
+        plan: true,
       },
     });
 
-    // Fallback: if no active week matches current date, find the most recent week for both tracks
+    // Fallback: for plans with no period covering today, use their latest period
     const allActiveWeeks = [...activeWeeks];
-    const tracks = ['AI', 'SD'];
-    const missingTracks = tracks.filter((track) => !allActiveWeeks.some((w) => w.track === track));
-    const latestWeeks = await Promise.all(missingTracks.map((track) =>
+    const plans = await prisma.plan.findMany({ where: { userId }, select: { id: true } });
+    const missingPlans = plans.filter((p) => !allActiveWeeks.some((w) => w.planId === p.id));
+    const latestWeeks = await Promise.all(missingPlans.map((p) =>
       prisma.planWeek.findFirst({
-        where: { userId, track },
+        where: { planId: p.id },
         orderBy: { weekNumber: 'desc' },
-        include: { planDays: true },
+        include: { planDays: true, plan: true },
       })
     ));
     latestWeeks.forEach((latestWeek) => {
@@ -246,6 +249,8 @@ async function getWeeklyDashboard(req, res) {
       return {
         id: week.id,
         track: week.track,
+        planId: week.planId,
+        planName: week.plan?.name,
         weekNumber: week.weekNumber,
         goalText: week.goalText,
         startDate: week.startDate,
@@ -324,7 +329,7 @@ async function getHistoryDashboard(req, res) {
     // 1. Get all plan days
     const planDays = await prisma.planDay.findMany({
       where: { userId },
-      include: { planWeek: true },
+      include: { planWeek: { include: { plan: true } } },
       orderBy: { date: 'desc' }
     });
 

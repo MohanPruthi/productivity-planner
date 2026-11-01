@@ -35,6 +35,7 @@ model User {
   resetExpiresAt   DateTime?
   resetAttempts    Int               @default(0)
   createdAt       DateTime          @default(now())
+  plans            Plan[]
   planWeeks        PlanWeek[]
   planDays         PlanDay[]
   dsaLogs          DsaLog[]
@@ -47,11 +48,34 @@ model User {
   notes            Note[]
 }
 
+// A user-defined plan (e.g. "AI learning", "System design"). Its periods are PlanWeek rows.
+model Plan {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  description  String     @default("")
+  color        String     @default("#6366f1")
+  cadence      String     @default("weekly") // weekly | monthly
+  layout       String     @default("daily")  // daily | split (weekday + weekend) | single
+  weekdayHours Int?
+  weekendHours Int?
+  isPersonal   Boolean    @default(false)
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+  periods      PlanWeek[]
+
+  @@index([userId])
+}
+
+// One period (week or month) of a plan. `track` is only set on rows from the old AI/SD plans.
 model PlanWeek {
   id         String    @id @default(uuid())
   userId     String
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  track      Track
+  planId     String?
+  plan       Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  track      Track?
   weekNumber Int
   startDate  DateTime
   endDate    DateTime
@@ -59,6 +83,7 @@ model PlanWeek {
   planDays   PlanDay[]
 
   @@unique([userId, track, weekNumber])
+  @@index([planId])
 }
 
 model PlanDay {
@@ -67,7 +92,7 @@ model PlanDay {
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   planWeekId     String
   planWeek       PlanWeek  @relation(fields: [planWeekId], references: [id], onDelete: Cascade)
-  track          Track
+  track          Track?
   date           DateTime
   dayLabel       String
   isWeekend      Boolean

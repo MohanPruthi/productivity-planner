@@ -12,6 +12,8 @@ const normalTaskRoutes = require('./routes/normalTaskRoutes');
 const medsRoutes = require('./routes/medsRoutes');
 const hrRoutes = require('./routes/hrRoutes');
 const notesRoutes = require('./routes/notesRoutes');
+const plansRoutes = require('./routes/plansRoutes');
+const { migrateLegacyPlans } = require('./controllers/plansController');
 const prisma = require('./db');
 
 const app = express();
@@ -44,6 +46,7 @@ app.use('/api/normal-tasks', normalTaskRoutes);
 app.use('/api/meds', medsRoutes);
 app.use('/api/hr-contacts', hrRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/plans', plansRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -72,6 +75,7 @@ async function main() {
     // Verify database connection
     await prisma.$connect();
     console.log('Successfully connected to the database.');
+    await migrateLegacyPlans();
     
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
