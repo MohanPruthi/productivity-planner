@@ -30,9 +30,9 @@ const DsaLog = () => {
 
   const questionInputRef = useRef(null);
 
-  const fetchLogs = async (page = 1) => {
+  const fetchLogs = async (page = 1, background = false) => {
     try {
-      setLoading(true);
+      if (!background) setLoading(true);
       setError('');
       const res = await fetch(`${API_BASE_URL}/api/dsa-logs?page=${page}&limit=${limit}`, {
         headers: getAuthHeaders(),
@@ -65,16 +65,23 @@ const DsaLog = () => {
     fetchLogs(1);
   }, []);
 
-  // Poll to enrich titles/details of newly logged questions if fetched on-the-fly
+  // Poll to enrich titles/details of newly logged questions if fetched on-the-fly.
+  // Capped so unknown question numbers don't poll forever.
+  const enrichPollsRef = useRef(0);
   useEffect(() => {
     const hasEmptyTitle = logs.some(l => !l.title);
-    if (!hasEmptyTitle) return;
+    if (!hasEmptyTitle) {
+      enrichPollsRef.current = 0;
+      return;
+    }
+    if (enrichPollsRef.current >= 3) return;
 
-    const interval = setInterval(() => {
-      fetchLogs(currentPage);
+    const timeout = setTimeout(() => {
+      enrichPollsRef.current += 1;
+      fetchLogs(currentPage, true);
     }, 1500);
 
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, [logs, currentPage]);
 
   const handlePageChange = (newPage) => {

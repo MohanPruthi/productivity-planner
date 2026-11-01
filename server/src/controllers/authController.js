@@ -1,7 +1,9 @@
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../db');
 const { JWT_SECRET } = require('../middleware/auth');
+const { sendVerificationCode } = require('../mailer');
 
 async function signup(req, res) {
   try {
@@ -154,42 +156,163 @@ async function resetWorkspacePin(req, res) {
   }
 }
 
+const CODE_TTL_MS = 15 * 60 * 1000;
+const MAX_CODE_ATTEMPTS = 5;
+
+function maskEmail(email) {
+  const [localPart, domain] = email.split('@');
+  const maskedLocal = localPart.length > 2
+    ? localPart[0] + '***' + localPart[localPart.length - 1]
+    : localPart[0] + '***';
+  return `${maskedLocal}@${domain}`;
+}
+
+// Generates a numeric code, stores its hash on the user and emails it
+async function issueResetCode(user, purpose, digits) {
+  const code = String(crypto.randomInt(0, 10 ** digits)).padStart(digits, '0');
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      resetCodeHash: await bcrypt.hash(code, 10),
+      resetPurpose: purpose,
+      resetExpiresAt: new Date(Date.now() + CODE_TTL_MS),
+      resetAttempts: 0,
+    },
+  });
+  await sendVerificationCode(user.email, code, purpose);
+}
+
+// Returns null when the code is valid, otherwise an error message
+async function checkResetCode(user, purpose, code) {
+  if (!user.resetCodeHash || user.resetPurpose !== purpose || !user.resetExpiresAt || user.resetExpiresAt < new Date()) {
+    return 'Code expired or not requested. Please request a new one.';
+  }
+  if (user.resetAttempts >= MAX_CODE_ATTEMPTS) {
+    return 'Too many wrong attempts. Please request a new code.';
+  }
+  const isMatch = await bcrypt.compare(String(code), user.resetCodeHash);
+  if (!isMatch) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { resetAttempts: { increment: 1 } },
+    });
+    return 'Incorrect verification code';
+  }
+  return null;
+}
+
+const clearResetCode = {
+  resetCodeHash: null,
+  resetPurpose: null,
+  resetExpiresAt: null,
+  resetAttempts: 0,
+};
+
 async function forgotWorkspacePin(req, res) {
   try {
-    const userId = req.user.id;
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true },
-    });
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Reset the saved PIN in DB to default '0000' (temporary security recovery code)
-    const tempPin = '0000';
-    await prisma.user.update({
-      where: { id: userId },
-      data: { workspacePin: tempPin },
-    });
-
-    // Mask user email for privacy (e.g., m***@gmail.com)
-    const [localPart, domain] = user.email.split('@');
-    const maskedLocal = localPart.length > 2 
-      ? localPart[0] + '***' + localPart[localPart.length - 1] 
-      : localPart[0] + '***';
-    const maskedEmail = `${maskedLocal}@${domain}`;
+    await issueResetCode(user, 'pin', 4);
 
     res.json({
-      message: 'A 4-digit security recovery OTP has been dispatched to your email.',
-      email: user.email,
-      maskedEmail,
-      tempPin,
+      message: 'A 4-digit verification code has been sent to your email.',
+      maskedEmail: maskEmail(user.email),
     });
   } catch (error) {
     console.error('Forgot PIN error:', error);
-    res.status(500).json({ error: 'Internal server error processing forgot PIN' });
+    res.status(500).json({ error: 'Could not send verification code' });
+  }
+}
+
+async function resetWorkspacePinWithCode(req, res) {
+  try {
+    const { code, newPin } = req.body;
+
+    if (!code || !newPin) {
+      return res.status(400).json({ error: 'Verification code and new PIN are required' });
+    }
+    if (!/^\d{4}$/.test(newPin)) {
+      return res.status(400).json({ error: 'New PIN must be exactly 4 digits' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const codeError = await checkResetCode(user, 'pin', code);
+    if (codeError) {
+      return res.status(401).json({ error: codeError });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { workspacePin: newPin, ...clearResetCode },
+    });
+
+    res.json({ message: 'Workspace PIN updated successfully' });
+  } catch (error) {
+    console.error('Reset PIN with code error:', error);
+    res.status(500).json({ error: 'Internal server error resetting PIN' });
+  }
+}
+
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Same response whether or not the account exists
+    if (user) {
+      await issueResetCode(user, 'password', 6);
+    }
+
+    res.json({ message: 'If that email is registered, a 6-digit code has been sent to it.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Could not send verification code' });
+  }
+}
+
+async function resetPassword(req, res) {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ error: 'Email, code and new password are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(401).json({ error: 'Incorrect verification code' });
+    }
+
+    const codeError = await checkResetCode(user, 'password', code);
+    if (codeError) {
+      return res.status(401).json({ error: codeError });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await bcrypt.hash(newPassword, 10), ...clearResetCode },
+    });
+
+    res.json({ message: 'Password updated. You can sign in now.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Internal server error resetting password' });
   }
 }
 
@@ -199,4 +322,7 @@ module.exports = {
   verifyWorkspacePin,
   resetWorkspacePin,
   forgotWorkspacePin,
+  resetWorkspacePinWithCode,
+  forgotPassword,
+  resetPassword,
 };

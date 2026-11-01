@@ -181,16 +181,14 @@ const Meds = () => {
     if (!medNameInput.trim()) return;
     try {
       setSubmitting(true);
-      const res = await fetch(`${API_BASE_URL}/api/meds/schedule/reset`, {
-        method: 'POST',
+      const res = await fetch(`${API_BASE_URL}/api/meds/schedule`, {
+        method: 'PATCH',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          medName: medNameInput.trim(),
-          startDate: schedule.startDate,
-          durationDays: schedule.durationDays || 60
+          medName: medNameInput.trim()
         })
       });
 
