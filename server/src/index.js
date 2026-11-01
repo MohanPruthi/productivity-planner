@@ -53,6 +53,8 @@ app.get('/health', (req, res) => {
 // In production, serve the built React app and let client-side routing handle unknown paths
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
+  // Hashed build assets never change, so browsers can keep them for a year
+  app.use('/assets', express.static(path.join(clientDist, 'assets'), { immutable: true, maxAge: '1y' }));
   app.use(express.static(clientDist));
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientDist, 'index.html'));

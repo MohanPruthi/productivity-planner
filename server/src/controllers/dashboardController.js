@@ -34,36 +34,85 @@ async function getTodayDashboard(req, res) {
     const endOfToday = new Date(today);
     endOfToday.setHours(23, 59, 59, 999);
 
-    // 1. Get plan days scheduled for today
-    // A: Get active weeks that cover today (for floating AI tasks)
-    const activeWeeks = await prisma.planWeek.findMany({
-      where: {
-        userId,
-        startDate: { lte: endOfToday },
-        endDate: { gte: startOfToday },
-      },
-      include: {
-        planDays: {
-          include: {
-            planWeek: true
+    // Active weeks (floating AI tasks), plan days dated today, DSA logs, pomodoros,
+    // normal tasks and meds. Independent queries run together: each one is a network round trip to the DB
+    const [
+      activeWeeks,
+      directPlanDays,
+      dsaLogsToday,
+      pomodorosToday,
+      normalTasksToday,
+      medSchedule,
+      medLogToday,
+    ] = await Promise.all([
+      prisma.planWeek.findMany({
+        where: {
+          userId,
+          startDate: { lte: endOfToday },
+          endDate: { gte: startOfToday },
+        },
+        include: {
+          planDays: {
+            include: {
+              planWeek: true
+            }
           }
         }
-      }
-    });
-
-    // B: Get plan days directly scheduled/rescheduled for today (any week)
-    const directPlanDays = await prisma.planDay.findMany({
-      where: {
-        userId,
-        date: {
-          gte: startOfToday,
-          lte: endOfToday
+      }),
+      prisma.planDay.findMany({
+        where: {
+          userId,
+          date: {
+            gte: startOfToday,
+            lte: endOfToday
+          }
+        },
+        include: {
+          planWeek: true
         }
-      },
-      include: {
-        planWeek: true
-      }
-    });
+      }),
+      prisma.dsaLog.findMany({
+        where: {
+          userId,
+          date: {
+            gte: startOfToday,
+            lte: endOfToday,
+          },
+        },
+      }),
+      prisma.pomodoroSession.findMany({
+        where: {
+          userId,
+          completedAt: {
+            gte: startOfToday,
+            lte: endOfToday,
+          },
+        },
+      }),
+      prisma.normalTask.findMany({
+        where: {
+          userId,
+          date: {
+            gte: startOfToday,
+            lte: endOfToday,
+          },
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      }),
+      prisma.medSchedule.findUnique({
+        where: { userId }
+      }),
+      prisma.medLog.findUnique({
+        where: {
+          userId_date: {
+            userId,
+            date: startOfToday
+          }
+        }
+      }),
+    ]);
 
     const planDaysToday = [];
     const seenDayIds = new Set();
@@ -110,56 +159,6 @@ async function getTodayDashboard(req, res) {
       }
     });
 
-    // 2. Get DSA logs submitted today
-    const dsaLogsToday = await prisma.dsaLog.findMany({
-      where: {
-        userId,
-        date: {
-          gte: startOfToday,
-          lte: endOfToday,
-        },
-      },
-    });
-
-    // 3. Get Pomodoro sessions completed today
-    const pomodorosToday = await prisma.pomodoroSession.findMany({
-      where: {
-        userId,
-        completedAt: {
-          gte: startOfToday,
-          lte: endOfToday,
-        },
-      },
-    });
-
-    // 4. Get normal tasks for today
-    const normalTasksToday = await prisma.normalTask.findMany({
-      where: {
-        userId,
-        date: {
-          gte: startOfToday,
-          lte: endOfToday,
-        },
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    });
-
-    // 5. Get Meds details for today
-    const medSchedule = await prisma.medSchedule.findUnique({
-      where: { userId }
-    });
-
-    const medLogToday = await prisma.medLog.findUnique({
-      where: {
-        userId_date: {
-          userId,
-          date: startOfToday
-        }
-      }
-    });
-
     res.json({
       date: today,
       planDays: planDaysToday,
@@ -201,18 +200,43 @@ async function getWeeklyDashboard(req, res) {
     // Fallback: if no active week matches current date, find the most recent week for both tracks
     const allActiveWeeks = [...activeWeeks];
     const tracks = ['AI', 'SD'];
-    for (const track of tracks) {
-      if (!allActiveWeeks.some((w) => w.track === track)) {
-        const latestWeek = await prisma.planWeek.findFirst({
-          where: { userId, track },
-          orderBy: { weekNumber: 'desc' },
-          include: { planDays: true },
-        });
-        if (latestWeek) {
-          allActiveWeeks.push(latestWeek);
-        }
+    const missingTracks = tracks.filter((track) => !allActiveWeeks.some((w) => w.track === track));
+    const latestWeeks = await Promise.all(missingTracks.map((track) =>
+      prisma.planWeek.findFirst({
+        where: { userId, track },
+        orderBy: { weekNumber: 'desc' },
+        include: { planDays: true },
+      })
+    ));
+    latestWeeks.forEach((latestWeek) => {
+      if (latestWeek) {
+        allActiveWeeks.push(latestWeek);
       }
-    }
+    });
+
+    const [
+      dsaLogsThisWeek,
+      completedDays,
+      dsaDays,
+    ] = await Promise.all([
+      prisma.dsaLog.findMany({
+        where: {
+          userId,
+          date: {
+            gte: startOfWeek,
+            lte: endOfWeek,
+          },
+        },
+      }),
+      prisma.planDay.findMany({
+        where: { userId, isDone: true },
+        select: { date: true },
+      }),
+      prisma.dsaLog.findMany({
+        where: { userId },
+        select: { date: true },
+      }),
+    ]);
 
     const weeklyProgress = allActiveWeeks.map((week) => {
       const totalDays = week.planDays.length;
@@ -232,17 +256,6 @@ async function getWeeklyDashboard(req, res) {
       };
     });
 
-    // 2. Get DSA Logs completed this week
-    const dsaLogsThisWeek = await prisma.dsaLog.findMany({
-      where: {
-        userId,
-        date: {
-          gte: startOfWeek,
-          lte: endOfWeek,
-        },
-      },
-    });
-
     const dsaStats = {
       Easy: dsaLogsThisWeek.filter((l) => l.difficulty === 'Easy').length,
       Medium: dsaLogsThisWeek.filter((l) => l.difficulty === 'Medium').length,
@@ -252,17 +265,6 @@ async function getWeeklyDashboard(req, res) {
 
     // 3. Calculate Streak
     // Streak: Consecutive days with at least 1 completed task (planDay.isDone) or 1 DSA question
-    // Fetch all completed planDays and dsaLogs
-    const completedDays = await prisma.planDay.findMany({
-      where: { userId, isDone: true },
-      select: { date: true },
-    });
-
-    const dsaDays = await prisma.dsaLog.findMany({
-      where: { userId },
-      select: { date: true },
-    });
-
     // Extract unique dates as YYYY-MM-DD
     const activityDates = new Set();
     completedDays.forEach((d) => activityDates.add(toLocalDateStr(d.date)));
