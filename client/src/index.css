@@ -2500,3 +2500,11 @@ label {
   .dsa-insights { grid-template-columns: minmax(0, 1fr); }
   .dsa-heatmap { overflow-x: auto; }
 }
+
+/* Illustration slot above the auth card heading */
+.auth-illustration {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+.auth-illustration:empty { display: none; }

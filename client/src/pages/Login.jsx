@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Illustration from '../components/Illustration';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -32,6 +33,9 @@ const Login = () => {
   return (
     <div className="auth-page">
       <div className="auth-card glass-card">
+        <div className="auth-illustration">
+          <Illustration name="welcome" size={150} />
+        </div>
         <div className="auth-header">
           <h2>Welcome Back</h2>
           <p className="auth-subheader">Sign in to manage your productivity planner</p>

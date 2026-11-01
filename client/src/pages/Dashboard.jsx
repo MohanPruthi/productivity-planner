@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Illustration from '../components/Illustration';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
@@ -411,7 +412,9 @@ const Dashboard = () => {
           <div className="glass-card glow-tracker" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: '350px' }}>
             {totalTasksCount === 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.75rem' }}>
-                <CheckCircle2 size={36} style={{ opacity: 0.3 }} />
+                <Illustration name="tasks-empty">
+                  <CheckCircle2 size={36} style={{ opacity: 0.3 }} />
+                </Illustration>
                 <p style={{ fontSize: '0.95rem', fontWeight: 500 }}>No tasks logged for this date.</p>
               </div>
             ) : (
@@ -730,7 +733,9 @@ const Dashboard = () => {
               {/* Questions list */}
               {dailyDsaLogs.length === 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.5rem', minHeight: '180px' }}>
-                  <Code2 size={32} style={{ opacity: 0.25 }} />
+                  <Illustration name="dsa-empty" size={110}>
+                    <Code2 size={32} style={{ opacity: 0.25 }} />
+                  </Illustration>
                   <p style={{ fontSize: '0.85rem' }}>No questions logged on this date.</p>
                 </div>
               ) : (

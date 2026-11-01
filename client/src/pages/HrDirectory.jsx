@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Illustration from '../components/Illustration';
 import { useAuth } from '../context/AuthContext';
 import { Trash2, Plus, Phone, Calendar, CheckCircle, Circle, ExternalLink, Edit3, Save, X, FileText, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
 import { API_BASE_URL } from '../config';
@@ -517,7 +518,10 @@ const HrDirectory = () => {
             {loading ? (
               <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>Loading contacts...</p>
             ) : currentItems.length === 0 ? (
-              <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>No contacts found on this page.</p>
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                <Illustration name="contacts-empty" />
+                <p style={{ margin: 0 }}>No contacts found on this page.</p>
+              </div>
             ) : (
               currentItems.map(contact => {
                 const isEditing = editingId === contact.id;

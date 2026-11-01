@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Illustration from '../components/Illustration';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
@@ -716,6 +717,7 @@ const Notes = () => {
             borderRadius: '20px'
           }}
         >
+          <Illustration name="notes-empty">
           <div
             style={{
               width: '60px',
@@ -730,6 +732,7 @@ const Notes = () => {
           >
             <FileText size={28} />
           </div>
+          </Illustration>
           <div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '0 0 0.35rem 0' }}>
               {searchQuery ? 'No matching notes found' : 'No notes created yet'}

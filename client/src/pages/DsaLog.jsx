@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Illustration from '../components/Illustration';
 import { useAuth } from '../context/AuthContext';
 import { Trash2, Plus, Code2, Calendar, ChevronLeft, ChevronRight, Bookmark, ExternalLink, Search, X } from 'lucide-react';
 import { API_BASE_URL } from '../config';
@@ -538,9 +539,10 @@ const DsaLog = () => {
           {loading ? (
             <p style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center' }}>Loading history...</p>
           ) : logs.length === 0 ? (
-            <p style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-              {hasFilters ? 'No questions match these filters.' : 'No questions logged yet. Go solve one!'}
-            </p>
+            <div style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+              {!hasFilters && <Illustration name="dsa-empty" />}
+              <p style={{ margin: 0 }}>{hasFilters ? 'No questions match these filters.' : 'No questions logged yet. Go solve one!'}</p>
+            </div>
           ) : (
             <>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
