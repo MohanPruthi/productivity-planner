@@ -223,25 +223,42 @@ async function deleteDsaLog(req, res) {
   }
 }
 
-// Fills title/difficulty/topics for logs saved before LeetCode lookups worked
-async function enrichMissingDetails(userId) {
+// Fills title/difficulty/topics for logs saved before LeetCode lookups worked.
+// Lookups run a few at a time, and concurrent requests for the same user share one run.
+const enrichRuns = new Map();
+
+function enrichMissingDetails(userId) {
+  if (!enrichRuns.has(userId)) {
+    const run = runEnrichment(userId).finally(() => enrichRuns.delete(userId));
+    enrichRuns.set(userId, run);
+  }
+  return enrichRuns.get(userId);
+}
+
+async function runEnrichment(userId) {
   const missing = await prisma.dsaLog.findMany({
     where: { userId, titleSlug: null },
     select: { id: true, questionNumber: true, title: true },
   });
-  for (const log of missing) {
-    const problem = await getProblem(log.questionNumber);
-    if (!problem) continue;
-    await prisma.dsaLog.update({
-      where: { id: log.id },
-      data: {
-        title: log.title || problem.title,
-        difficulty: problem.difficulty,
-        titleSlug: problem.titleSlug,
-        topics: problem.topics,
-      },
-    });
-  }
+
+  const queue = [...missing];
+  const worker = async () => {
+    while (queue.length) {
+      const log = queue.shift();
+      const problem = await getProblem(log.questionNumber);
+      if (!problem) continue;
+      await prisma.dsaLog.update({
+        where: { id: log.id },
+        data: {
+          title: log.title || problem.title,
+          difficulty: problem.difficulty,
+          titleSlug: problem.titleSlug,
+          topics: problem.topics,
+        },
+      });
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
 }
 
 async function updateDsaLog(req, res) {

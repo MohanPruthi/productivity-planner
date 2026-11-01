@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, Plus, Code2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Code2, Calendar, ChevronLeft, ChevronRight, Bookmark, ExternalLink, Search, X } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import DsaInsights from '../components/DsaInsights';
 
 const DsaLog = () => {
   const { getAuthHeaders } = useAuth();
@@ -20,10 +21,20 @@ const DsaLog = () => {
   const [totalLogs, setTotalLogs] = useState(0);
   const limit = 10;
 
+  // History filters
+  const [searchInput, setSearchInput] = useState('');
+  const [filters, setFilters] = useState({ q: '', difficulty: '', topic: '', revisit: false });
+  const hasFilters = filters.q || filters.difficulty || filters.topic || filters.revisit;
+
+  // Bumped after any change so the insights panel refetches
+  const [insightsVersion, setInsightsVersion] = useState(0);
+  const [topicOptions, setTopicOptions] = useState([]);
+
   // Form states
   const [questionNumber, setQuestionNumber] = useState('');
   const [difficulty, setDifficulty] = useState('Medium');
   const [title, setTitle] = useState('');
+  const [previewTopics, setPreviewTopics] = useState([]);
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -34,7 +45,12 @@ const DsaLog = () => {
     try {
       if (!background) setLoading(true);
       setError('');
-      const res = await fetch(`${API_BASE_URL}/api/dsa-logs?page=${page}&limit=${limit}`, {
+      const params = new URLSearchParams({ page, limit });
+      if (filters.q) params.set('q', filters.q);
+      if (filters.difficulty) params.set('difficulty', filters.difficulty);
+      if (filters.topic) params.set('topic', filters.topic);
+      if (filters.revisit) params.set('revisit', 'true');
+      const res = await fetch(`${API_BASE_URL}/api/dsa-logs?${params}`, {
         headers: getAuthHeaders(),
       });
       if (!res.ok) throw new Error('Failed to load DSA logs');
@@ -61,28 +77,44 @@ const DsaLog = () => {
     }
   };
 
+  // Load (and reload from page 1) whenever the filters change
   useEffect(() => {
+    setCurrentPage(1);
     fetchLogs(1);
-  }, []);
+  }, [filters]);
 
-  // Poll to enrich titles/details of newly logged questions if fetched on-the-fly.
-  // Capped so unknown question numbers don't poll forever.
-  const enrichPollsRef = useRef(0);
+  // Debounce typing in the search box
   useEffect(() => {
-    const hasEmptyTitle = logs.some(l => !l.title);
-    if (!hasEmptyTitle) {
-      enrichPollsRef.current = 0;
-      return;
+    const timer = setTimeout(() => {
+      setFilters(prev => (prev.q === searchInput.trim() ? prev : { ...prev, q: searchInput.trim() }));
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const clearFilters = () => {
+    setSearchInput('');
+    setFilters({ q: '', difficulty: '', topic: '', revisit: false });
+  };
+
+  const toggleRevisit = async (log) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/dsa-logs/${log.id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ revisit: !log.revisit }),
+      });
+      if (!res.ok) throw new Error('Failed to update log');
+      const updated = await res.json();
+      if (filters.revisit && !updated.revisit) {
+        await fetchLogs(currentPage);
+      } else {
+        setLogs(prev => prev.map(l => (l.id === updated.id ? updated : l)));
+      }
+      setInsightsVersion(v => v + 1);
+    } catch (err) {
+      console.error(err);
     }
-    if (enrichPollsRef.current >= 3) return;
-
-    const timeout = setTimeout(() => {
-      enrichPollsRef.current += 1;
-      fetchLogs(currentPage, true);
-    }, 1500);
-
-    return () => clearTimeout(timeout);
-  }, [logs, currentPage]);
+  };
 
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > totalPages) return;
@@ -95,6 +127,7 @@ const DsaLog = () => {
     const qNumClean = questionNumber.trim();
     if (!qNumClean || isNaN(qNumClean)) {
       setTitle('');
+      setPreviewTopics([]);
       return;
     }
 
@@ -107,6 +140,7 @@ const DsaLog = () => {
           const details = await res.json();
           if (details.title) setTitle(details.title);
           if (details.difficulty) setDifficulty(details.difficulty);
+          setPreviewTopics(details.topics || []);
         }
       } catch (err) {
         console.error('Error auto-fetching question info:', err);
@@ -144,10 +178,12 @@ const DsaLog = () => {
       // Refresh data
       setCurrentPage(1);
       await fetchLogs(1);
+      setInsightsVersion(v => v + 1);
 
       // Reset form
       setQuestionNumber('');
       setTitle('');
+      setPreviewTopics([]);
       setNotes('');
       setDifficulty('Medium'); // Keep difficulty defaulted to Medium
       
@@ -171,6 +207,7 @@ const DsaLog = () => {
       });
       if (!res.ok) throw new Error('Failed to delete log');
       await fetchLogs(currentPage);
+      setInsightsVersion(v => v + 1);
     } catch (err) {
       console.error(err);
       alert('Failed to delete log');
@@ -301,6 +338,9 @@ const DsaLog = () => {
                     <span style={{ fontSize: '0.85rem', fontWeight: 750, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={title}>
                       {title}
                     </span>
+                    {previewTopics.length > 0 && (
+                      <span className="dsa-topics">{previewTopics.slice(0, 3).join(' · ')}</span>
+                    )}
                   </div>
                   <span 
                     className="badge" 
@@ -439,15 +479,70 @@ const DsaLog = () => {
 
       </div>
 
+      <DsaInsights
+        version={insightsVersion}
+        activeTopic={filters.topic}
+        onTopicClick={(topic) => setFilters(prev => ({ ...prev, topic: prev.topic === topic ? '' : topic }))}
+        onTopicsLoaded={setTopicOptions}
+      />
+
       {/* History table */}
       <div>
         <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', color: 'var(--text-primary)' }}>Submission History</h2>
+
+        <div className="dsa-filter-bar">
+          <div className="dsa-search">
+            <Search size={14} />
+            <input
+              type="text"
+              placeholder="Search by number, title or notes"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
+          <select
+            className="input-control dsa-filter-select"
+            value={filters.difficulty}
+            onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
+          >
+            <option value="">All difficulties</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+          <select
+            className="input-control dsa-filter-select"
+            value={filters.topic}
+            onChange={(e) => setFilters(prev => ({ ...prev, topic: e.target.value }))}
+          >
+            <option value="">All topics</option>
+            {topicOptions.map(t => (
+              <option key={t.name} value={t.name}>{t.name} ({t.count})</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className={`dsa-revisit-filter ${filters.revisit ? 'active' : ''}`}
+            onClick={() => setFilters(prev => ({ ...prev, revisit: !prev.revisit }))}
+          >
+            <Bookmark size={13} />
+            <span>To revisit</span>
+          </button>
+          {hasFilters && (
+            <button type="button" className="dsa-clear-filters" onClick={clearFilters}>
+              <X size={13} />
+              <span>Clear</span>
+            </button>
+          )}
+        </div>
         
         <div className="glass-card" style={{ padding: '0', overflowX: 'auto', border: '1px solid rgba(255,255,255,0.03)' }}>
           {loading ? (
             <p style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center' }}>Loading history...</p>
           ) : logs.length === 0 ? (
-            <p style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center' }}>No questions logged yet. Go solve one!</p>
+            <p style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+              {hasFilters ? 'No questions match these filters.' : 'No questions logged yet. Go solve one!'}
+            </p>
           ) : (
             <>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
@@ -467,14 +562,21 @@ const DsaLog = () => {
                       <td style={{ padding: '0.85rem 1.5rem', color: 'var(--text-secondary)' }}>{formatDate(log.date)}</td>
                       <td style={{ padding: '0.85rem 1.5rem', fontWeight: 700 }}>#{log.questionNumber}</td>
                       <td style={{ padding: '0.85rem 1.5rem', fontWeight: 500 }}>
-                        {log.title || (
-                          <span style={{ color: '#ffa116', fontStyle: 'italic', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" style={{ animation: 'orbitSwirl 1s linear infinite' }}>
-                              <circle cx="12" cy="12" r="10" opacity="0.25" />
-                              <path d="M4 12a8 8 0 0 1 8-8" />
-                            </svg>
-                            Fetching details...
-                          </span>
+                        {log.titleSlug ? (
+                          <a
+                            href={`https://leetcode.com/problems/${log.titleSlug}/`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="dsa-problem-link"
+                          >
+                            {log.title}
+                            <ExternalLink size={12} />
+                          </a>
+                        ) : (
+                          log.title || <span style={{ color: 'var(--text-muted)' }}>Unknown question</span>
+                        )}
+                        {log.topics?.length > 0 && (
+                          <div className="dsa-topics">{log.topics.slice(0, 3).join(' · ')}</div>
                         )}
                       </td>
                       <td style={{ padding: '0.85rem 1.5rem' }}>
@@ -492,7 +594,14 @@ const DsaLog = () => {
                       <td style={{ padding: '0.85rem 1.5rem', maxWidth: '250px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }} title={log.notes}>
                         {log.notes || '-'}
                       </td>
-                      <td style={{ padding: '0.85rem 1.5rem', textAlign: 'right' }}>
+                      <td style={{ padding: '0.85rem 1.5rem', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <button
+                          onClick={() => toggleRevisit(log)}
+                          className={`dsa-revisit-btn ${log.revisit ? 'active' : ''}`}
+                          title={log.revisit ? 'Marked to revisit' : 'Mark to revisit'}
+                        >
+                          <Bookmark size={16} fill={log.revisit ? 'currentColor' : 'none'} />
+                        </button>
                         <button 
                           onClick={() => handleDelete(log.id)}
                           style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s ease' }}
