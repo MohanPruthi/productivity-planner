@@ -718,7 +718,8 @@ const TaskHistory = () => {
                     
                     <button 
                       onClick={() => handleToggleTask(day.id, 'planDay', day.isDone)}
-                      className={`mirror-checkbox ${day.isDone ? (day.track === 'AI' ? 'checked-ai' : 'checked-sd') : ''}`}
+                      className={`mirror-checkbox ${day.isDone ? 'checked-plan' : ''}`}
+                      style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)' }}
                       style={{ width: '22px', height: '22px', flexShrink: 0, marginTop: '2px' }}
                     >
                       {day.isDone ? (
@@ -729,8 +730,8 @@ const TaskHistory = () => {
                     </button>
 
                     <div style={{ flex: 1 }}>
-                      <span className={`badge ${day.track === 'AI' ? 'badge-ai' : 'badge-sd'}`} style={{ fontSize: '0.55rem', padding: '0.05rem 0.3rem', marginBottom: '0.2rem', display: 'inline-block' }}>
-                        {day.track}
+                      <span className="badge plan-badge" style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)', marginBottom: '0.2rem', display: 'inline-block' }}>
+                        {day.planWeek?.plan?.name || day.track}
                       </span>
                       <p 
                         onClick={(e) => handleTaskTextClick(e, day.topic, day.id, 'planDay', col.dateStr)}

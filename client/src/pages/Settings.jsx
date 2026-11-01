@@ -184,17 +184,10 @@ const Settings = () => {
       canHideFromDashboard: false
     },
     {
-      id: 'aiPlan',
-      name: 'AI Study Plan',
-      icon: Brain,
-      color: 'var(--track-ai-start)',
-      canHideFromDashboard: true
-    },
-    {
-      id: 'sdPlan',
-      name: 'System Design Plan',
+      id: 'plans',
+      name: 'Plans',
       icon: Layers,
-      color: 'var(--track-sd-start)',
+      color: 'var(--mod-plans)',
       canHideFromDashboard: true
     },
     {

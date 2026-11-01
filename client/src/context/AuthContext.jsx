@@ -86,8 +86,7 @@ export const AuthProvider = ({ children }) => {
 
   const DEFAULT_WORKSPACE_VISIBILITY = {
     dashboard: { showInOffice: true, showOnDashboard: true },
-    aiPlan: { showInOffice: true, showOnDashboard: true },
-    sdPlan: { showInOffice: true, showOnDashboard: true },
+    plans: { showInOffice: true, showOnDashboard: true },
     dsaLog: { showInOffice: false, showOnDashboard: false },
     taskHistory: { showInOffice: true, showOnDashboard: true },
     meds: { showInOffice: true, showOnDashboard: true },
@@ -108,6 +107,10 @@ export const AuthProvider = ({ children }) => {
               ? val.showOnDashboard 
               : (val.hideFromDashboard !== undefined ? !val.hideFromDashboard : true)
           };
+        }
+        // AI and SD plans were merged into Plans: carry the AI plan's settings over once
+        if (!normalized.plans && normalized.aiPlan) {
+          normalized.plans = normalized.aiPlan;
         }
         return { ...DEFAULT_WORKSPACE_VISIBILITY, ...normalized };
       }

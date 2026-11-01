@@ -119,14 +119,13 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard, color: 'var(--accent-primary)' },
-    { id: 'aiPlan', path: '/ai-plan', label: 'AI Plan', icon: Brain, color: 'var(--track-ai-start)' },
-    { id: 'sdPlan', path: '/sd-plan', label: 'SD Plan', icon: Layers, color: 'var(--track-sd-start)' },
-    { id: 'dsaLog', path: '/dsa-log', label: 'DSA Log', icon: Code2, color: '#ffa116' },
-    { id: 'taskHistory', path: '/task-history', label: 'Work Board', icon: History, color: 'var(--accent-secondary)' },
-    { id: 'meds', path: '/meds', label: 'Meds Tracker', icon: Pill, color: '#ff2d55' },
-    { id: 'hrDirectory', path: '/hr-directory', label: 'Directory', icon: Phone, color: '#007aff' },
-    { id: 'notes', path: '/notes', label: 'Notes', icon: StickyNote, color: '#eab308' },
+    { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard, color: 'var(--mod-dashboard)' },
+    { id: 'plans', path: '/plans', label: 'Plans', icon: Layers, color: 'var(--mod-plans)' },
+    { id: 'dsaLog', path: '/dsa-log', label: 'DSA Log', icon: Code2, color: 'var(--mod-dsa)' },
+    { id: 'taskHistory', path: '/task-history', label: 'Work Board', icon: History, color: 'var(--mod-board)' },
+    { id: 'meds', path: '/meds', label: 'Meds Tracker', icon: Pill, color: 'var(--mod-meds)' },
+    { id: 'hrDirectory', path: '/hr-directory', label: 'Directory', icon: Phone, color: 'var(--mod-contacts)' },
+    { id: 'notes', path: '/notes', label: 'Notes', icon: StickyNote, color: 'var(--mod-notes)' },
   ];
 
   const filteredNavItems = navItems.filter(item => {

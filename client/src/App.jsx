@@ -9,7 +9,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import Loader from './components/Loader';
 
 // Less-used pages load on demand so the first visit downloads less JavaScript
-const Plan = lazy(() => import('./pages/Plan'));
+const Plans = lazy(() => import('./pages/Plans'));
 const DsaLog = lazy(() => import('./pages/DsaLog'));
 const TaskHistory = lazy(() => import('./pages/TaskHistory'));
 const Meds = lazy(() => import('./pages/Meds'));
@@ -104,25 +104,18 @@ function App() {
               } 
             />
             <Route 
-              path="/ai-plan" 
+              path="/plans" 
               element={
                 <ProtectedRoute>
-                  <WorkspaceProtectedRoute systemId="aiPlan">
-                    <Plan track="AI" />
+                  <WorkspaceProtectedRoute systemId="plans">
+                    <Plans />
                   </WorkspaceProtectedRoute>
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/sd-plan" 
-              element={
-                <ProtectedRoute>
-                  <WorkspaceProtectedRoute systemId="sdPlan">
-                    <Plan track="SD" />
-                  </WorkspaceProtectedRoute>
-                </ProtectedRoute>
-              } 
-            />
+            {/* The old AI and SD plans now live under Plans */}
+            <Route path="/ai-plan" element={<Navigate to="/plans" replace />} />
+            <Route path="/sd-plan" element={<Navigate to="/plans" replace />} />
             <Route 
               path="/dsa-log" 
               element={

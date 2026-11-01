@@ -296,8 +296,9 @@ const Dashboard = () => {
   const filteredPlanDays = (todayData?.planDays || []).filter(day => {
     if (privacyMode) {
       const isHiddenFromDashboard = (sysConfig) => sysConfig?.showInOffice === false && sysConfig?.showOnDashboard === false;
-      if (day.track === 'AI' && isHiddenFromDashboard(workspaceVisibility?.aiPlan)) return false;
-      if (day.track === 'SD' && isHiddenFromDashboard(workspaceVisibility?.sdPlan)) return false;
+      if (isHiddenFromDashboard(workspaceVisibility?.plans)) return false;
+      // Personal plans stay out of the office workspace
+      if (day.planWeek?.plan?.isPersonal) return false;
     }
     return true;
   });
@@ -427,7 +428,8 @@ const Dashboard = () => {
                   >
                     <button 
                       onClick={() => handleToggleTask(day.id, day.isDone)}
-                      className={`mirror-checkbox ${day.isDone ? (day.track === 'AI' ? 'checked-ai' : 'checked-sd') : ''}`}
+                      className={`mirror-checkbox ${day.isDone ? 'checked-plan' : ''}`}
+                      style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)' }}
                       style={{ marginTop: '0.15rem' }}
                     >
                       {day.isDone ? (
@@ -439,8 +441,8 @@ const Dashboard = () => {
                     
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.2rem' }}>
-                        <span className={`badge ${day.track === 'AI' ? 'badge-ai' : 'badge-sd'}`} style={{ fontSize: '0.62rem', padding: '0.1rem 0.4rem' }}>
-                          {day.track} Planner
+                        <span className="badge plan-badge" style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)' }}>
+                          {day.planWeek?.plan?.name || `${day.track} plan`}
                         </span>
                         <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Week {day.planWeek?.weekNumber}</span>
                       </div>
