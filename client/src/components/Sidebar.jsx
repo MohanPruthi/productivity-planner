@@ -62,12 +62,12 @@ const renderThemeIcon = (currentTheme) => {
 };
 
 // Same life-grid mark as the favicon. In personal space the top-left tile turns
-// warm amber: a quiet cue for which workspace is active.
+// soft violet, echoing the sidebar lamp.
 const LogoIcon = ({ personal }) => {
   return (
     <svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="64" height="64" rx="14" fill="var(--accent-primary)" />
-      <rect x="13" y="13" width="17" height="17" rx="4" fill={personal ? '#ffa116' : '#fff'} style={{ transition: 'fill 0.4s ease' }} />
+      <rect x="13" y="13" width="17" height="17" rx="4" fill={personal ? '#c4b5fd' : '#fff'} style={{ transition: 'fill 0.4s ease' }} />
       <rect x="34" y="13" width="17" height="17" rx="4" fill="#a5b4fc" />
       <rect x="13" y="34" width="17" height="17" rx="4" fill="#a5b4fc" />
       <rect x="34" y="34" width="17" height="17" rx="4" fill="#fff" />
@@ -140,7 +140,7 @@ const Sidebar = () => {
   });
 
   return (
-    <aside className="sidebar-aside">
+    <aside className={`sidebar-aside ${privacyMode ? '' : 'workspace-lamp'}`}>
       <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', marginBottom: '3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <LogoIcon personal={!privacyMode} />
