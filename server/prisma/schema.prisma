@@ -84,6 +84,9 @@ model DsaLog {
   questionNumber String
   difficulty     Difficulty
   title          String?
+  titleSlug      String?
+  topics         String[]   @default([])
+  revisit        Boolean    @default(false)
   notes          String?
   createdAt      DateTime   @default(now())
 }

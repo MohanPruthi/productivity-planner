@@ -1,4 +1,5 @@
 const prisma = require('../db');
+const { getProblem } = require('../leetcode');
 
 // Helper to get start and end dates of the current week (Monday-Sunday or Sunday-Saturday)
 // Let's use Monday-Sunday as standard week
@@ -29,22 +30,15 @@ async function createDsaLog(req, res) {
     let finalTitle = title || '';
     let finalDifficulty = difficulty;
 
-    try {
-      const problems = await fetchLeetCodeProblems();
-      const problem = problems.find(p => String(p.stat.frontend_question_id) === String(questionNumber));
-      if (problem) {
-        if (!finalTitle) {
-          finalTitle = problem.stat.question__title;
-        }
-        // If difficulty is default (Medium) or empty, grab the correct difficulty level
-        const diffLevel = problem.difficulty.level;
-        const realDifficulty = diffLevel === 1 ? 'Easy' : diffLevel === 2 ? 'Medium' : 'Hard';
-        if (!finalDifficulty || finalDifficulty === 'Medium') {
-          finalDifficulty = realDifficulty;
-        }
+    const problem = await getProblem(questionNumber);
+    if (problem) {
+      if (!finalTitle) {
+        finalTitle = problem.title;
       }
-    } catch (err) {
-      console.error('Error auto-enriching DSA details in backend createDsaLog:', err);
+      // If difficulty is default (Medium) or empty, use LeetCode's
+      if (!finalDifficulty || finalDifficulty === 'Medium') {
+        finalDifficulty = problem.difficulty;
+      }
     }
 
     if (!finalDifficulty || (finalDifficulty !== 'Easy' && finalDifficulty !== 'Medium' && finalDifficulty !== 'Hard')) {
@@ -61,6 +55,8 @@ async function createDsaLog(req, res) {
         questionNumber: String(questionNumber),
         difficulty: finalDifficulty,
         title: finalTitle,
+        titleSlug: problem?.titleSlug || null,
+        topics: problem?.topics || [],
         notes: notes || '',
       },
     });
@@ -75,9 +71,30 @@ async function createDsaLog(req, res) {
 async function getDsaLogs(req, res) {
   try {
     const userId = req.user.id;
-    const { date } = req.query;
+    const { date, q, difficulty, topic, revisit } = req.query;
+
+    await enrichMissingDetails(userId);
 
     let whereClause = { userId };
+
+    // History filters
+    if (q && q.trim()) {
+      const term = q.trim().replace(/^#/, '');
+      whereClause.OR = [
+        { questionNumber: term },
+        { title: { contains: term, mode: 'insensitive' } },
+        { notes: { contains: term, mode: 'insensitive' } },
+      ];
+    }
+    if (['Easy', 'Medium', 'Hard'].includes(difficulty)) {
+      whereClause.difficulty = difficulty;
+    }
+    if (topic) {
+      whereClause.topics = { has: topic };
+    }
+    if (revisit === 'true') {
+      whereClause.revisit = true;
+    }
 
     if (date) {
       const targetDate = new Date(date);
@@ -106,7 +123,7 @@ async function getDsaLogs(req, res) {
 
     // Independent queries run together: each one is a network round trip to the DB
     const difficultyOnly = { difficulty: true };
-    let [totalLogs, logs, weeklyLogs, monthlyLogs, overallLogs, dailyLogs] = await Promise.all([
+    const [totalLogs, logs, weeklyLogs, monthlyLogs, overallLogs, dailyLogs] = await Promise.all([
       prisma.dsaLog.count({ where: whereClause }),
       prisma.dsaLog.findMany({
         where: whereClause,
@@ -134,32 +151,6 @@ async function getDsaLogs(req, res) {
       }),
     ]);
     const totalPages = Math.ceil(totalLogs / limitNum) || 1;
-
-    // Auto-enrich any existing logs with empty titles on retrieval
-    let problemsList = null;
-    for (let i = 0; i < logs.length; i++) {
-      if (!logs[i].title) {
-        try {
-          if (!problemsList) {
-            problemsList = await fetchLeetCodeProblems();
-          }
-          const problem = problemsList.find(p => String(p.stat.frontend_question_id) === String(logs[i].questionNumber));
-          if (problem) {
-            logs[i].title = problem.stat.question__title;
-            const diffLevel = problem.difficulty.level;
-            logs[i].difficulty = diffLevel === 1 ? 'Easy' : diffLevel === 2 ? 'Medium' : 'Hard';
-            
-            // Asynchronously update in database so it is saved permanently
-            prisma.dsaLog.update({
-              where: { id: logs[i].id },
-              data: { title: logs[i].title, difficulty: logs[i].difficulty }
-            }).catch(err => console.error('Error updating empty title in DB:', err));
-          }
-        } catch (enrichErr) {
-          console.error(`Error enriching historical DSA log ${logs[i].id}:`, enrichErr);
-        }
-      }
-    }
 
     const weeklyStats = {
       Easy: weeklyLogs.filter((l) => l.difficulty === 'Easy').length,
@@ -232,52 +223,109 @@ async function deleteDsaLog(req, res) {
   }
 }
 
-let leetcodeCache = null;
-let lastFetchTime = 0;
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-
-async function fetchLeetCodeProblems() {
-  if (leetcodeCache && (Date.now() - lastFetchTime < CACHE_DURATION)) {
-    return leetcodeCache;
+// Fills title/difficulty/topics for logs saved before LeetCode lookups worked
+async function enrichMissingDetails(userId) {
+  const missing = await prisma.dsaLog.findMany({
+    where: { userId, titleSlug: null },
+    select: { id: true, questionNumber: true, title: true },
+  });
+  for (const log of missing) {
+    const problem = await getProblem(log.questionNumber);
+    if (!problem) continue;
+    await prisma.dsaLog.update({
+      where: { id: log.id },
+      data: {
+        title: log.title || problem.title,
+        difficulty: problem.difficulty,
+        titleSlug: problem.titleSlug,
+        topics: problem.topics,
+      },
+    });
   }
+}
 
+async function updateDsaLog(req, res) {
   try {
-    console.log("Fetching fresh LeetCode problems list...");
-    const res = await fetch('https://leetcode.com/api/problems/algorithms/');
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.stat_status_pairs) {
-        leetcodeCache = data.stat_status_pairs;
-        lastFetchTime = Date.now();
-        console.log(`Successfully cached ${leetcodeCache.length} LeetCode problems.`);
-        return leetcodeCache;
-      }
-    }
-  } catch (err) {
-    console.error("Error fetching LeetCode problems list:", err);
-  }
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { revisit, notes } = req.body;
 
-  if (leetcodeCache) {
-    return leetcodeCache;
+    const log = await prisma.dsaLog.findFirst({ where: { id, userId } });
+    if (!log) {
+      return res.status(404).json({ error: 'DSA Log not found' });
+    }
+
+    const updated = await prisma.dsaLog.update({
+      where: { id },
+      data: {
+        ...(revisit !== undefined && { revisit: Boolean(revisit) }),
+        ...(notes !== undefined && { notes }),
+      },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Error updating DSA log:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  return [];
+}
+
+// Heatmap (last 26 weeks), difficulty split and topic counts across all logs
+async function getDsaInsights(req, res) {
+  try {
+    const userId = req.user.id;
+    await enrichMissingDetails(userId);
+
+    const logs = await prisma.dsaLog.findMany({
+      where: { userId },
+      select: { date: true, difficulty: true, topics: true, revisit: true },
+    });
+
+    const toLocalDateStr = (d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const since = new Date();
+    since.setHours(0, 0, 0, 0);
+    since.setDate(since.getDate() - 26 * 7);
+
+    const perDay = {};
+    const difficulty = { Easy: 0, Medium: 0, Hard: 0 };
+    const topicCounts = {};
+    let revisitCount = 0;
+
+    logs.forEach((log) => {
+      if (log.date >= since) {
+        const key = toLocalDateStr(log.date);
+        perDay[key] = (perDay[key] || 0) + 1;
+      }
+      difficulty[log.difficulty] += 1;
+      log.topics.forEach((t) => {
+        topicCounts[t] = (topicCounts[t] || 0) + 1;
+      });
+      if (log.revisit) revisitCount += 1;
+    });
+
+    const topics = Object.entries(topicCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({ perDay, difficulty, topics, total: logs.length, revisitCount });
+  } catch (error) {
+    console.error('Error fetching DSA insights:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }
 
 async function getQuestionDetails(req, res) {
   try {
-    const { id } = req.params;
-    const problems = await fetchLeetCodeProblems();
-    const problem = problems.find(p => String(p.stat.frontend_question_id) === String(id));
-    
+    const problem = await getProblem(req.params.id);
     if (problem) {
-      const diffLevel = problem.difficulty.level;
-      const difficulty = diffLevel === 1 ? 'Easy' : diffLevel === 2 ? 'Medium' : 'Hard';
-      return res.json({
-        title: problem.stat.question__title,
-        difficulty
-      });
+      return res.json(problem);
     }
-
     return res.status(404).json({ error: 'Question not found' });
   } catch (error) {
     console.error('Error fetching question details:', error);
@@ -289,5 +337,7 @@ module.exports = {
   createDsaLog,
   getDsaLogs,
   deleteDsaLog,
+  updateDsaLog,
+  getDsaInsights,
   getQuestionDetails,
 };
