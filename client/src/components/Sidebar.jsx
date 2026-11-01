@@ -61,40 +61,15 @@ const renderThemeIcon = (currentTheme) => {
   );
 };
 
+// Same life-grid mark as the favicon
 const LogoIcon = () => {
   return (
-    <svg 
-      width="28" 
-      height="28" 
-      viewBox="0 0 32 32" 
-      fill="none" 
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ filter: 'drop-shadow(0 0 8px rgba(99, 102, 241, 0.4))' }}
-    >
-      <defs>
-        <linearGradient id="logoGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="var(--accent-primary)" />
-          <stop offset="100%" stopColor="#8b5cf6" />
-        </linearGradient>
-      </defs>
-      
-      {/* Outer Classic Outline Ring */}
-      <circle cx="16" cy="16" r="14" stroke="url(#logoGlowGrad)" strokeWidth="1.75" strokeLinecap="round" />
-      
-      {/* Inner Dash Alignment Ring */}
-      <circle cx="16" cy="16" r="11" stroke="var(--text-muted)" strokeWidth="1" strokeDasharray="2,3" opacity="0.5" />
-      
-      {/* Compass Needle / Star Core */}
-      <path 
-        d="M16 6 L20 14 L28 16 L20 18 L16 26 L12 18 L4 16 L12 14 Z" 
-        stroke="url(#logoGlowGrad)" 
-        strokeWidth="1.75" 
-        strokeLinejoin="round" 
-        fill="rgba(99, 102, 241, 0.05)" 
-      />
-      
-      {/* Center Pivot Point */}
-      <circle cx="16" cy="16" r="2" fill="var(--text-primary)" />
+    <svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="64" height="64" rx="14" fill="var(--accent-primary)" />
+      <rect x="13" y="13" width="17" height="17" rx="4" fill="#fff" />
+      <rect x="34" y="13" width="17" height="17" rx="4" fill="#a5b4fc" />
+      <rect x="13" y="34" width="17" height="17" rx="4" fill="#a5b4fc" />
+      <rect x="34" y="34" width="17" height="17" rx="4" fill="#fff" />
     </svg>
   );
 };

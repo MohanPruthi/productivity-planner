@@ -91,24 +91,49 @@ async function getDsaLogs(req, res) {
       };
     }
 
-    // 1. Get total logs count for pagination
-    const totalLogs = await prisma.dsaLog.count({ where: whereClause });
-
-    // 2. Parse pagination query params
     const pageNum = req.query.page ? parseInt(req.query.page, 10) : 1;
     const limitNum = req.query.limit ? parseInt(req.query.limit, 10) : 10;
     const skip = (pageNum - 1) * limitNum;
-    const totalPages = Math.ceil(totalLogs / limitNum) || 1;
 
-    // 3. Get paginated logs
-    let logs = await prisma.dsaLog.findMany({
-      where: whereClause,
-      orderBy: {
-        date: 'desc',
-      },
-      skip,
-      take: limitNum,
-    });
+    const today = new Date();
+    const { startOfWeek, endOfWeek } = getStartAndEndOfWeek(today);
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0, 0);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+    const todayStart = new Date(today);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(today);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    // Independent queries run together: each one is a network round trip to the DB
+    const difficultyOnly = { difficulty: true };
+    let [totalLogs, logs, weeklyLogs, monthlyLogs, overallLogs, dailyLogs] = await Promise.all([
+      prisma.dsaLog.count({ where: whereClause }),
+      prisma.dsaLog.findMany({
+        where: whereClause,
+        orderBy: {
+          date: 'desc',
+        },
+        skip,
+        take: limitNum,
+      }),
+      prisma.dsaLog.findMany({
+        where: { userId, date: { gte: startOfWeek, lte: endOfWeek } },
+        select: difficultyOnly,
+      }),
+      prisma.dsaLog.findMany({
+        where: { userId, date: { gte: startOfMonth, lte: endOfMonth } },
+        select: difficultyOnly,
+      }),
+      prisma.dsaLog.findMany({
+        where: { userId },
+        select: difficultyOnly,
+      }),
+      prisma.dsaLog.findMany({
+        where: { userId, date: { gte: todayStart, lte: todayEnd } },
+        select: difficultyOnly,
+      }),
+    ]);
+    const totalPages = Math.ceil(totalLogs / limitNum) || 1;
 
     // Auto-enrich any existing logs with empty titles on retrieval
     let problemsList = null;
@@ -136,41 +161,12 @@ async function getDsaLogs(req, res) {
       }
     }
 
-    // Calculate weekly statistics
-    const today = new Date();
-    const { startOfWeek, endOfWeek } = getStartAndEndOfWeek(today);
-
-    const weeklyLogs = await prisma.dsaLog.findMany({
-      where: {
-        userId,
-        date: {
-          gte: startOfWeek,
-          lte: endOfWeek,
-        },
-      },
-    });
-
     const weeklyStats = {
       Easy: weeklyLogs.filter((l) => l.difficulty === 'Easy').length,
       Medium: weeklyLogs.filter((l) => l.difficulty === 'Medium').length,
       Hard: weeklyLogs.filter((l) => l.difficulty === 'Hard').length,
       total: weeklyLogs.length,
     };
-
-    // Calculate monthly statistics
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0, 0);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
-
-    const monthlyLogs = await prisma.dsaLog.findMany({
-      where: {
-        userId,
-        date: {
-          gte: startOfMonth,
-          lte: endOfMonth,
-        },
-      },
-      select: { difficulty: true }
-    });
 
     const monthlyStats = {
       Easy: monthlyLogs.filter((l) => l.difficulty === 'Easy').length,
@@ -179,34 +175,12 @@ async function getDsaLogs(req, res) {
       total: monthlyLogs.length,
     };
 
-    // Calculate overall statistics across all pages for this user
-    const overallLogs = await prisma.dsaLog.findMany({
-      where: { userId },
-      select: { difficulty: true }
-    });
-
     const overallStats = {
       Easy: overallLogs.filter((l) => l.difficulty === 'Easy').length,
       Medium: overallLogs.filter((l) => l.difficulty === 'Medium').length,
       Hard: overallLogs.filter((l) => l.difficulty === 'Hard').length,
       total: overallLogs.length,
     };
-
-    // Calculate daily statistics
-    const todayStart = new Date(today);
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date(today);
-    todayEnd.setHours(23, 59, 59, 999);
-
-    const dailyLogs = await prisma.dsaLog.findMany({
-      where: {
-        userId,
-        date: {
-          gte: todayStart,
-          lte: todayEnd,
-        },
-      },
-    });
 
     const dailyStats = {
       Easy: dailyLogs.filter((l) => l.difficulty === 'Easy').length,
