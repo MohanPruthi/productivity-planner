@@ -1,16 +1,16 @@
 # Illustrations
 
-Drop the generated images here using these exact file names. Any missing file falls back to the original icon.
+Each slot uses the bundled SVG (`welcome.svg` etc.). To replace one, drop a PNG with the same name here (e.g. `welcome.png`); a PNG always wins over the SVG.
 
 | File | Where it shows |
 |---|---|
-| `welcome.png` | Login and sign-up pages |
-| `tasks-empty.png` | Dashboard, no tasks for the day |
-| `dsa-empty.png` | Dashboard and DSA page, nothing logged |
-| `notes-empty.png` | Notes, no notes yet |
-| `contacts-empty.png` | Directory, no contacts |
+| `welcome` | Login and sign-up pages |
+| `tasks-empty` | Dashboard, no tasks for the day |
+| `dsa-empty` | Dashboard and DSA page, nothing logged |
+| `notes-empty` | Notes, no notes yet |
+| `contacts-empty` | Directory, no contacts |
 
-## Generating them in ChatGPT
+## Generating PNG replacements in ChatGPT (optional)
 
 Use **one chat** for all five so the style stays consistent. Paste the style block first, then each subject one at a time. Ask for a **transparent background PNG**. Download each image and save it under the name above.
 

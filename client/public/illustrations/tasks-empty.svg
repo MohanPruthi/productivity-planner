@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <ellipse cx="100" cy="166" rx="70" ry="8" fill="#6366F1" fill-opacity="0.15"/>
+  <!-- clipboard -->
+  <rect x="44" y="40" width="80" height="116" rx="12" fill="#A5B4FC" stroke="#6366F1" stroke-width="6"/>
+  <rect x="54" y="54" width="60" height="92" rx="6" fill="#E6E7EB" stroke="#6366F1" stroke-width="5"/>
+  <rect x="68" y="32" width="32" height="16" rx="6" fill="#6366F1" stroke="#6366F1" stroke-width="6"/>
+  <rect x="64" y="72" width="12" height="12" rx="3" stroke="#6366F1" stroke-width="5"/>
+  <path d="M84 78h20" stroke="#6366F1" stroke-width="5"/>
+  <path d="M66 100h38M66 116h30M66 132h22" stroke="#A5B4FC" stroke-width="5"/>
+  <!-- coffee cup -->
+  <path d="M132 118h34v24a14 14 0 0 1-14 14h-6a14 14 0 0 1-14-14z" fill="#E6E7EB" stroke="#6366F1" stroke-width="6"/>
+  <path d="M166 124h4a8 8 0 0 1 0 16h-4" stroke="#6366F1" stroke-width="6"/>
+  <path d="M140 102c-4-6 4-8 0-14M152 102c-4-6 4-8 0-14" stroke="#FFA116" stroke-width="5"/>
+</svg>
