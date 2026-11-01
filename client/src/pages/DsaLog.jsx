@@ -12,7 +12,6 @@ const DsaLog = () => {
   const [monthlyStats, setMonthlyStats] = useState({ Easy: 0, Medium: 0, Hard: 0, total: 0 });
   const [overallStats, setOverallStats] = useState({ Easy: 0, Medium: 0, Hard: 0, total: 0 });
   const [dailyStats, setDailyStats] = useState({ Easy: 0, Medium: 0, Hard: 0, total: 0 });
-  const [tallyRange, setTallyRange] = useState('week'); // 'week' | 'month' | 'overall'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -56,14 +55,14 @@ const DsaLog = () => {
       });
       if (!res.ok) throw new Error('Failed to load DSA logs');
       const data = await res.json();
-      
+
       // Self-healing: if we deleted all items on a page, load the previous page
       if (data.logs.length === 0 && page > 1) {
         setCurrentPage(page - 1);
         fetchLogs(page - 1);
         return;
       }
-      
+
       setLogs(data.logs);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalLogs(data.pagination?.totalLogs || 0);
@@ -187,7 +186,7 @@ const DsaLog = () => {
       setPreviewTopics([]);
       setNotes('');
       setDifficulty('Medium'); // Keep difficulty defaulted to Medium
-      
+
       // Focus back to question input for rapid-fire submission
       if (questionInputRef.current) {
         questionInputRef.current.focus();
@@ -226,18 +225,13 @@ const DsaLog = () => {
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const sameYear = d.getFullYear() === new Date().getFullYear();
+    return d.toLocaleDateString('en-US', sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
   };
-
-  const activeStats = tallyRange === 'week'
-    ? weeklyStats
-    : tallyRange === 'month'
-    ? monthlyStats
-    : overallStats;
 
   return (
     <div className="dsa-log-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      
+
       {/* Header Banner */}
       <header className="page-header tone-dsa">
 
@@ -252,27 +246,24 @@ const DsaLog = () => {
         </div>
       </header>
 
-      {/* Grid: Form and Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
-        
+      {/* Log form and tallies */}
+      <div className="dsa-top">
+
         {/* Rapid Form card */}
-        <div className="glass-card glow-dsa">
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
-            <Plus size={16} color="#ffa116" />
-            <span>Log Completed Question</span>
-          </h3>
+        <div className="glass-card">
+          <h2 className="ui-section-title">Log a question</h2>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {formError && <div className="text-error">{formError}</div>}
-            
+
             <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-              <label htmlFor="qNum" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Question Number *</label>
+              <label htmlFor="qNum" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Question number</label>
               <input
                 id="qNum"
                 ref={questionInputRef}
                 type="text"
                 className="input-control"
-                placeholder="Type LeetCode question number (e.g. 1)..."
+                placeholder="LeetCode number, like 146"
                 value={questionNumber}
                 onChange={(e) => setQuestionNumber(e.target.value)}
                 autoFocus
@@ -281,12 +272,12 @@ const DsaLog = () => {
 
               {/* Auto-detected LeetCode question preview */}
               {title && (
-                <div 
-                  className="glass-card" 
-                  style={{ 
-                    padding: '0.65rem 0.85rem', 
-                    background: 'rgba(255, 255, 255, 0.015)', 
-                    border: '1px solid var(--border-light)', 
+                <div
+                  className="glass-card"
+                  style={{
+                    padding: '0.65rem 0.85rem',
+                    background: 'rgba(255, 255, 255, 0.015)',
+                    border: '1px solid var(--border-light)',
                     borderRadius: '8px',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -297,7 +288,7 @@ const DsaLog = () => {
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', maxWidth: '75%' }}>
                     <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                      Auto-Detected Question
+                      Found on LeetCode
                     </span>
                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={title}>
                       {title}
@@ -306,10 +297,10 @@ const DsaLog = () => {
                       <span className="dsa-topics">{previewTopics.slice(0, 3).join(' · ')}</span>
                     )}
                   </div>
-                  <span 
-                    className="badge" 
-                    style={{ 
-                      color: getDifficultyColor(difficulty), 
+                  <span
+                    className="badge"
+                    style={{
+                      color: getDifficultyColor(difficulty),
                       background: `${getDifficultyColor(difficulty)}10`,
                       borderColor: `${getDifficultyColor(difficulty)}20`,
                       fontWeight: 600,
@@ -324,121 +315,48 @@ const DsaLog = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="notes" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Notes / Observations (Optional)</label>
+              <label htmlFor="notes" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Notes (optional)</label>
               <textarea
                 id="notes"
                 rows="2"
                 className="input-control"
                 style={{ resize: 'vertical' }}
-                placeholder="Key insights, runtime complexity or tricks..."
+                placeholder="Key idea, complexity, what tripped you up"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
             </div>
 
-            <button 
-              type="submit" 
-              className="mirror-btn-pill dsa-submit" 
-              style={{ 
-                marginTop: '0.5rem',
-                width: '100%',
-                opacity: submitting ? 0.7 : 1
-              }}
+            <button
+              type="submit"
+              className="ui-btn ui-btn-primary dsa-submit-btn"
               disabled={submitting}
             >
-              <Plus size={15} style={{ marginRight: '2px' }} />
-              <span>{submitting ? 'Logging...' : 'Log Question'}</span>
+              <Plus size={15} />
+              <span>{submitting ? 'Logging...' : 'Log question'}</span>
             </button>
           </form>
         </div>
 
-        {/* Stats card */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          
-          {/* Today's Tally */}
-          <div className="glass-card glow-stats-orange" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', overflow: 'hidden' }}>
-            <h3 style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Calendar size={14} color="#ffa116" />
-              <span>Today's Submissions</span>
-            </h3>
-            <p style={{ fontSize: '2rem', fontWeight: 600, fontFamily: 'var(--font-display)', margin: '0.25rem 0', color: 'var(--text-primary)' }}>{dailyStats.total}</p>
-            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', fontWeight: 600 }}>
-              <span className="badge" style={{ color: '#30d158', background: 'rgba(48, 209, 88, 0.1)', borderColor: 'rgba(48, 209, 88, 0.2)' }}>Easy: {dailyStats.Easy}</span>
-              <span className="badge" style={{ color: '#ffcc00', background: 'rgba(255, 204, 0, 0.1)', borderColor: 'rgba(255, 204, 0, 0.2)' }}>Medium: {dailyStats.Medium}</span>
-              <span className="badge" style={{ color: '#ff2d55', background: 'rgba(255, 45, 85, 0.1)', borderColor: 'rgba(255, 45, 85, 0.2)' }}>Hard: {dailyStats.Hard}</span>
-            </div>
-          </div>
-
-          {/* Running Weekly Tally */}
-          <div className="glass-card glow-stats-orange" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <h3 style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                <Code2 size={14} color="#ffa116" />
-                <span>
-                  {tallyRange === 'week' ? "This Week's Tally" : tallyRange === 'month' ? "This Month's Tally" : "Overall Tally"}
-                </span>
-              </h3>
-              
-              {/* Range Toggle */}
-              <div style={{ 
-                display: 'flex', 
-                gap: '3px', 
-                background: 'transparent', 
-                padding: '2px', 
-                borderRadius: '8px', 
-                border: '1px solid var(--border-light, rgba(255, 255, 255, 0.05))',
-                zIndex: 2
-              }}>
-                {['week', 'month', 'overall'].map(r => {
-                  const isActive = tallyRange === r;
-                  return (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setTallyRange(r)}
-                      style={{
-                        padding: '0.22rem 0.55rem',
-                        fontSize: '0.62rem',
-                        borderRadius: '6px',
-                        border: '1px solid',
-                        borderColor: isActive ? 'rgba(255, 161, 22, 0.18)' : 'transparent',
-                        background: isActive ? 'var(--glass-bg, rgba(255, 255, 255, 0.04))' : 'transparent',
-                        color: isActive ? '#ffa116' : 'var(--text-muted)',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        transition: 'all 0.18s ease',
-                        outline: 'none'
-                      }}
-                      onMouseOver={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.color = 'var(--text-secondary)';
-                          e.currentTarget.style.background = 'var(--glass-border, rgba(255,255,255,0.02))';
-                        }
-                      }}
-                      onMouseOut={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.color = 'var(--text-muted)';
-                          e.currentTarget.style.background = 'transparent';
-                        }
-                      }}
-                    >
-                      {r.charAt(0).toUpperCase() + r.slice(1)}
-                    </button>
-                  );
-                })}
+        {/* Tallies */}
+        <div className="dsa-tallies">
+          {[
+            { label: 'Today', stats: dailyStats },
+            { label: 'This week', stats: weeklyStats },
+            { label: 'This month', stats: monthlyStats },
+            { label: 'All time', stats: overallStats },
+          ].map(({ label, stats }) => (
+            <div key={label} className="ui-stat">
+              <div className="ui-stat-label">{label}</div>
+              <div className="ui-stat-value">{stats.total}</div>
+              <div className="dsa-tally-split">
+                <span className="easy">{stats.Easy}</span>
+                <span className="medium">{stats.Medium}</span>
+                <span className="hard">{stats.Hard}</span>
               </div>
             </div>
-            
-            <p style={{ fontSize: '2.5rem', fontWeight: 600, fontFamily: 'var(--font-display)', margin: '0.25rem 0', color: 'var(--text-primary)' }}>{activeStats.total}</p>
-            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', fontWeight: 600 }}>
-              <span className="badge" style={{ color: '#30d158', background: 'rgba(48, 209, 88, 0.1)', borderColor: 'rgba(48, 209, 88, 0.2)' }}>Easy: {activeStats.Easy}</span>
-              <span className="badge" style={{ color: '#ffcc00', background: 'rgba(255, 204, 0, 0.1)', borderColor: 'rgba(255, 204, 0, 0.2)' }}>Medium: {activeStats.Medium}</span>
-              <span className="badge" style={{ color: '#ff2d55', background: 'rgba(255, 45, 85, 0.1)', borderColor: 'rgba(255, 45, 85, 0.2)' }}>Hard: {activeStats.Hard}</span>
-            </div>
-          </div>
-
+          ))}
         </div>
-
       </div>
 
       <DsaInsights
@@ -450,7 +368,7 @@ const DsaLog = () => {
 
       {/* History table */}
       <div>
-        <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-primary)' }}>Submission History</h2>
+        <h2 className="ui-section-title">History <small>{totalLogs} {totalLogs === 1 ? 'question' : 'questions'}</small></h2>
 
         <div className="dsa-filter-bar">
           <div className="dsa-search">
@@ -497,7 +415,7 @@ const DsaLog = () => {
             </button>
           )}
         </div>
-        
+
         <div className="glass-card" style={{ padding: '0', overflowX: 'auto', border: '1px solid rgba(255,255,255,0.03)' }}>
           {loading ? (
             <p style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center' }}>Loading history...</p>
@@ -512,19 +430,18 @@ const DsaLog = () => {
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600 }}>
                     <th style={{ padding: '1rem 1.5rem' }}>Date</th>
-                    <th style={{ padding: '1rem 1.5rem' }}>Question #</th>
-                    <th style={{ padding: '1rem 1.5rem' }}>Title</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Problem</th>
                     <th style={{ padding: '1rem 1.5rem' }}>Difficulty</th>
                     <th style={{ padding: '1rem 1.5rem' }}>Notes</th>
-                    <th style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>Actions</th>
+                    <th style={{ padding: '1rem 1.5rem', textAlign: 'right' }}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {logs.map(log => (
                     <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', fontSize: '0.85rem', color: 'var(--text-primary)' }} className="table-row-hover">
-                      <td style={{ padding: '0.85rem 1.5rem', color: 'var(--text-secondary)' }}>{formatDate(log.date)}</td>
-                      <td style={{ padding: '0.85rem 1.5rem', fontWeight: 600 }}>#{log.questionNumber}</td>
+                      <td style={{ padding: '0.85rem 1.5rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{formatDate(log.date)}</td>
                       <td style={{ padding: '0.85rem 1.5rem', fontWeight: 500 }}>
+                        <span className="dsa-qnum">#{log.questionNumber}</span>
                         {log.titleSlug ? (
                           <a
                             href={`https://leetcode.com/problems/${log.titleSlug}/`}
@@ -543,10 +460,10 @@ const DsaLog = () => {
                         )}
                       </td>
                       <td style={{ padding: '0.85rem 1.5rem' }}>
-                        <span 
-                          className="badge" 
-                          style={{ 
-                            color: getDifficultyColor(log.difficulty), 
+                        <span
+                          className="badge"
+                          style={{
+                            color: getDifficultyColor(log.difficulty),
                             background: `${getDifficultyColor(log.difficulty)}10`,
                             borderColor: `${getDifficultyColor(log.difficulty)}20`
                           }}
@@ -565,7 +482,7 @@ const DsaLog = () => {
                         >
                           <Bookmark size={16} fill={log.revisit ? 'currentColor' : 'none'} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(log.id)}
                           style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s ease' }}
                           className="btn-trash-hover"

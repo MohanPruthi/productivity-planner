@@ -2830,3 +2830,42 @@ label {
 .page-header-title-row { display: flex; align-items: center; gap: 0.35rem; }
 .page-header-rename { display: flex; align-items: center; gap: 0.5rem; }
 .page-header-rename .input-control { width: 220px; height: 36px; padding: 0 0.75rem; }
+
+/* ---------- DSA page layout ---------- */
+.dsa-log-page { gap: 1.25rem !important; }
+.dsa-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.dsa-tallies {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.dsa-tally-split {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.dsa-tally-split span::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+.dsa-tally-split .easy::before { background: #30d158; }
+.dsa-tally-split .medium::before { background: #ffcc00; }
+.dsa-tally-split .hard::before { background: #ff2d55; }
+.dsa-submit-btn { width: 100%; margin-top: 0.25rem; }
+@media (max-width: 1100px) {
+  .dsa-top { grid-template-columns: minmax(0, 1fr); }
+}
+
+.dsa-qnum { color: var(--text-muted); margin-right: 0.45rem; font-variant-numeric: tabular-nums; }
