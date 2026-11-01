@@ -67,6 +67,21 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
+  // The server answers 403 only for an invalid/expired token: sign out instead of showing broken pages
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const res = await originalFetch(...args);
+      if (res.status === 403 && localStorage.getItem('token')) {
+        logout();
+      }
+      return res;
+    };
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
   const [privacyMode, setPrivacyMode] = useState(() => localStorage.getItem('privacyMode') === 'true');
 
   const DEFAULT_WORKSPACE_VISIBILITY = {

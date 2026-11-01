@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, Plus, ChevronDown, ChevronUp, CheckCircle2, Circle, AlertCircle, Trash2, Sparkles, Database } from 'lucide-react';
 import Loader from '../components/Loader';
+import { API_BASE_URL } from '../config';
+
+const getLocalDateString = (d = new Date()) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const Plan = ({ track }) => {
   const { getAuthHeaders } = useAuth();
@@ -25,7 +33,7 @@ const Plan = ({ track }) => {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`http://localhost:5000/api/plan/weeks?track=${track}`, {
+      const res = await fetch(`${API_BASE_URL}/api/plan/weeks?track=${track}`, {
         headers: getAuthHeaders(),
       });
       if (!res.ok) {
@@ -36,13 +44,12 @@ const Plan = ({ track }) => {
 
       // Auto-expand current or latest week
       if (data.length > 0) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
+        // Week dates are stored as UTC midnight, so compare calendar days
+        const todayStr = getLocalDateString();
         const activeWeek = data.find(w => {
-          const start = new Date(w.startDate);
-          const end = new Date(w.endDate);
-          return today >= start && today <= end;
+          const start = new Date(w.startDate).toISOString().split('T')[0];
+          const end = new Date(w.endDate).toISOString().split('T')[0];
+          return todayStr >= start && todayStr <= end;
         });
 
         if (activeWeek) {
@@ -76,7 +83,7 @@ const Plan = ({ track }) => {
       setStartDate(nextStart.toISOString().split('T')[0]);
     } else {
       setWeekNumber(1);
-      setStartDate(new Date().toISOString().split('T')[0]);
+      setStartDate(getLocalDateString());
     }
   }, [weeks, showAddForm]);
 
@@ -90,7 +97,7 @@ const Plan = ({ track }) => {
     setSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/plan/weeks', {
+      const res = await fetch(`${API_BASE_URL}/api/plan/weeks`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -116,7 +123,7 @@ const Plan = ({ track }) => {
 
   const handleToggleDay = async (weekId, dayId, currentIsDone) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/plan/days/${dayId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/plan/days/${dayId}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify({ isDone: !currentIsDone }),
@@ -142,7 +149,7 @@ const Plan = ({ track }) => {
   const handleUpdateDayText = async (weekId, dayId, field, value) => {
     setSavingStates(prev => ({ ...prev, [dayId]: 'saving' }));
     try {
-      const res = await fetch(`http://localhost:5000/api/plan/days/${dayId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/plan/days/${dayId}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify({ [field]: value }),
@@ -178,7 +185,7 @@ const Plan = ({ track }) => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/plan/weeks/${weekId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/plan/weeks/${weekId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });

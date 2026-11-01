@@ -86,7 +86,8 @@ const CustomDatePickerButton = ({ onSelectDate, buttonStyle, label = "Custom" })
     return `${y}-${m}-${day}`;
   };
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const monthName = viewDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
   return (
@@ -299,6 +300,7 @@ const TaskHistory = () => {
   const fetchHistory = async () => {
     try {
       setLoading(true);
+      setError('');
       const res = await fetch(`${API_BASE_URL}/api/dashboard/history`, {
         headers: getAuthHeaders()
       });
@@ -569,6 +571,10 @@ const TaskHistory = () => {
 
   if (loading) {
     return <Loader text="Loading Jira Work Board..." />;
+  }
+
+  if (error) {
+    return <div className="error-state">Error: {error}</div>;
   }
 
   return (

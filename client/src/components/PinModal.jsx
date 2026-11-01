@@ -200,21 +200,13 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
     }
   };
 
-  // Verify OTP
-  const handleVerifyOtp = (codeStr) => {
-    if (codeStr === '0000' || codeStr === forgotInfo?.tempPin) {
-      setMode('forgot_new_pin');
-      setError('');
-      setTimeout(() => {
-        if (forgotNewRefs[0].current) forgotNewRefs[0].current.focus();
-      }, 100);
-    } else {
-      setError('Invalid security code. Please enter 0000.');
-      setOtpPin(['', '', '', '']);
-      setTimeout(() => {
-        if (otpRefs[0].current) otpRefs[0].current.focus();
-      }, 100);
-    }
+  // Code is checked by the server when the new PIN is saved
+  const handleVerifyOtp = () => {
+    setMode('forgot_new_pin');
+    setError('');
+    setTimeout(() => {
+      if (forgotNewRefs[0].current) forgotNewRefs[0].current.focus();
+    }, 100);
   };
 
   // Save new PIN after OTP verification
@@ -234,20 +226,25 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`${API_BASE_URL}/api/auth/reset-pin`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/reset-pin-with-code`, {
         method: 'POST',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          currentPin: forgotInfo?.tempPin || '0000',
+          code: otpPin.join(''),
           newPin: newStr
         })
       });
 
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 401) {
+          // Wrong or expired code: send the user back to re-enter it
+          setMode('forgot');
+          setOtpPin(['', '', '', '']);
+        }
         throw new Error(data.error || 'Failed to set new PIN');
       }
 

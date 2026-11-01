@@ -30,7 +30,11 @@ model User {
   passwordHash     String
   name             String
   workspacePin     String?           @default("1234")
-  createdAt        DateTime          @default(now())
+  resetCodeHash    String?
+  resetPurpose     String?
+  resetExpiresAt   DateTime?
+  resetAttempts    Int               @default(0)
+  createdAt       DateTime          @default(now())
   planWeeks        PlanWeek[]
   planDays         PlanDay[]
   dsaLogs          DsaLog[]

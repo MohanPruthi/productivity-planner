@@ -373,9 +373,8 @@ const TimeLogger = () => {
   }, [selectedDateStr]);
 
   // Save current duration to DB
-  const syncStudyTime = async (secondsToSync) => {
+  const syncStudyTime = async (secondsToSync, todayStr = getLocalDateString()) => {
     const minutes = parseFloat((secondsToSync / 60).toFixed(2));
-    const todayStr = getLocalDateString();
     try {
       const res = await fetch(`${API_BASE_URL}/api/study-logs`, {
         method: 'POST',
@@ -463,7 +462,8 @@ const TimeLogger = () => {
         // Rollover check
         const nowStr = getLocalDateString();
         if (nowStr !== currentDateString) {
-          syncStudyTime(currentTotal);
+          // Save the finished day's total under that day, not the new one
+          syncStudyTime(currentTotal, currentDateString);
           trackingStartTimeRef.current = Date.now();
           secondsAtStartRef.current = 0;
           setTodaySeconds(0);

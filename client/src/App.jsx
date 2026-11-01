@@ -7,6 +7,7 @@ import Plan from './pages/Plan';
 import DsaLog from './pages/DsaLog';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 import TaskHistory from './pages/TaskHistory';
 import Meds from './pages/Meds';
 import HrDirectory from './pages/HrDirectory';
@@ -79,7 +80,15 @@ function App() {
                 <PublicRoute>
                   <Signup />
                 </PublicRoute>
-              } 
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <PublicRoute>
+                  <ForgotPassword />
+                </PublicRoute>
+              }
             />
 
             {/* Protected Core App Routes */}

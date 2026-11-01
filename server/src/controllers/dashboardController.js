@@ -14,6 +14,14 @@ function getStartAndEndOfWeek(date) {
   return { startOfWeek, endOfWeek };
 }
 
+// Local YYYY-MM-DD (toISOString would shift local-midnight dates to the previous UTC day)
+function toLocalDateStr(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 async function getTodayDashboard(req, res) {
   try {
     const userId = req.user.id;
@@ -257,19 +265,19 @@ async function getWeeklyDashboard(req, res) {
 
     // Extract unique dates as YYYY-MM-DD
     const activityDates = new Set();
-    completedDays.forEach((d) => activityDates.add(d.date.toISOString().split('T')[0]));
-    dsaDays.forEach((d) => activityDates.add(d.date.toISOString().split('T')[0]));
+    completedDays.forEach((d) => activityDates.add(toLocalDateStr(d.date)));
+    dsaDays.forEach((d) => activityDates.add(toLocalDateStr(d.date)));
 
     let streak = 0;
     const checkDate = new Date(today);
     checkDate.setHours(0, 0, 0, 0);
 
-    const todayStr = checkDate.toISOString().split('T')[0];
+    const todayStr = toLocalDateStr(checkDate);
     
     // Check yesterday's date
     const yesterday = new Date(checkDate);
     yesterday.setDate(checkDate.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const yesterdayStr = toLocalDateStr(yesterday);
 
     // Determine starting point for checking streak:
     // If there is activity today, start checking from today.
@@ -286,7 +294,7 @@ async function getWeeklyDashboard(req, res) {
 
     if (currentCheck) {
       while (true) {
-        const dateStr = currentCheck.toISOString().split('T')[0];
+        const dateStr = toLocalDateStr(currentCheck);
         if (activityDates.has(dateStr)) {
           streak++;
           currentCheck.setDate(currentCheck.getDate() - 1);

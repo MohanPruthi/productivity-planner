@@ -60,6 +60,28 @@ async function resetMedSchedule(req, res) {
   }
 }
 
+// Rename the medication without restarting the course or clearing logs
+async function updateMedSchedule(req, res) {
+  try {
+    const userId = req.user.id;
+    const { medName } = req.body;
+
+    if (!medName || !medName.trim()) {
+      return res.status(400).json({ error: 'Medication name is required' });
+    }
+
+    const schedule = await prisma.medSchedule.update({
+      where: { userId },
+      data: { medName: medName.trim() }
+    });
+
+    res.json(schedule);
+  } catch (error) {
+    console.error('Error updating meds schedule:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 // Get all meds logs
 async function getMedLogs(req, res) {
   try {
@@ -118,6 +140,7 @@ async function toggleMedLog(req, res) {
 module.exports = {
   getMedSchedule,
   resetMedSchedule,
+  updateMedSchedule,
   getMedLogs,
   toggleMedLog
 };

@@ -45,6 +45,7 @@ const Dashboard = () => {
   const fetchData = async (dateStr) => {
     try {
       setLoading(true);
+      setError('');
       const [todayRes, weekRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/dashboard/today?date=${dateStr}`, { headers: getAuthHeaders() }),
         fetch(`${API_BASE_URL}/api/dashboard/week`, { headers: getAuthHeaders() })
