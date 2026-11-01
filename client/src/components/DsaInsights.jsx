@@ -69,7 +69,7 @@ const DsaInsights = ({ version, activeTopic, onTopicClick, onTopicsLoaded }) => 
         </div>
         <div className="dsa-heatmap">
           {weeks.map((days, w) => (
-            <div key={w} className="dsa-heatmap-week">
+            <div key={w} className="dsa-heatmap-week" style={{ '--col': w }}>
               {days.map((date, d) => {
                 if (!date) return <div key={d} className="dsa-heatmap-cell empty" />;
                 const key = toLocalDateStr(date);

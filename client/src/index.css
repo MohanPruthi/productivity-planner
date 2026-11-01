@@ -2895,3 +2895,141 @@ label {
 }
 .sidebar-aside.workspace-lamp { --lamp: 1; }
 .light-theme .sidebar-aside.workspace-lamp { --lamp: 0.7; }
+
+/* ======================================================================
+   Motion: calm, short, ease-out. Everything here is decorative and is
+   switched off for people who ask their system to reduce motion.
+   Zen Zone (TimeLogger) is intentionally left alone.
+   ====================================================================== */
+:root {
+  --ease-out-soft: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --motion-fast: 160ms;
+  --motion-base: 280ms;
+  --motion-slow: 520ms;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes check-pop {
+  0% { transform: scale(0.7); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@keyframes progress-in {
+  from { width: 0; }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes unfold {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Page entrance on every navigation. Fill mode is 'backwards' on purpose: a held
+   transform would make this wrapper the containing block for fixed pop-ups. */
+.page-enter {
+  animation: rise-in var(--motion-slow) var(--ease-out-soft) backwards;
+}
+
+/* Auth card (login, sign-up, reset) */
+.auth-card {
+  animation: rise-in var(--motion-slow) var(--ease-out-soft) backwards;
+}
+
+/* Staggered entrance for repeated blocks: stat tiles, week cards, tallies */
+.ui-stat-row > *,
+.dsa-tallies > *,
+.plan-weeks > * {
+  animation: rise-in var(--motion-slow) var(--ease-out-soft) backwards;
+}
+.ui-stat-row > :nth-child(2), .dsa-tallies > :nth-child(2), .plan-weeks > :nth-child(2) { animation-delay: 50ms; }
+.ui-stat-row > :nth-child(3), .dsa-tallies > :nth-child(3), .plan-weeks > :nth-child(3) { animation-delay: 100ms; }
+.ui-stat-row > :nth-child(4), .dsa-tallies > :nth-child(4), .plan-weeks > :nth-child(4) { animation-delay: 150ms; }
+.plan-weeks > :nth-child(5) { animation-delay: 200ms; }
+.plan-weeks > :nth-child(n + 6) { animation-delay: 240ms; }
+
+/* Week card opening */
+.plan-days {
+  animation: unfold var(--motion-base) var(--ease-out-soft) backwards;
+}
+
+/* Progress bars fill up when they appear, then glide on change */
+.ui-progress > div {
+  animation: progress-in 0.9s var(--ease-out-soft) backwards;
+  transition: width 0.5s var(--ease-out-soft);
+}
+
+/* Checkboxes: a small pop when ticked */
+.plan-check {
+  transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+.plan-check.checked,
+.mirror-checkbox.checked-ai,
+.mirror-checkbox.checked-sd,
+.mirror-checkbox.checked-gen {
+  animation: check-pop 0.32s var(--ease-spring);
+}
+.plan-day .plan-topic {
+  transition: color var(--motion-base) ease, background var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+
+/* Gentle lift on hover for cards you interact with */
+.plan-week,
+.ui-stat,
+.dsa-topic-chip {
+  transition: transform var(--motion-base) var(--ease-out-soft), border-color var(--motion-base) ease, background var(--motion-base) ease;
+}
+.plan-week:hover,
+.ui-stat:hover {
+  transform: translateY(-1px);
+}
+.plan-chevron {
+  transition: transform var(--motion-base) var(--ease-out-soft);
+}
+
+/* Buttons: a soft press */
+.ui-btn,
+.ui-icon-btn {
+  transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, color var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+.ui-btn:active:not(:disabled),
+.ui-icon-btn:active {
+  transform: scale(0.97);
+}
+
+/* Page header icon settles in */
+.page-header-icon {
+  animation: check-pop 0.5s var(--ease-spring) backwards;
+}
+
+/* The login illustration floats slowly. Only there: a never-ending animation
+   gets its own compositing layer, which painted over in-page dialogs. */
+.auth-illustration img {
+  animation: drift 6s ease-in-out infinite;
+}
+
+/* DSA heatmap cells fade in column by column */
+.dsa-heatmap-week {
+  animation: fade-in 0.6s ease backwards;
+}
+.dsa-heatmap-week:nth-child(n) { animation-delay: calc(var(--col, 0) * 18ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
