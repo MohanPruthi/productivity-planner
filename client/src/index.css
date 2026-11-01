@@ -3546,3 +3546,33 @@ body::after {
 .main-content .glow-stats-orange {
   box-shadow: var(--card-shadow);
 }
+
+/* ---------- Login, sign-up and reset: neon card over the aurora ---------- */
+.auth-page { background: transparent; }
+.auth-card {
+  position: relative;
+  border: 1px solid rgba(139, 92, 246, 0.28) !important;
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6), 0 0 60px -18px rgba(139, 92, 246, 0.55) !important;
+  backdrop-filter: blur(14px);
+}
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 18%;
+  right: 18%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #a5b4fc, transparent);
+}
+.auth-card .btn-primary {
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.6), 0 10px 30px -8px rgba(139, 92, 246, 0.8);
+  transition: filter 0.2s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+.auth-card .btn-primary:hover { filter: brightness(1.1); }
+.auth-card .btn-primary:active { transform: scale(0.98); }
+.auth-card .input-control:focus {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
