@@ -61,12 +61,13 @@ const renderThemeIcon = (currentTheme) => {
   );
 };
 
-// Same life-grid mark as the favicon
-const LogoIcon = () => {
+// Same life-grid mark as the favicon. In personal space the top-left tile turns
+// warm amber: a quiet cue for which workspace is active.
+const LogoIcon = ({ personal }) => {
   return (
     <svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="64" height="64" rx="14" fill="var(--accent-primary)" />
-      <rect x="13" y="13" width="17" height="17" rx="4" fill="#fff" />
+      <rect x="13" y="13" width="17" height="17" rx="4" fill={personal ? '#ffa116' : '#fff'} style={{ transition: 'fill 0.4s ease' }} />
       <rect x="34" y="13" width="17" height="17" rx="4" fill="#a5b4fc" />
       <rect x="13" y="34" width="17" height="17" rx="4" fill="#a5b4fc" />
       <rect x="34" y="34" width="17" height="17" rx="4" fill="#fff" />
@@ -77,6 +78,16 @@ const LogoIcon = () => {
 const Sidebar = () => {
   const { user, logout, privacyMode, togglePrivacyMode, workspaceVisibility } = useAuth();
   const location = useLocation();
+
+  // Tab icon carries the same quiet workspace cue as the sidebar logo
+  useEffect(() => {
+    const icon = document.querySelector("link[rel='icon']");
+    if (!icon) return;
+    icon.href = privacyMode ? '/favicon.svg' : '/favicon-personal.svg';
+    return () => {
+      icon.href = '/favicon.svg';
+    };
+  }, [privacyMode]);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
   // Initialize theme from localStorage or default to dark
@@ -132,7 +143,7 @@ const Sidebar = () => {
     <aside className="sidebar-aside">
       <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', marginBottom: '3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <LogoIcon />
+          <LogoIcon personal={!privacyMode} />
           <h2 className="brand-title animated-gradient-purple" style={{ margin: 0, fontSize: '1.45rem', fontWeight: 600 }}>Planner</h2>
         </div>
       </div>
