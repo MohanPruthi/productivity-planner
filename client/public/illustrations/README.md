@@ -9,6 +9,7 @@ Each slot uses the bundled SVG (`welcome.svg` etc.). To replace one, drop a PNG 
 | `dsa-empty` | Dashboard and DSA page, nothing logged |
 | `notes-empty` | Notes, no notes yet |
 | `contacts-empty` | Directory, no contacts |
+| `plan-empty` | AI and SD plans, no weeks yet |
 
 ## Generating PNG replacements in ChatGPT (optional)
 
