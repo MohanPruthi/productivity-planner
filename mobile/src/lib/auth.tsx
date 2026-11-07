@@ -68,9 +68,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(me);
         SecureStore.setItemAsync(USER_KEY, JSON.stringify(me)).catch(() => {});
       } catch (err) {
-        // 403 is handled by the unauthorized handler; 401/404 also mean the session is unusable.
-        // Network errors keep the cached session so the app still opens offline.
-        if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
+        // 403 is handled by the unauthorized handler; 401 also means the session is unusable.
+        // A 404 only means the server predates /api/auth/me, so keep the session, like
+        // network errors do (the app still opens offline).
+        if (err instanceof ApiError && err.status === 401) {
           signOut();
         }
       }
