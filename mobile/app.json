@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Planner",
+    "slug": "productivity-planner",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "planner",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0a0b10",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.mohanpruthi.planner"
+    },
+    "android": {
+      "package": "com.mohanpruthi.planner",
+      "adaptiveIcon": {
+        "backgroundColor": "#6366f1",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0a0b10",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 96
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
