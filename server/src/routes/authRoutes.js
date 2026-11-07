@@ -2,6 +2,7 @@ const express = require('express');
 const { 
   signup, 
   login, 
+  getMe,
   verifyWorkspacePin, 
   resetWorkspacePin, 
   forgotWorkspacePin,
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.post('/signup', signup);
 router.post('/login', login);
+router.get('/me', authenticateToken, getMe);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/verify-pin', authenticateToken, verifyWorkspacePin);

@@ -93,6 +93,25 @@ async function login(req, res) {
   }
 }
 
+// Returns the signed-in user so clients can check a stored token is still valid
+async function getMe(req, res) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { id: true, email: true, name: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Get me error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 async function verifyWorkspacePin(req, res) {
   try {
     const { pin } = req.body;
@@ -319,6 +338,7 @@ async function resetPassword(req, res) {
 module.exports = {
   signup,
   login,
+  getMe,
   verifyWorkspacePin,
   resetWorkspacePin,
   forgotWorkspacePin,
