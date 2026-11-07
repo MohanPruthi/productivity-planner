@@ -1,16 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <ellipse cx="100" cy="164" rx="70" ry="8" fill="#6366F1" fill-opacity="0.15"/>
-  <!-- calendar -->
-  <rect x="40" y="48" width="104" height="104" rx="14" fill="#E6E7EB" stroke="#6366F1" stroke-width="6"/>
-  <path d="M40 76h104" stroke="#6366F1" stroke-width="6"/>
-  <path d="M40 62a14 14 0 0 1 14-14h76a14 14 0 0 1 14 14v14H40z" fill="#A5B4FC" stroke="#6366F1" stroke-width="6"/>
-  <path d="M66 38v20M118 38v20" stroke="#6366F1" stroke-width="6"/>
-  <rect x="56" y="92" width="16" height="14" rx="4" fill="#A5B4FC"/>
-  <rect x="84" y="92" width="16" height="14" rx="4" fill="#A5B4FC"/>
-  <rect x="112" y="92" width="16" height="14" rx="4" fill="#A5B4FC"/>
-  <rect x="56" y="118" width="16" height="14" rx="4" fill="#A5B4FC"/>
-  <rect x="84" y="118" width="16" height="14" rx="4" stroke="#6366F1" stroke-width="4"/>
-  <!-- plus badge -->
-  <circle cx="146" cy="136" r="20" fill="#FFA116" stroke="#FFA116" stroke-width="4"/>
-  <path d="M146 126v20M136 136h20" stroke="#E6E7EB" stroke-width="6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="26" y="30" width="68" height="62" rx="8"/>
+  <path d="M26 46h68M44 24v12M76 24v12"/>
+  <path d="M60 60v20M50 70h20"/>
 </svg>

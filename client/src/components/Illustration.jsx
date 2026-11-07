@@ -1,23 +1,31 @@
 import React, { useState } from 'react';
 
-// Shows /illustrations/<name>.png if one has been added, else the bundled <name>.svg,
-// else the fallback (the original icon), so missing artwork never leaves a broken image.
-const SOURCES = ['png', 'svg'];
+// Shows /illustrations/<name>.png if one has been added. Otherwise the bundled
+// <name>.svg outline is used as a mask and filled with the page color (--tone),
+// so the drawings match whichever module they appear in.
+const Illustration = ({ name, size = 140 }) => {
+  const [hasPng, setHasPng] = useState(true);
 
-const Illustration = ({ name, size = 140, children = null }) => {
-  const [attempt, setAttempt] = useState(0);
+  if (hasPng) {
+    return (
+      <img
+        src={`/illustrations/${name}.png`}
+        alt=""
+        width={size}
+        height={size}
+        style={{ objectFit: 'contain', userSelect: 'none' }}
+        draggable="false"
+        onError={() => setHasPng(false)}
+      />
+    );
+  }
 
-  if (attempt >= SOURCES.length) return children;
-
+  const mask = `url(/illustrations/${name}.svg) center / contain no-repeat`;
   return (
-    <img
-      src={`/illustrations/${name}.${SOURCES[attempt]}`}
-      alt=""
-      width={size}
-      height={size}
-      style={{ objectFit: 'contain', userSelect: 'none' }}
-      draggable="false"
-      onError={() => setAttempt(a => a + 1)}
+    <span
+      className="illustration-outline"
+      aria-hidden="true"
+      style={{ width: size, height: size, WebkitMask: mask, mask }}
     />
   );
 };

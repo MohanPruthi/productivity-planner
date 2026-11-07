@@ -690,22 +690,7 @@ const Notes = () => {
             borderRadius: '20px'
           }}
         >
-          <Illustration name="notes-empty">
-          <div
-            style={{
-              width: '60px',
-              height: '60px',
-              borderRadius: '18px',
-              background: 'rgba(255, 255, 255, 0.03)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-muted)'
-            }}
-          >
-            <FileText size={28} />
-          </div>
-          </Illustration>
+          <Illustration name="notes-empty" />
           <div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '0 0 0.35rem 0' }}>
               {searchQuery ? 'No matching notes found' : 'No notes created yet'}

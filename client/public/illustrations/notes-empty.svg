@@ -1,13 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <ellipse cx="100" cy="160" rx="76" ry="8" fill="#6366F1" fill-opacity="0.15"/>
-  <!-- sticky note -->
-  <rect x="122" y="32" width="44" height="44" rx="6" transform="rotate(10 144 54)" fill="#A5B4FC" stroke="#6366F1" stroke-width="5"/>
-  <!-- open notebook -->
-  <path d="M100 66c-16-10-38-12-60-8v88c22-4 44-2 60 8z" fill="#E6E7EB" stroke="#6366F1" stroke-width="6"/>
-  <path d="M100 66c16-10 38-12 60-8v88c-22-4-44-2-60 8z" fill="#E6E7EB" stroke="#6366F1" stroke-width="6"/>
-  <path d="M100 66v88" stroke="#6366F1" stroke-width="5"/>
-  <path d="M52 82c12-2 24-1 36 3M52 98c12-2 24-1 36 3M52 114c12-2 24-1 36 3" stroke="#A5B4FC" stroke-width="4"/>
-  <!-- pen -->
-  <path d="M118 132l36-36 10 10-36 36-14 4z" fill="#6366F1" stroke="#6366F1" stroke-width="5"/>
-  <path d="M118 132l-4 14 14-4" fill="#FFA116" stroke="#FFA116" stroke-width="4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M38 24h32l16 16v52a4 4 0 0 1-4 4H38a4 4 0 0 1-4-4V28a4 4 0 0 1 4-4z"/>
+  <path d="M70 24v16h16"/>
+  <path d="M44 56h30M44 68h30M44 80h18"/>
 </svg>

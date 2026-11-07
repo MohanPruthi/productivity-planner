@@ -3025,11 +3025,8 @@ label {
   animation: check-pop 0.5s var(--ease-spring) backwards;
 }
 
-/* The login illustration floats slowly. Only there: a never-ending animation
-   gets its own compositing layer, which painted over in-page dialogs. */
-.auth-illustration img {
-  animation: drift 6s ease-in-out infinite;
-}
+/* The login illustration floats slowly (see .auth-illustration below). Only there:
+   a never-ending animation gets its own compositing layer, which painted over in-page dialogs. */
 
 /* DSA heatmap cells fade in column by column */
 .dsa-heatmap-week {
@@ -3270,41 +3267,6 @@ label {
    left as it was.
    ====================================================================== */
 
-/* --- Aurora backdrop that takes on the page color --- */
-@keyframes aurora-drift {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  33%  { transform: translate3d(4%, -3%, 0) scale(1.08); }
-  66%  { transform: translate3d(-3%, 4%, 0) scale(0.96); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
-}
-body::before,
-body::after {
-  content: '';
-  position: fixed;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: 50%;
-  transition: background 1.2s ease;
-}
-body::before {
-  width: 70vmax;
-  height: 70vmax;
-  top: -30vmax;
-  left: 10vw;
-  background: radial-gradient(circle, color-mix(in srgb, var(--tone, #6366f1) 16%, transparent), transparent 65%);
-  animation: aurora-drift 26s ease-in-out infinite;
-}
-body::after {
-  width: 60vmax;
-  height: 60vmax;
-  bottom: -32vmax;
-  right: 5vw;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.10), transparent 65%);
-  animation: aurora-drift 34s ease-in-out infinite reverse;
-}
-.light-theme::before { opacity: 0.6; }
-.light-theme::after { opacity: 0.5; }
-
 /* --- Page transition: blur, rise and fade in --- */
 @keyframes page-in {
   from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
@@ -3464,9 +3426,6 @@ body::after {
 .main-content ::-webkit-scrollbar-thumb,
 .main-content::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--tone, #6366f1) 35%, transparent); border-radius: 999px; }
 
-@media (prefers-reduced-motion: reduce) {
-  body::before, body::after { animation: none; }
-}
 
 /* ======================================================================
    Older controls still used inside pages, brought into the themed look.
@@ -3622,4 +3581,16 @@ body::after {
 }
 @media (prefers-reduced-motion: reduce) {
   .timelogger-card:first-of-type svg { animation: none; }
+}
+
+/* Outline illustrations: drawn in the page color, softened so they stay quiet */
+.illustration-outline {
+  display: inline-block;
+  flex: none;
+  background: var(--tone, var(--accent-primary));
+  opacity: 0.75;
+}
+.auth-illustration .illustration-outline {
+  background: #a5b4fc;
+  animation: drift 6s ease-in-out infinite;
 }
