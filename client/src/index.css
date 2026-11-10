@@ -4087,3 +4087,28 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
 @media (max-width: 720px) {
   .dash-quick-add { display: none; }
 }
+
+/* ======================================================================
+   Redo 12 · Command center on every page: the page header is a bar
+   pinned to the top while the page scrolls, titles match the Dashboard,
+   and content keeps a comfortable maximum width.
+   ====================================================================== */
+@media (min-width: 1101px) {
+  .main-content { padding: 0 2.25rem 2.5rem; }
+  .main-content .page-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin: 0 -2.25rem;
+    padding: 1.4rem 2.25rem 1.1rem;
+    /* Solid, no backdrop blur: a blur would trap fixed pop-ups opened from the header */
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .page-enter > * { max-width: 1320px; }
+}
+.main-content .page-header-title { font-size: 1.75rem; }
+.main-content .page-header-icon { width: 44px; height: 44px; border-radius: 13px; }
+@media (max-width: 720px) {
+  .main-content .page-header-title { font-size: 1.35rem; }
+}
