@@ -3621,3 +3621,114 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
 .brand-title { font-weight: 800; letter-spacing: -0.03em; text-shadow: none; }
 .ui-stat-value { font-weight: 700; letter-spacing: -0.02em; }
 .nav-link { font-size: 0.9rem; }
+
+/* ======================================================================
+   Redo 2 · Surfaces: two flat levels with hairline edges. Nothing glows
+   or moves while idle; color and light only answer the pointer or show
+   state (active nav item, checked box, primary action).
+   ====================================================================== */
+:root {
+  --surface-1: #111219;               /* cards */
+  --surface-2: #171923;               /* tiles, inputs inside cards */
+  --hairline: rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.12);
+  --card-shadow: none;
+}
+.main-content .glass-card {
+  background-color: var(--surface-1);
+  background-image: none;
+  backdrop-filter: none;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: none;
+}
+/* The cursor spotlight only shows while the pointer is on the card */
+.main-content .glass-card:hover {
+  background-image: radial-gradient(360px circle at var(--mx) var(--my),
+    color-mix(in srgb, var(--tone, #6366f1) 6%, transparent), transparent 50%);
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 28%, var(--hairline));
+  box-shadow: none;
+  transform: none;
+}
+.main-content .glow-dsa, .main-content .glow-dsa:hover,
+.main-content .glow-med, .main-content .glow-med:hover,
+.main-content .glow-tracker, .main-content .glow-tracker:hover,
+.main-content .glow-ai, .main-content .glow-ai:hover,
+.main-content .glow-sd, .main-content .glow-sd:hover,
+.main-content .glow-stats-orange, .main-content .glow-stats-orange:hover {
+  box-shadow: none !important;
+}
+
+/* Page header icon: a quiet tinted tile, no breathing halo */
+.page-header-icon {
+  border: 1px solid color-mix(in srgb, var(--tone) 22%, transparent);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  animation: check-pop 0.5s var(--ease-spring) backwards;
+}
+
+/* Primary buttons: solid page color, no halo; the shine still sweeps on hover */
+.ui-btn-primary,
+.ui-btn-primary:hover:not(:disabled) { box-shadow: none; }
+.main-content .btn-primary,
+.main-content .btn-primary:hover,
+.main-content .mirror-btn-pill.dsa-submit,
+.main-content .mirror-btn-pill.dsa-submit:hover,
+.ui-dialog .btn-primary { box-shadow: none !important; }
+.main-content .mirror-btn-pill:not(.dsa-submit):hover { box-shadow: none; }
+
+/* Sidebar: active item is a tinted row with a colored icon, no glow */
+.nav-link:hover { transform: none; }
+.nav-link.active {
+  background: color-mix(in srgb, var(--active-color) 11%, transparent);
+  box-shadow: none;
+}
+.nav-link.active .nav-icon,
+.nav-link.active svg { filter: none; }
+
+/* Stat tiles: flat, no glowing numbers or top light line */
+.ui-stat { background: var(--surface-2); border-color: var(--hairline); }
+.ui-stat::before { display: none; }
+.ui-stat:hover { transform: none; }
+.ui-stat-value { text-shadow: none; }
+
+/* Progress: solid fill that glides, no endless sheen */
+.ui-progress > div {
+  background: var(--tone, #6366f1);
+  box-shadow: none;
+  animation: progress-in 0.9s var(--ease-out-soft) backwards;
+}
+
+/* State marks stay colored but stop glowing */
+.plan-check.checked,
+.plan-pill, .plan-tab.active,
+.mirror-checkbox.checked-plan,
+.main-content .mirror-checkbox.checked-gen,
+.main-content .mirror-checkbox.checked-ai,
+.main-content .mirror-checkbox.checked-sd { box-shadow: none; }
+.ui-section-title::before { box-shadow: none; }
+.dsa-heatmap-cell.level-3, .dsa-heatmap-cell.level-4 { box-shadow: none; }
+.plan-week:hover { transform: none; border-color: var(--hairline-strong); }
+
+/* Inputs sit one level up from their card */
+.main-content .input-control,
+.ui-dialog .input-control {
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+}
+
+/* Dialogs: a plain raised panel */
+.ui-dialog {
+  background: var(--surface-1);
+  border-color: var(--hairline-strong);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Empty-state illustrations: quieter */
+.illustration-outline { opacity: 0.6; }
+.light-theme {
+  --surface-1: #ffffff;
+  --surface-2: #f1f5f9;
+  --hairline: rgba(15, 23, 42, 0.08);
+  --hairline-strong: rgba(15, 23, 42, 0.14);
+}
+.light-theme .ui-dialog { box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18); }
