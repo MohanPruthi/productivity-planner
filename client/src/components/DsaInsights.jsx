@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 
 const WEEKS = 26;
-const DIFFICULTY_COLORS = { Easy: '#30d158', Medium: '#ffcc00', Hard: '#ff2d55' };
 
 const toLocalDateStr = (d) => {
   const year = d.getFullYear();
@@ -61,24 +60,27 @@ const DsaInsights = ({ version, activeTopic, onTopicClick, onTopicsLoaded }) => 
   const recentTotal = Object.values(data.perDay).reduce((sum, n) => sum + n, 0);
 
   return (
-    <div className="glass-card dsa-insights">
-      <div className="dsa-insights-heatmap">
-        <div className="dsa-insights-label">
-          Last 6 months
-          <span>{recentTotal} solved on {activeDays} {activeDays === 1 ? 'day' : 'days'}</span>
-        </div>
+    <section className="cc-tile tone-dsa" aria-labelledby="dsa-activity-title">
+      <div className="cc-tile-head">
+        <h2 id="dsa-activity-title">Activity</h2>
+        <span className="cc-meta">
+          {recentTotal} solved on {activeDays} {activeDays === 1 ? 'day' : 'days'} in the last 6 months
+        </span>
+      </div>
+
+      <div className="dsa-heat-scroll" role="img" aria-label={`Activity heatmap: ${recentTotal} solved on ${activeDays} days in the last 6 months`}>
         <div className="dsa-heatmap">
           {weeks.map((days, w) => (
-            <div key={w} className="dsa-heatmap-week" style={{ '--col': w }}>
+            <div key={w} className="dsa-heatmap-week">
               {days.map((date, d) => {
-                if (!date) return <div key={d} className="dsa-heatmap-cell empty" />;
+                if (!date) return <div key={d} className="dsa-cell empty" />;
                 const key = toLocalDateStr(date);
                 const count = data.perDay[key] || 0;
                 const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 return (
                   <div
                     key={d}
-                    className={`dsa-heatmap-cell level-${cellLevel(count)}`}
+                    className={`dsa-cell level-${cellLevel(count)}`}
                     title={`${label}: ${count} solved`}
                   />
                 );
@@ -88,53 +90,42 @@ const DsaInsights = ({ version, activeTopic, onTopicClick, onTopicsLoaded }) => 
         </div>
       </div>
 
-      <div className="dsa-insights-side">
-        <div>
-          <div className="dsa-insights-label">
-            Difficulty
-            <span>{data.total} solved in total</span>
-          </div>
-          <div className="dsa-difficulty-bar">
-            {['Easy', 'Medium', 'Hard'].map(level => (
-              data.difficulty[level] > 0 && (
-                <div
-                  key={level}
-                  style={{ flex: data.difficulty[level], background: DIFFICULTY_COLORS[level] }}
-                  title={`${level}: ${data.difficulty[level]}`}
-                />
-              )
-            ))}
-          </div>
-          <div className="dsa-difficulty-legend">
-            {['Easy', 'Medium', 'Hard'].map(level => (
-              <span key={level}>
-                <i style={{ background: DIFFICULTY_COLORS[level] }} />
-                {level} {data.difficulty[level]}
-              </span>
+      <div className="dsa-act-block">
+        <p className="dsa-act-label">Difficulty, {data.total} solved in total</p>
+        <div className="dsa-bar" aria-hidden="true">
+          {['Easy', 'Medium', 'Hard'].map(level => (
+            data.difficulty[level] > 0 && (
+              <i
+                key={level}
+                className={level.toLowerCase()}
+                style={{ flex: data.difficulty[level] }}
+                title={`${level}: ${data.difficulty[level]}`}
+              />
+            )
+          ))}
+        </div>
+      </div>
+
+      {data.topics.length > 0 && (
+        <div className="dsa-act-block">
+          <p className="dsa-act-label">Top topics. Select one to filter history.</p>
+          <div className="dsa-topics-list">
+            {data.topics.slice(0, 8).map(t => (
+              <button
+                key={t.name}
+                type="button"
+                className={`dsa-topic ${activeTopic === t.name ? 'active' : ''}`}
+                aria-pressed={activeTopic === t.name}
+                onClick={() => onTopicClick(t.name)}
+                title={`Filter history by ${t.name}`}
+              >
+                {t.name}<small>{t.count}</small>
+              </button>
             ))}
           </div>
         </div>
-
-        {data.topics.length > 0 && (
-          <div>
-            <div className="dsa-insights-label">Top topics</div>
-            <div className="dsa-topic-chips">
-              {data.topics.slice(0, 8).map(t => (
-                <button
-                  key={t.name}
-                  type="button"
-                  className={`dsa-topic-chip ${activeTopic === t.name ? 'active' : ''}`}
-                  onClick={() => onTopicClick(t.name)}
-                  title={`Filter history by ${t.name}`}
-                >
-                  {t.name} <span>{t.count}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      )}
+    </section>
   );
 };
 

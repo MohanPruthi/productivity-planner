@@ -27,9 +27,9 @@
 }
 :root[data-theme="classic"] .ui-btn-primary,
 :root[data-theme="classic"] .main-content .btn-primary {
-  background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
-  color: #fff !important;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25) !important;
+  background: linear-gradient(135deg, var(--tone, #6366f1), color-mix(in srgb, var(--tone, #6366f1) 78%, #000)) !important;
+  color: var(--tone-ink, #fff) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--tone, #6366f1) 30%, transparent) !important;
 }
 :root[data-theme="classic"] .nav-link.active {
   box-shadow: -6px 0 18px -8px var(--active-color);

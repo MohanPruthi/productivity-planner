@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CountUp from '../components/CountUp';
-import Illustration from '../components/Illustration';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, Plus, Code2, Calendar, ChevronLeft, ChevronRight, Bookmark, ExternalLink, Search, X } from 'lucide-react';
+import { Trash2, Code2, ChevronLeft, ChevronRight, Bookmark, Search, X } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import DsaInsights from '../components/DsaInsights';
+import '../styles/dsa.css';
 
 const DsaLog = () => {
   const { getAuthHeaders } = useAuth();
@@ -36,8 +36,8 @@ const DsaLog = () => {
   const [difficulty, setDifficulty] = useState('Medium');
   const [title, setTitle] = useState('');
   const [previewTopics, setPreviewTopics] = useState([]);
-  const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState('');
+  const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const questionInputRef = useRef(null);
@@ -158,6 +158,7 @@ const DsaLog = () => {
       return;
     }
     setFormError('');
+    setSuccess('');
     setSubmitting(true);
 
     try {
@@ -168,7 +169,7 @@ const DsaLog = () => {
           questionNumber,
           difficulty,
           title,
-          notes,
+          notes: '',
           date: new Date().toISOString() // Set date to today
         }),
       });
@@ -176,6 +177,7 @@ const DsaLog = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to log question');
 
+      const loggedLabel = `#${questionNumber.trim()}${title ? ` ${title}` : ''}`;
       // Refresh data
       setCurrentPage(1);
       await fetchLogs(1);
@@ -185,8 +187,9 @@ const DsaLog = () => {
       setQuestionNumber('');
       setTitle('');
       setPreviewTopics([]);
-      setNotes('');
       setDifficulty('Medium'); // Keep difficulty defaulted to Medium
+
+      setSuccess(`Logged ${loggedLabel}`);
 
       // Focus back to question input for rapid-fire submission
       if (questionInputRef.current) {
@@ -215,27 +218,22 @@ const DsaLog = () => {
     }
   };
 
-  const getDifficultyColor = (diff) => {
-    switch (diff) {
-      case 'Easy': return '#30d158'; // Apple activity Green
-      case 'Medium': return '#ffcc00'; // Apple activity Yellow/Orange
-      case 'Hard': return '#ff2d55'; // Apple activity Red
-      default: return 'var(--text-secondary)';
-    }
-  };
-
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
     const sameYear = d.getFullYear() === new Date().getFullYear();
     return d.toLocaleDateString('en-US', sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const diffClass = (d) => String(d).toLowerCase();
+  const small = [
+    { label: 'This week', value: weeklyStats.total },
+    { label: 'This month', value: monthlyStats.total },
+    { label: 'All time', value: overallStats.total },
+  ];
+
   return (
-    <div className="dsa-log-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-
-      {/* Header Banner */}
+    <div className="dsa-page">
       <header className="page-header tone-dsa">
-
         <div className="page-header-main">
           <div className="page-header-icon">
             <Code2 size={20} />
@@ -247,117 +245,67 @@ const DsaLog = () => {
         </div>
       </header>
 
-      {/* Log form and tallies */}
       <div className="dsa-top">
-
-        {/* Rapid Form card */}
-        <div className="glass-card">
-          <h2 className="ui-section-title">Log a question</h2>
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {formError && <div className="text-error">{formError}</div>}
-
-            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-              <label htmlFor="qNum" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Question number</label>
+        <section className="cc-tile tone-dsa" aria-labelledby="dsa-log-title">
+          <div className="cc-tile-head">
+            <h2 id="dsa-log-title">Log a question</h2>
+          </div>
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="dsa-log-row">
               <input
                 id="qNum"
                 ref={questionInputRef}
                 type="text"
-                className="input-control"
+                inputMode="numeric"
+                aria-label="LeetCode question number"
+                aria-invalid={formError ? 'true' : undefined}
                 placeholder="LeetCode number, like 146"
                 value={questionNumber}
-                onChange={(e) => setQuestionNumber(e.target.value)}
+                onChange={(e) => { setQuestionNumber(e.target.value); setSuccess(''); }}
                 autoFocus
-                required
               />
-
-              {/* Auto-detected LeetCode question preview */}
-              {title && (
-                <div
-                  className="glass-card"
-                  style={{
-                    padding: '0.65rem 0.85rem',
-                    background: 'rgba(255, 255, 255, 0.015)',
-                    border: '1px solid var(--border-light)',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '0.15rem',
-                    animation: 'modalSlideUp 0.2s ease-out'
-                  }}
-                >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', maxWidth: '75%' }}>
-                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                      Found on LeetCode
-                    </span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={title}>
-                      {title}
-                    </span>
-                    {previewTopics.length > 0 && (
-                      <span className="dsa-topics">{previewTopics.slice(0, 3).join(' · ')}</span>
-                    )}
-                  </div>
-                  <span
-                    className="badge"
-                    style={{
-                      color: getDifficultyColor(difficulty),
-                      background: `${getDifficultyColor(difficulty)}10`,
-                      borderColor: `${getDifficultyColor(difficulty)}20`,
-                      fontWeight: 600,
-                      fontSize: '0.65rem',
-                      padding: '0.1rem 0.45rem'
-                    }}
-                  >
-                    {difficulty}
-                  </span>
-                </div>
-              )}
+              <button type="submit" className="ui-btn ui-btn-primary" disabled={submitting}>
+                {submitting ? 'Logging...' : 'Log'}
+              </button>
             </div>
-
-            <div className="form-group">
-              <label htmlFor="notes" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Notes (optional)</label>
-              <textarea
-                id="notes"
-                rows="2"
-                className="input-control"
-                style={{ resize: 'vertical' }}
-                placeholder="Key idea, complexity, what tripped you up"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
+            {title && (
+              <p className="dsa-preview">
+                <span className="dsa-preview-title" title={title}>{title}</span>
+                <span className={`cc-diff ${diffClass(difficulty)}`}>{difficulty}</span>
+                {previewTopics.length > 0 && <small>{previewTopics.slice(0, 3).join(' · ')}</small>}
+              </p>
+            )}
+            <div aria-live="polite">
+              {formError && <p className="dsa-msg error" role="alert">{formError}</p>}
+              {!formError && success && <p className="dsa-msg ok">{success}</p>}
             </div>
-
-            <button
-              type="submit"
-              className="ui-btn ui-btn-primary dsa-submit-btn"
-              disabled={submitting}
-            >
-              <Plus size={15} />
-              <span>{submitting ? 'Logging...' : 'Log question'}</span>
-            </button>
           </form>
-        </div>
+        </section>
 
-        {/* Tallies */}
-        <div className="dsa-tallies">
-          {[
-            { label: 'Today', stats: dailyStats },
-            { label: 'This week', stats: weeklyStats },
-            { label: 'This month', stats: monthlyStats },
-            { label: 'All time', stats: overallStats },
-          ].map(({ label, stats }) => (
-            <div key={label} className="ui-stat">
-              <div className="ui-stat-label">{label}</div>
-              <div className="ui-stat-value"><CountUp value={stats.total} /></div>
-              <div className="dsa-tally-split">
-                <span className="easy">{stats.Easy}</span>
-                <span className="medium">{stats.Medium}</span>
-                <span className="hard">{stats.Hard}</span>
-              </div>
+        <section className="cc-tile tone-dsa" aria-labelledby="dsa-progress-title">
+          <div className="cc-tile-head">
+            <h2 id="dsa-progress-title">Progress</h2>
+          </div>
+          <div className="dsa-progress">
+            <div className="cc-figure">
+              <strong><CountUp value={dailyStats.total} /></strong>
+              <span>today</span>
             </div>
-          ))}
-        </div>
+            <div className="dsa-small-figs">
+              {small.map(f => (
+                <div key={f.label}>
+                  <strong><CountUp value={f.value} /></strong>
+                  <span>{f.label.toLowerCase()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="dsa-split dsa-grow" aria-label="All-time split by difficulty">
+            <span className="easy"><b>{overallStats.Easy}</b> easy</span>
+            <span className="medium"><b>{overallStats.Medium}</b> medium</span>
+            <span className="hard"><b>{overallStats.Hard}</b> hard</span>
+          </div>
+        </section>
       </div>
 
       <DsaInsights
@@ -367,22 +315,26 @@ const DsaLog = () => {
         onTopicsLoaded={setTopicOptions}
       />
 
-      {/* History table */}
-      <div>
-        <h2 className="ui-section-title">History <small>{totalLogs} {totalLogs === 1 ? 'question' : 'questions'}</small></h2>
+      <section className="cc-tile tone-dsa" aria-labelledby="dsa-history-title">
+        <div className="cc-tile-head">
+          <h2 id="dsa-history-title">History</h2>
+          <span className="cc-meta">{totalLogs} {totalLogs === 1 ? 'question' : 'questions'}</span>
+        </div>
 
-        <div className="dsa-filter-bar">
-          <div className="dsa-search">
-            <Search size={14} />
+        <div className="dsa-filters">
+          <label className="dsa-search">
+            <Search size={14} aria-hidden="true" />
             <input
               type="text"
-              placeholder="Search by number, title or notes"
+              aria-label="Search history"
+              placeholder="Search number, title or notes"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
-          </div>
+          </label>
           <select
-            className="input-control dsa-filter-select"
+            className="input-control"
+            aria-label="Filter by difficulty"
             value={filters.difficulty}
             onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
           >
@@ -392,7 +344,8 @@ const DsaLog = () => {
             <option value="Hard">Hard</option>
           </select>
           <select
-            className="input-control dsa-filter-select"
+            className="input-control"
+            aria-label="Filter by topic"
             value={filters.topic}
             onChange={(e) => setFilters(prev => ({ ...prev, topic: e.target.value }))}
           >
@@ -403,135 +356,109 @@ const DsaLog = () => {
           </select>
           <button
             type="button"
-            className={`dsa-revisit-filter ${filters.revisit ? 'active' : ''}`}
+            className={`dsa-chip-btn ${filters.revisit ? 'active' : ''}`}
+            aria-pressed={filters.revisit}
             onClick={() => setFilters(prev => ({ ...prev, revisit: !prev.revisit }))}
           >
-            <Bookmark size={13} />
+            <Bookmark size={13} fill={filters.revisit ? 'currentColor' : 'none'} />
             <span>To revisit</span>
           </button>
           {hasFilters && (
-            <button type="button" className="dsa-clear-filters" onClick={clearFilters}>
+            <button type="button" className="dsa-chip-btn" onClick={clearFilters}>
               <X size={13} />
-              <span>Clear</span>
+              <span>Clear filters</span>
             </button>
           )}
         </div>
 
-        <div className="glass-card" style={{ padding: '0', overflowX: 'auto', border: '1px solid rgba(255,255,255,0.03)' }}>
-          {loading ? (
-            <p style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center' }}>Loading history...</p>
-          ) : logs.length === 0 ? (
-            <div style={{ padding: '2rem', color: 'var(--text-muted)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-              {!hasFilters && <Illustration name="dsa-empty" />}
-              <p style={{ margin: 0 }}>{hasFilters ? 'No questions match these filters.' : 'No questions logged yet. Go solve one!'}</p>
-            </div>
-          ) : (
-            <>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600 }}>
-                    <th style={{ padding: '1rem 1.5rem' }}>Date</th>
-                    <th style={{ padding: '1rem 1.5rem' }}>Problem</th>
-                    <th style={{ padding: '1rem 1.5rem' }}>Difficulty</th>
-                    <th style={{ padding: '1rem 1.5rem' }}>Notes</th>
-                    <th style={{ padding: '1rem 1.5rem', textAlign: 'right' }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map(log => (
-                    <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', fontSize: '0.85rem', color: 'var(--text-primary)' }} className="table-row-hover">
-                      <td style={{ padding: '0.85rem 1.5rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{formatDate(log.date)}</td>
-                      <td style={{ padding: '0.85rem 1.5rem', fontWeight: 500 }}>
-                        <span className="dsa-qnum">#{log.questionNumber}</span>
-                        {log.titleSlug ? (
-                          <a
-                            href={`https://leetcode.com/problems/${log.titleSlug}/`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="dsa-problem-link"
-                          >
-                            {log.title}
-                            <ExternalLink size={12} />
-                          </a>
-                        ) : (
-                          log.title || <span style={{ color: 'var(--text-muted)' }}>Unknown question</span>
-                        )}
-                        {log.topics?.length > 0 && (
-                          <div className="dsa-topics">{log.topics.slice(0, 3).join(' · ')}</div>
-                        )}
-                      </td>
-                      <td style={{ padding: '0.85rem 1.5rem' }}>
-                        <span
-                          className="badge"
-                          style={{
-                            color: getDifficultyColor(log.difficulty),
-                            background: `${getDifficultyColor(log.difficulty)}10`,
-                            borderColor: `${getDifficultyColor(log.difficulty)}20`
-                          }}
+        {loading ? (
+          <p className="cc-empty">Loading history...</p>
+        ) : logs.length === 0 ? (
+          <p className="cc-empty">
+            {hasFilters ? 'No questions match these filters. Try clearing them.' : 'No questions logged yet. Enter a LeetCode number above to log your first.'}
+          </p>
+        ) : (
+          <>
+            <ul className="cc-list">
+              {logs.map(log => (
+                <li key={log.id} className="cc-row dsa-row">
+                  <span className="cc-qnum">#{log.questionNumber}</span>
+                  <div className="cc-row-text">
+                    <span>
+                      {log.titleSlug ? (
+                        <a
+                          href={`https://leetcode.com/problems/${log.titleSlug}/`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          {log.difficulty}
-                        </span>
-                      </td>
-                      <td style={{ padding: '0.85rem 1.5rem', maxWidth: '250px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }} title={log.notes}>
-                        {log.notes || '-'}
-                      </td>
-                      <td style={{ padding: '0.85rem 1.5rem', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                        <button
-                          onClick={() => toggleRevisit(log)}
-                          className={`dsa-revisit-btn ${log.revisit ? 'active' : ''}`}
-                          title={log.revisit ? 'Marked to revisit' : 'Mark to revisit'}
-                        >
-                          <Bookmark size={16} fill={log.revisit ? 'currentColor' : 'none'} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(log.id)}
-                          style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s ease' }}
-                          className="btn-trash-hover"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Pagination Controls */}
-              {totalLogs > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.04)', fontSize: '0.75rem', color: 'var(--text-secondary)' }} className="pagination-bar">
-                  <div style={{ paddingLeft: '1.5rem' }}>
-                    Showing <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{Math.min((currentPage - 1) * limit + 1, totalLogs)}</span> to <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{Math.min(currentPage * limit, totalLogs)}</span> of <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{totalLogs}</span> questions
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', paddingRight: '1.5rem', paddingBottom: '1rem' }}>
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="mirror-btn-pill"
-                      style={{ padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', gap: '2px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1, border: '1px solid var(--border-light)' }}
-                    >
-                      <ChevronLeft size={12} />
-                      <span>Prev</span>
-                    </button>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', minWidth: '70px', textAlign: 'center' }}>
-                      Page {currentPage} of {totalPages}
+                          {log.title || 'Unknown question'}
+                        </a>
+                      ) : (
+                        log.title || 'Unknown question'
+                      )}
                     </span>
+                    {(log.topics?.length > 0 || log.notes) && (
+                      <small title={log.notes || undefined}>
+                        {[log.topics?.slice(0, 3).join(' · '), log.notes].filter(Boolean).join(' · ')}
+                      </small>
+                    )}
+                  </div>
+                  <span className={`cc-diff ${diffClass(log.difficulty)}`}>{log.difficulty}</span>
+                  <span className="dsa-date">{formatDate(log.date)}</span>
+                  <div className="dsa-actions">
                     <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages || totalPages === 0}
-                      className="mirror-btn-pill"
-                      style={{ padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', gap: '2px', cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer', opacity: (currentPage === totalPages || totalPages === 0) ? 0.4 : 1, border: '1px solid var(--border-light)' }}
+                      type="button"
+                      onClick={() => toggleRevisit(log)}
+                      className={`ui-icon-btn ${log.revisit ? 'on' : ''}`}
+                      aria-pressed={!!log.revisit}
+                      aria-label={log.revisit ? `Remove #${log.questionNumber} from revisit` : `Mark #${log.questionNumber} to revisit`}
+                      title={log.revisit ? 'Marked to revisit' : 'Mark to revisit'}
                     >
-                      <span>Next</span>
-                      <ChevronRight size={12} />
+                      <Bookmark size={16} fill={log.revisit ? 'currentColor' : 'none'} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(log.id)}
+                      className="ui-icon-btn danger"
+                      aria-label={`Delete #${log.questionNumber}`}
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
                     </button>
                   </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+                </li>
+              ))}
+            </ul>
 
+            <div className="dsa-pager">
+              <span>
+                {Math.min((currentPage - 1) * limit + 1, totalLogs)}-{Math.min(currentPage * limit, totalLogs)} of {totalLogs}
+              </span>
+              <div className="dsa-pager-ctrl">
+                <button
+                  type="button"
+                  className="ui-icon-btn"
+                  aria-label="Previous page"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span>Page {currentPage} of {totalPages}</span>
+                <button
+                  type="button"
+                  className="ui-icon-btn"
+                  aria-label="Next page"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </section>
     </div>
   );
 };
