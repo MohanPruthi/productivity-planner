@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { bubbleForResponse, confusedLine, errorLine } from './lines';
 import { runUiActions } from './actions';
+import { play } from './sfx';
 import '../../styles/assistant.css';
 
 const BUBBLE_MS = 3500;
@@ -55,6 +56,7 @@ const AssistantButton = () => {
   const handleResponse = useCallback((res) => {
     const b = bubbleForResponse(res);
     showBubble(b);
+    play(b.kind === 'error' ? 'error' : b.kind === 'confirm' ? 'confirm' : 'success');
     settle(b.kind === 'error' ? 'error' : b.kind === 'confirm' ? 'idle' : 'done');
     runUiActions(res.ui, latest.current.navigate);
   }, [showBubble, settle]);
@@ -63,6 +65,7 @@ const AssistantButton = () => {
     sessionRef.current?.cancel();
     sessionRef.current = null;
     busyRef.current = false;
+    play('cancel');
     setHeard('');
     setState('idle');
   }, []);
@@ -70,6 +73,8 @@ const AssistantButton = () => {
   const start = useCallback(async () => {
     if (busyRef.current) return;
     busyRef.current = true;
+    play('tap');
+    play('listenStart', 0.12);
     clearBubbleTimer();
     setBubble(null);
     setHeard('');
@@ -79,6 +84,7 @@ const AssistantButton = () => {
       engineRef.current ||= await import('./voiceEngine');
     } catch {
       busyRef.current = false;
+      play('error');
       showBubble({ kind: 'error', text: errorLine('network') });
       settle('error');
       return;
@@ -88,11 +94,12 @@ const AssistantButton = () => {
       getAuthHeaders: () => latest.current.getAuthHeaders(),
       onPartial: setHeard,
       onLevel: (v) => rootRef.current?.style.setProperty('--lvl', String(v)),
-      onIdle: () => { sessionRef.current = null; busyRef.current = false; setHeard(''); setState('idle'); },
+      onIdle: () => { play('listenStop'); sessionRef.current = null; busyRef.current = false; setHeard(''); setState('idle'); },
       onError: (kind) => {
         sessionRef.current = null;
         busyRef.current = false;
         setHeard('');
+        play('error');
         showBubble({ kind: 'error', text: errorLine(kind) });
         settle('error');
       },
@@ -101,11 +108,15 @@ const AssistantButton = () => {
         setHeard('');
         if (!text) {
           busyRef.current = false;
+          play('listenStop');
+          play('error', 0.2);
           showBubble({ kind: 'reply', text: confusedLine() });
           settle('idle');
           return;
         }
         setState('thinking');
+        play('listenStop');
+        play('thinking', 0.25);
         const { getAuthHeaders: gh, privacyMode: pm, route } = latest.current;
         const res = await engine.sendCommand(text, route, pm, gh);
         busyRef.current = false;
@@ -122,10 +133,11 @@ const AssistantButton = () => {
   const confirm = async (token) => {
     setBubble(null);
     setState('thinking');
+    play('thinking');
     const res = await engineRef.current.sendConfirm(token, latest.current.getAuthHeaders);
     handleResponse(res);
   };
-  const dismissConfirm = useCallback(() => { setBubble(null); settle('idle'); }, [settle]);
+  const dismissConfirm = useCallback(() => { play('cancel'); setBubble(null); settle('idle'); }, [settle]);
 
   // Escape: cancel listening, or dismiss a pending confirmation
   useEffect(() => {
