@@ -3790,3 +3790,86 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
 .settings-item-title { margin: 0; font-size: 0.95rem !important; font-weight: 600 !important; color: var(--text-primary); }
 .settings-item-desc { margin: 0.1rem 0 0; font-size: var(--fs-small); color: var(--text-secondary); }
 .settings-item form { border-top-color: var(--hairline) !important; }
+
+/* ======================================================================
+   Redo 5 · Phones and small tablets: the page scrolls as a whole, the
+   sidebar shrinks to a slim top bar (logo, theme, workspace, settings,
+   sign out) and the sections move to a tab bar along the bottom.
+   ====================================================================== */
+@media (max-width: 1100px) {
+  body { height: auto; min-height: 100vh; overflow-y: auto; }
+  .app-container { height: auto; min-height: 100vh; overflow: visible; }
+}
+@media (max-width: 720px) {
+  .app-container { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .sidebar-aside {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .sidebar-brand { margin-bottom: 0 !important; }
+  .brand-title { font-size: 1.15rem !important; }
+
+  .sidebar-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    flex: none;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    gap: 0;
+    margin: 0;
+    padding: 0.35rem 0.25rem calc(0.35rem + env(safe-area-inset-bottom));
+    background: var(--surface-1);
+    border-top: 1px solid var(--hairline);
+  }
+  .sidebar-nav .nav-link {
+    flex: 1;
+    max-width: 64px;
+    min-height: 48px;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+  }
+  .sidebar-nav .nav-link.active { border: none; }
+  /* Labels stay for screen readers; the icons carry it on screen */
+  .sidebar-nav .nav-link span,
+  .btn-logout span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sidebar-footer {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0;
+    border: none;
+  }
+  .sidebar-footer > div:first-child {
+    border-top: none !important;
+    padding-top: 0 !important;
+    width: auto !important;
+    gap: 0.4rem !important;
+  }
+  .sidebar-footer .user-profile { display: none !important; }
+  .btn-logout { width: 36px; height: 36px; padding: 0; }
+
+  .main-content { padding: 1.25rem 1rem; }
+  .page-header-title { font-size: 1.3rem; }
+}

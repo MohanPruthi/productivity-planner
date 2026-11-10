@@ -336,7 +336,7 @@ const Dashboard = () => {
         </div>
         
         {/* Streak indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <div className="dashboard-header-tools" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem 1.5rem', flexWrap: 'wrap' }}>
           {/* Day switches */}
           <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '4px', borderRadius: '9999px', border: '1px solid var(--border-light)' }}>
             <button 

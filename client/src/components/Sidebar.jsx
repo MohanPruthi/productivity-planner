@@ -192,6 +192,7 @@ const Sidebar = () => {
               flexShrink: 0
             }}
             className="theme-toggle-btn"
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
             title={theme === 'light' ? 'Switch to Dark Mode (Study at Night)' : 'Switch to Light Mode (Study in Day)'}
             onMouseOver={(e) => {
               e.currentTarget.style.color = 'var(--accent-primary)';
@@ -227,6 +228,7 @@ const Sidebar = () => {
               flexShrink: 0
             }}
             className="privacy-toggle-btn"
+            aria-label={privacyMode ? 'Switch to personal workspace' : 'Switch to office workspace'}
             title={privacyMode ? 'Switch to Personal Workspace' : 'Switch to Office Workspace'}
             onMouseOver={(e) => {
               e.currentTarget.style.color = 'var(--accent-primary)';
@@ -263,6 +265,7 @@ const Sidebar = () => {
               textDecoration: 'none'
             }}
             className="settings-toggle-btn"
+            aria-label="Settings"
             title="Settings"
             onMouseOver={(e) => {
               e.currentTarget.style.color = 'var(--accent-primary)';
@@ -307,9 +310,9 @@ const Sidebar = () => {
           </div>
         </div>
         
-        <button className="btn-logout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={logout}>
+        <button className="btn-logout" aria-label="Sign out" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={logout}>
           <LogOut size={18} />
-          <span>Sign Out</span>
+          <span>Sign out</span>
         </button>
       </div>
     </aside>
