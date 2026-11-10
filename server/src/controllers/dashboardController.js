@@ -53,11 +53,7 @@ async function getTodayDashboard(req, res) {
         },
         include: {
           plan: true,
-          planDays: {
-            include: {
-              planWeek: { include: { plan: true } }
-            }
-          }
+          planDays: true
         }
       }),
       prisma.planDay.findMany({
@@ -187,41 +183,26 @@ async function getWeeklyDashboard(req, res) {
     const today = new Date();
     const { startOfWeek, endOfWeek } = getStartAndEndOfWeek(today);
 
-    // 1. Find plan periods covering the current date
-    const activeWeeks = await prisma.planWeek.findMany({
-      where: {
-        userId,
-        startDate: { lte: today },
-        endDate: { gte: today },
-      },
-      include: {
-        planDays: true,
-        plan: true,
-      },
-    });
+    // Streak only needs recent history; scan roughly the last 400 days
+    const streakSince = new Date(today);
+    streakSince.setHours(0, 0, 0, 0);
+    streakSince.setDate(streakSince.getDate() - 400);
 
-    // Fallback: for plans with no period covering today, use their latest period
-    const allActiveWeeks = [...activeWeeks];
-    const plans = await prisma.plan.findMany({ where: { userId }, select: { id: true } });
-    const missingPlans = plans.filter((p) => !allActiveWeeks.some((w) => w.planId === p.id));
-    const latestWeeks = await Promise.all(missingPlans.map((p) =>
-      prisma.planWeek.findFirst({
-        where: { planId: p.id },
-        orderBy: { weekNumber: 'desc' },
-        include: { planDays: true, plan: true },
-      })
-    ));
-    latestWeeks.forEach((latestWeek) => {
-      if (latestWeek) {
-        allActiveWeeks.push(latestWeek);
-      }
-    });
-
-    const [
-      dsaLogsThisWeek,
-      completedDays,
-      dsaDays,
-    ] = await Promise.all([
+    // Everything here is independent, so run it together
+    const [activeWeeks, plans, dsaLogsThisWeek, completedDays, dsaDays] = await Promise.all([
+      // Plan periods covering the current date
+      prisma.planWeek.findMany({
+        where: {
+          userId,
+          startDate: { lte: today },
+          endDate: { gte: today },
+        },
+        include: {
+          planDays: true,
+          plan: true,
+        },
+      }),
+      prisma.plan.findMany({ where: { userId }, select: { id: true } }),
       prisma.dsaLog.findMany({
         where: {
           userId,
@@ -232,14 +213,29 @@ async function getWeeklyDashboard(req, res) {
         },
       }),
       prisma.planDay.findMany({
-        where: { userId, isDone: true },
+        where: { userId, isDone: true, date: { gte: streakSince } },
         select: { date: true },
       }),
       prisma.dsaLog.findMany({
-        where: { userId },
+        where: { userId, date: { gte: streakSince } },
         select: { date: true },
       }),
     ]);
+
+    // Fallback: for plans with no period covering today, use their latest period (one query)
+    const allActiveWeeks = [...activeWeeks];
+    const missingIds = plans
+      .filter((p) => !allActiveWeeks.some((w) => w.planId === p.id))
+      .map((p) => p.id);
+    if (missingIds.length > 0) {
+      const candidates = await prisma.planWeek.findMany({
+        where: { planId: { in: missingIds } },
+        orderBy: [{ planId: 'asc' }, { weekNumber: 'desc' }],
+        distinct: ['planId'],
+        include: { planDays: true, plan: true },
+      });
+      allActiveWeeks.push(...candidates);
+    }
 
     const weeklyProgress = allActiveWeeks.map((week) => {
       const totalDays = week.planDays.length;
@@ -375,7 +371,42 @@ async function getHistoryDashboard(req, res) {
   }
 }
 
+// Local dates (YYYY-MM-DD) in [from, to] that have at least one plan day or normal task
+async function getPlannedDates(req, res) {
+  try {
+    const userId = req.user.id;
+    const { from, to } = req.query;
+    const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRe.test(from || '') || !dateRe.test(to || '')) {
+      return res.status(400).json({ error: 'from and to must be YYYY-MM-DD' });
+    }
+    const [fy, fm, fd] = from.split('-').map(Number);
+    const [ty, tm, td] = to.split('-').map(Number);
+    const start = new Date(fy, fm - 1, fd, 0, 0, 0, 0);
+    const end = new Date(ty, tm - 1, td, 23, 59, 59, 999);
+    if (isNaN(start) || isNaN(end) || end < start) {
+      return res.status(400).json({ error: 'Invalid date range' });
+    }
+
+    const where = { userId, date: { gte: start, lte: end } };
+    const [planDays, normalTasks] = await Promise.all([
+      prisma.planDay.findMany({ where, select: { date: true } }),
+      prisma.normalTask.findMany({ where, select: { date: true } }),
+    ]);
+
+    const dates = new Set();
+    planDays.forEach((d) => dates.add(toLocalDateStr(d.date)));
+    normalTasks.forEach((d) => dates.add(toLocalDateStr(d.date)));
+
+    res.json({ plannedDates: [...dates].sort() });
+  } catch (error) {
+    console.error('Error fetching planned dates:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 module.exports = {
+  getPlannedDates,
   getTodayDashboard,
   getWeeklyDashboard,
   getHistoryDashboard
