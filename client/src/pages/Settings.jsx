@@ -264,21 +264,20 @@ const Settings = () => {
         </div>
       </header>
 
+      <div className="settings-list">
       {/* ========================================================= */}
       {/* 1. ZEN ZONE TARGETS CARD (Accordion Dropdown)             */}
       {/* ========================================================= */}
       <div 
-        className="glass-card" 
-        style={{ 
-          borderRadius: '20px', 
-          overflow: 'hidden',
-          border: '1px solid var(--border-light)',
-          transition: 'all 0.25s ease'
-        }}
+        className="settings-item"
       >
         {/* Accordion Header */}
         <div 
           onClick={() => setIsZenSectionOpen(prev => !prev)}
+          role="button"
+          tabIndex={0}
+          className="settings-item-head"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsZenSectionOpen(prev => !prev); } }}
           style={{ 
             padding: '1.25rem 1.75rem',
             display: 'flex', 
@@ -291,10 +290,8 @@ const Settings = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <Flame size={18} color="#ff9500" />
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>
-              Zen Zone Targets
-            </h2>
+            <span className="settings-item-icon"><Flame size={17} /></span>
+            <div><h2 className="settings-item-title">Zen Zone targets</h2><p className="settings-item-desc">Daily focus goals for the Zen Zone timer</p></div>
           </div>
 
           <div 
@@ -465,17 +462,15 @@ const Settings = () => {
       {/* ========================================================= */}
       {!privacyMode && (
         <div 
-          className="glass-card" 
-          style={{ 
-            borderRadius: '20px', 
-            overflow: 'hidden',
-            border: '1px solid var(--border-light)',
-            transition: 'all 0.25s ease'
-          }}
+          className="settings-item"
         >
           {/* Accordion Header */}
           <div 
             onClick={() => setIsVisibilitySectionOpen(prev => !prev)}
+          role="button"
+          tabIndex={0}
+          className="settings-item-head"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsVisibilitySectionOpen(prev => !prev); } }}
             style={{ 
               padding: '1.25rem 1.75rem',
               display: 'flex', 
@@ -488,10 +483,8 @@ const Settings = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <Sliders size={18} color="var(--accent-primary)" />
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>
-                Office Workspace Visibility
-              </h2>
+              <span className="settings-item-icon"><Sliders size={17} /></span>
+              <div><h2 className="settings-item-title">Office workspace</h2><p className="settings-item-desc">Choose what stays hidden in office space</p></div>
             </div>
 
             <div 
@@ -666,17 +659,15 @@ const Settings = () => {
       {/* 3. CHANGE SECURITY PIN (At Bottom with Accordion)        */}
       {/* ========================================================= */}
       <div 
-        className="glass-card" 
-        style={{ 
-          borderRadius: '20px', 
-          overflow: 'hidden',
-          border: '1px solid var(--border-light)',
-          transition: 'all 0.25s ease'
-        }}
+        className="settings-item"
       >
         {/* Accordion Header */}
         <div 
           onClick={() => setIsPinSectionOpen(prev => !prev)}
+          role="button"
+          tabIndex={0}
+          className="settings-item-head"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsPinSectionOpen(prev => !prev); } }}
           style={{ 
             padding: '1.25rem 1.75rem',
             display: 'flex', 
@@ -690,10 +681,8 @@ const Settings = () => {
         >
           {/* Left Title */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <KeyRound size={18} color="#007aff" />
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>
-              Change Security PIN
-            </h2>
+            <span className="settings-item-icon"><KeyRound size={17} /></span>
+            <div><h2 className="settings-item-title">Security PIN</h2><p className="settings-item-desc">The 4-digit PIN that opens personal space</p></div>
           </div>
 
           {/* Right Chevron Icon */}
@@ -865,6 +854,7 @@ const Settings = () => {
             </div>
           </form>
         )}
+      </div>
       </div>
 
       {/* When NOT in Personal Space: Yellow Glass Unlock Button */}

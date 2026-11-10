@@ -3754,3 +3754,39 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
 @media (max-width: 1100px) {
   .meds-layout { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ======================================================================
+   Redo 4 · Settings: the three sections become rows of one list, each
+   with a one-line description. Rows open in place and work by keyboard.
+   ====================================================================== */
+.settings-list {
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface-1);
+  overflow: hidden;
+}
+.settings-item + .settings-item { border-top: 1px solid var(--hairline); }
+.settings-item-head {
+  padding: 1rem 1.25rem !important;
+  border-radius: 0;
+}
+.settings-item-head:hover { background: color-mix(in srgb, var(--text-primary) 3%, transparent) !important; }
+.settings-item-head:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tone) 70%, transparent);
+  outline-offset: -2px;
+}
+.settings-item-head > div:first-child { gap: 0.85rem !important; }
+.settings-item-icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+}
+.settings-item-title { margin: 0; font-size: 0.95rem !important; font-weight: 600 !important; color: var(--text-primary); }
+.settings-item-desc { margin: 0.1rem 0 0; font-size: var(--fs-small); color: var(--text-secondary); }
+.settings-item form { border-top-color: var(--hairline) !important; }
