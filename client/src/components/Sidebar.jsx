@@ -78,6 +78,18 @@ const RING_TICK_PATHS = {
 const LogoIcon = ({ personal }) => {
   return (
     <svg className={`brand-logo ${personal ? 'lit' : ''}`} width="30" height="30" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        {/* Used by themes: Aurora's gradient stroke and Notebook's inked line */}
+        <linearGradient id="logo-aurora" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#a78bfa" />
+          <stop offset="0.55" stopColor="#22d3ee" />
+          <stop offset="1" stopColor="#f472b6" />
+        </linearGradient>
+        <filter id="logo-ink">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="3" />
+          <feDisplacementMap in="SourceGraphic" scale="2.2" />
+        </filter>
+      </defs>
       <path className="bl-disc" d={RING_TICK_PATHS.disc} />
       <path className="bl-echo" d={RING_TICK_PATHS.echo} />
       <g className="bl-ticks">
