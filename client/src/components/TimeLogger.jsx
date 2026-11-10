@@ -656,6 +656,34 @@ const TimeLogger = () => {
   };
 
 
+  // Voice assistant ("Blipo") drives the Pomodoro through a window event
+  const zenHandlerRef = useRef(null);
+  zenHandlerRef.current = (detail) => {
+    const modes = { focus: 'work', short: 'shortBreak', long: 'longBreak' };
+    // Same as the buttons: start = Start Lock-In (plus the Pomodoro when a mode is named),
+    // pause = Pause Lock-In (stops both), reset = Pomodoro only (never wipes logged focus time)
+    if (detail?.op === 'start') {
+      setIsMainClockRunning(true);
+      if (detail.mode && modes[detail.mode]) {
+        if (modes[detail.mode] !== pomoMode) resetPomo(modes[detail.mode]);
+        startPomo();
+      }
+    } else if (detail?.op === 'pause') {
+      setIsMainClockRunning(false);
+      setIsPomoActive(false);
+    } else if (detail?.op === 'reset') {
+      resetPomo(pomoMode);
+    } else if (detail?.op === 'mode' && modes[detail.mode]) {
+      resetPomo(modes[detail.mode]);
+    }
+  };
+  useEffect(() => {
+    const onZen = (e) => zenHandlerRef.current?.(e.detail);
+    window.addEventListener('zen-command', onZen);
+    return () => window.removeEventListener('zen-command', onZen);
+  }, []);
+
+
   // Time Digit Renderer (Clean light-weight digits matching reference image)
   const renderReferenceDigits = (seconds, isTicking, activeColor) => {
     const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
