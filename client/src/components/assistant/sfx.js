@@ -33,47 +33,51 @@ const SOUNDS = {
   cancel: [n(150, 70, 0, 0.1, 'square', 0.4), n(110, 60, 0, 0.12, 'sine', 1)],
 };
 
-// A cute little voiced hum ("hm-hmm?"): a soft buzzy tone with vibrato, shaped by a
-// low nasal formant so it reads as humming rather than a beep.
-const hum = (c, s, f0, f1, d, v = 1) => {
-  const o = c.createOscillator();
-  const lfo = c.createOscillator();
-  const lfoGain = c.createGain();
-  const nasal = c.createBiquadFilter();
-  const soft = c.createBiquadFilter();
-  const g = c.createGain();
-  o.type = 'sawtooth';
-  o.frequency.setValueAtTime(f0, s);
-  o.frequency.exponentialRampToValueAtTime(f1, s + d);
-  lfo.frequency.value = 7;
-  lfoGain.gain.value = f0 * 0.02;
-  lfo.connect(lfoGain).connect(o.frequency);
-  nasal.type = 'bandpass';
-  nasal.frequency.value = 280;
-  nasal.Q.value = 1.4;
-  soft.type = 'lowpass';
-  soft.frequency.value = 900;
-  g.gain.setValueAtTime(0.0001, s);
-  g.gain.exponentialRampToValueAtTime(0.5 * v, s + 0.04);
-  g.gain.setValueAtTime(0.5 * v, s + d * 0.6);
-  g.gain.exponentialRampToValueAtTime(0.0001, s + d);
-  o.connect(nasal).connect(soft).connect(g).connect(c.destination);
-  o.start(s);
-  lfo.start(s);
-  o.stop(s + d + 0.03);
-  lfo.stop(s + d + 0.03);
+// Tap sound: a soft water-drop "bloop" and a curious rising "bip?" (round sine
+// tones, no voice imitation). If a real clip exists at /sfx/hum.mp3 it is used
+// instead; the synth stays as the fallback.
+const bloop = (c, s) => {
+  const tone = (f0, f1, at, d, v) => {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f0, s + at);
+    o.frequency.exponentialRampToValueAtTime(f1, s + at + d);
+    g.gain.setValueAtTime(0.0001, s + at);
+    g.gain.exponentialRampToValueAtTime(0.16 * v, s + at + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, s + at + d);
+    o.connect(g).connect(c.destination);
+    o.start(s + at);
+    o.stop(s + at + d + 0.02);
+  };
+  tone(1200, 320, 0, 0.11, 1.1);   // bloop (drop)
+  tone(380, 520, 0.09, 0.08, 0.6); // little bounce
+  tone(620, 1180, 0.22, 0.16, 0.9); // bip? (rising, curious)
 };
 
-// "hm" then a longer rising "hmm?" (about 0.6 s)
-const HUM = [[330, 350, 0, 0.17, 0.9], [300, 400, 0.24, 0.34, 1]];
+let clip = null;       // HTMLAudioElement once loaded
+let clipState = 'unknown'; // 'unknown' | 'loading' | 'ok' | 'missing'
+const loadClip = () => {
+  if (clipState !== 'unknown' || typeof Audio === 'undefined') return;
+  clipState = 'loading';
+  const a = new Audio('/sfx/hum.mp3');
+  a.preload = 'auto';
+  a.volume = 0.6;
+  a.addEventListener('canplaythrough', () => { clip = a; clipState = 'ok'; }, { once: true });
+  a.addEventListener('error', () => { clipState = 'missing'; }, { once: true });
+  a.load();
+};
 
 export const play = (name, delay = 0) => {
   if (muted || typeof document === 'undefined' || document.hidden) return;
   if (name === 'hum') {
+    loadClip();
+    if (clipState === 'ok' && clip) {
+      try { clip.currentTime = 0; clip.play().catch(() => {}); return; } catch { /* fall back */ }
+    }
     const c = getCtx();
     if (!c) return;
-    const t0 = c.currentTime + delay;
-    for (const [f0, f1, at, d, v] of HUM) hum(c, t0 + at, f0, f1, d, v);
+    bloop(c, c.currentTime + delay);
     return;
   }
   const notes = SOUNDS[name];

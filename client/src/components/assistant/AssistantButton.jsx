@@ -73,9 +73,9 @@ const AssistantButton = () => {
   const start = useCallback(async () => {
     if (busyRef.current) return;
     busyRef.current = true;
-    // Cute "hm-hmm?" then the quick mic chirp
+    // Cute bloop-bip (or /sfx/hum.mp3 if present), then the quick mic chirp
     play('hum');
-    play('listenStart', 0.6);
+    play('listenStart', 0.45);
     clearBubbleTimer();
     setBubble(null);
     setHeard('');
