@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TimeLogger from './TimeLogger';
+import ZenDock from './ZenDock';
 import MedReminder from './MedReminder';
 import { useAuth } from '../context/AuthContext';
 
@@ -56,7 +57,9 @@ const Layout = ({ children }) => {
           {children}
         </div>
       </main>
-      <TimeLogger />
+      <ZenDock>
+        <TimeLogger />
+      </ZenDock>
       <MedReminder />
     </div>
   );

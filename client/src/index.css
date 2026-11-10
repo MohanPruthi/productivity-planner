@@ -3961,3 +3961,63 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
   .btn-logout { width: 40px; height: 40px; padding: 0; }
   .btn-logout span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 }
+
+/* ======================================================================
+   Redo 9 · Zen Zone dock (Zen Zone change, kept in its own commit).
+   On wide screens Zen Zone can fold into a slim dock; it stays mounted,
+   so a running timer keeps running. Below 1100px it stacks as before.
+   ====================================================================== */
+.zen-dock { display: contents; }
+.zen-dock-fold, .zen-dock-mini { display: none; }
+@media (min-width: 1101px) {
+  .zen-dock { display: flex; flex: none; position: sticky; top: 0; height: 100vh; }
+  .zen-dock.is-folded .zen-dock-panel { display: none; }
+  .zen-dock-panel { display: flex; height: 100%; }
+  .zen-dock-fold {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 1.55rem;
+    right: 1.25rem;
+    z-index: 101;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: 1px solid var(--hairline);
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .zen-dock-fold:hover { color: var(--text-primary); border-color: var(--hairline-strong); }
+  .zen-dock-mini {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    width: 76px;
+    height: 100%;
+    padding: 1.4rem 0;
+    border: none;
+    border-left: 1px solid var(--hairline);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font: inherit;
+    cursor: pointer;
+  }
+  .zen-dock-mini:hover { color: var(--text-primary); }
+  .zen-dock-mini:focus-visible { outline: 2px solid #ff6b3d; outline-offset: -4px; }
+  .zen-dock-ring {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255, 69, 58, 0.28);
+    color: #ff6b3d;
+  }
+  .zen-dock-ring.running { border-color: #ff453a; }
+  .zen-dock-label { font-size: 0.72rem; font-weight: 700; color: #ff6b3d; }
+  .zen-dock-time { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); }
+}
