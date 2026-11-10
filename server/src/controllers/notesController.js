@@ -75,7 +75,7 @@ async function updateNote(req, res) {
   try {
     const userId = req.user.id;
     const { id } = req.params;
-    const { title, content, colorTag, isPersonal, isPinned, type, checklist } = req.body;
+    const { title, content, colorTag, isPersonal, isPinned, type, checklist, groupId } = req.body;
 
     const existingNote = await prisma.note.findFirst({
       where: { id, userId }
@@ -96,6 +96,17 @@ async function updateNote(req, res) {
     }
 
     const updateData = {};
+    if (groupId !== undefined) {
+      if (groupId === null) {
+        updateData.groupId = null;
+      } else {
+        const group = typeof groupId === 'string'
+          ? await prisma.noteGroup.findFirst({ where: { id: groupId, userId } })
+          : null;
+        if (!group) return res.status(404).json({ error: 'Group not found' });
+        updateData.groupId = group.id;
+      }
+    }
     if (title !== undefined) updateData.title = title.trim();
     if (content !== undefined) updateData.content = content.trim();
     if (type !== undefined) updateData.type = type === 'todo' ? 'todo' : 'note';

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import '../styles/notes.css';
 import Illustration from '../components/Illustration';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -18,7 +19,10 @@ import {
   X, 
   Check, 
   AlertCircle,
-  Clock
+  Clock,
+  Folder,
+  FolderInput,
+  FolderMinus
 } from 'lucide-react';
 
 const TAG_COLORS = [
@@ -57,6 +61,34 @@ const formatRelativeTime = (dateStr) => {
   return `${d.getDate()} ${months[d.getMonth()]}`;
 };
 
+// Editable group name; commits on blur or Enter
+const GroupNameField = ({ name, autoFocus, onCommit }) => {
+  const [draft, setDraft] = useState(name);
+  useEffect(() => { setDraft(name); }, [name]);
+  const commit = () => {
+    const next = draft.trim() || 'New group';
+    setDraft(next);
+    if (next !== name) onCommit(next);
+  };
+  return (
+    <input
+      type="text"
+      className="input-control notes-group-name-input"
+      aria-label="Group name"
+      value={draft}
+      maxLength={80}
+      autoFocus={autoFocus}
+      onFocus={(e) => autoFocus && e.target.select()}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur();
+        if (e.key === 'Escape') { setDraft(name); e.currentTarget.blur(); }
+      }}
+    />
+  );
+};
+
 const Notes = () => {
   const navigate = useNavigate();
   const { getAuthHeaders, privacyMode } = useAuth();
@@ -65,6 +97,16 @@ const Notes = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef(null);
+
+  // Groups + drag and drop state
+  const [groups, setGroups] = useState([]);
+  const [openGroupId, setOpenGroupId] = useState(null);
+  const [renameFocusId, setRenameFocusId] = useState(null);
+  const [dragNoteId, setDragNoteId] = useState(null);
+  const [dropTarget, setDropTarget] = useState(null); // 'note:<id>' | 'group:<id>' | 'page'
+  const panelRef = useRef(null);
 
   // Quick Create Metadata Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -102,6 +144,13 @@ const Notes = () => {
       if (!res.ok) throw new Error('Failed to load notes');
       const data = await res.json();
       setNotes(data || []);
+      try {
+        const gres = await fetch(`${API_BASE_URL}/api/note-groups`, { headers: getAuthHeaders() });
+        setGroups(gres.ok ? ((await gres.json()) || []) : []);
+      } catch (gerr) {
+        console.error(gerr);
+        setGroups([]);
+      }
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -133,16 +182,44 @@ const Notes = () => {
     });
   }, [notes, privacyMode, searchQuery]);
 
-  // Separate pinned and unpinned notes
+  // Groups: a group shows only if it has at least one visible note; only visible notes are listed/counted
+  const groupIds = useMemo(() => new Set(groups.map(g => g.id)), [groups]);
+  const visibleGroups = useMemo(() => {
+    return groups
+      .map(g => ({ ...g, visibleNotes: visibleNotes.filter(n => n.groupId === g.id) }))
+      .filter(g => g.visibleNotes.length > 0);
+  }, [groups, visibleNotes]);
+
+  // Groups offered in the "Move to group" menu (ignores search, respects office mode)
+  const movableGroups = useMemo(() => {
+    return groups.filter(g => notes.some(n => n.groupId === g.id && !(privacyMode && n.isPersonal)));
+  }, [groups, notes, privacyMode]);
+
+  // Separate pinned and unpinned notes (grouped notes live inside their group)
   const { pinnedNotes, unpinnedNotes } = useMemo(() => {
     const pinned = [];
     const unpinned = [];
     visibleNotes.forEach(n => {
+      if (n.groupId && groupIds.has(n.groupId)) return;
       if (n.isPinned) pinned.push(n);
       else unpinned.push(n);
     });
     return { pinnedNotes: pinned, unpinnedNotes: unpinned };
-  }, [visibleNotes]);
+  }, [visibleNotes, groupIds]);
+
+  const openGroup = visibleGroups.find(g => g.id === openGroupId) || null;
+  const openGroupKey = openGroup ? openGroup.id : null;
+
+  useEffect(() => {
+    if (openGroupKey && panelRef.current) {
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      panelRef.current.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    }
+  }, [openGroupKey]);
+
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) searchInputRef.current.focus();
+  }, [searchOpen]);
 
   // Open Quick Metadata Create Modal
   const handleOpenCreate = (initialType = 'note') => {
@@ -253,7 +330,10 @@ const Notes = () => {
       });
 
       if (!res.ok) throw new Error('Failed to delete note');
-      setNotes(prev => prev.filter(n => n.id !== noteId));
+      const deleted = notes.find(n => n.id === noteId);
+      const remaining = notes.filter(n => n.id !== noteId);
+      setNotes(remaining);
+      if (deleted && deleted.groupId) pruneGroupIfEmpty(deleted.groupId, remaining);
     } catch (err) {
       console.error(err);
       showToast('Error deleting note');
@@ -298,6 +378,159 @@ const Notes = () => {
     }
   };
 
+  // ---- Groups ----
+  const jsonHeaders = () => ({ ...getAuthHeaders(), 'Content-Type': 'application/json' });
+
+  // Delete a group that no longer holds any notes
+  const pruneGroupIfEmpty = async (groupId, remainingNotes) => {
+    if (!groupId || remainingNotes.some(n => n.groupId === groupId)) return;
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+    setOpenGroupId(cur => (cur === groupId ? null : cur));
+    try {
+      await fetch(`${API_BASE_URL}/api/note-groups/${groupId}`, { method: 'DELETE', headers: getAuthHeaders() });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const moveNote = async (noteId, groupId) => {
+    const note = notes.find(n => n.id === noteId);
+    if (!note || (note.groupId || null) === groupId) return;
+    const oldGroupId = note.groupId || null;
+    const before = notes;
+    const after = notes.map(n => n.id === noteId ? { ...n, groupId } : n);
+    setNotes(after);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notes/${noteId}`, {
+        method: 'PUT',
+        headers: jsonHeaders(),
+        body: JSON.stringify({ groupId })
+      });
+      if (!res.ok) throw new Error('Failed to move note');
+      const saved = await res.json();
+      setNotes(prev => prev.map(n => n.id === noteId ? saved : n));
+      pruneGroupIfEmpty(oldGroupId, after);
+    } catch (err) {
+      console.error(err);
+      setNotes(before);
+      showToast('Could not move note');
+    }
+  };
+
+  // Create a group holding the given notes, then open it with the name ready to rename
+  const createGroupWith = async (noteIds) => {
+    const oldGroupIds = [...new Set(noteIds.map(id => notes.find(n => n.id === id)?.groupId).filter(Boolean))];
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/note-groups`, {
+        method: 'POST',
+        headers: jsonHeaders(),
+        body: JSON.stringify({ noteIds })
+      });
+      if (!res.ok) throw new Error('Failed to create group');
+      const group = await res.json();
+      const after = notes.map(n => noteIds.includes(n.id) ? { ...n, groupId: group.id } : n);
+      setGroups(prev => [...prev, group]);
+      setNotes(after);
+      setRenameFocusId(group.id);
+      setOpenGroupId(group.id);
+      oldGroupIds.forEach(gid => pruneGroupIfEmpty(gid, after));
+    } catch (err) {
+      console.error(err);
+      showToast('Could not create group');
+    }
+  };
+
+  const renameGroup = async (groupId, name) => {
+    setGroups(prev => prev.map(g => g.id === groupId ? { ...g, name } : g));
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/note-groups/${groupId}`, {
+        method: 'PATCH',
+        headers: jsonHeaders(),
+        body: JSON.stringify({ name })
+      });
+      if (!res.ok) throw new Error('Failed to rename group');
+    } catch (err) {
+      console.error(err);
+      showToast('Could not rename group');
+      fetchNotes();
+    }
+  };
+
+  const handleDeleteGroup = async (group) => {
+    if (!window.confirm(`Delete the group "${group.name}"? Its notes are kept.`)) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/note-groups/${group.id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error('Failed to delete group');
+      setGroups(prev => prev.filter(g => g.id !== group.id));
+      setNotes(prev => prev.map(n => n.groupId === group.id ? { ...n, groupId: null } : n));
+      setOpenGroupId(null);
+    } catch (err) {
+      console.error(err);
+      showToast('Could not delete group');
+    }
+  };
+
+  const handleMoveSelect = (e, note) => {
+    e.stopPropagation();
+    const v = e.target.value;
+    if (v === '__new') createGroupWith([note.id]);
+    else if (v === '__none') moveNote(note.id, null);
+    else if (v) moveNote(note.id, v);
+  };
+
+  // ---- Drag and drop ----
+  const endDrag = () => { setDragNoteId(null); setDropTarget(null); };
+  const draggedNote = dragNoteId ? notes.find(n => n.id === dragNoteId) : null;
+
+  const onNoteDragStart = (e, note) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', note.id);
+    setDragNoteId(note.id);
+  };
+
+  const dragOverTarget = (e, key, allowed) => {
+    if (!dragNoteId || !allowed) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    if (dropTarget !== key) setDropTarget(key);
+  };
+
+  const dragLeaveTarget = (e, key) => {
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    setDropTarget(cur => (cur === key ? null : cur));
+  };
+
+  const onDropOnNote = (e, target) => {
+    if (!dragNoteId || dragNoteId === target.id) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = dragNoteId;
+    endDrag();
+    if (target.groupId && groupIds.has(target.groupId)) moveNote(id, target.groupId);
+    else createGroupWith([target.id, id]);
+  };
+
+  const onDropOnGroup = (e, group) => {
+    if (!dragNoteId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = dragNoteId;
+    endDrag();
+    moveNote(id, group.id);
+  };
+
+  const onDropOnPage = (e) => {
+    if (!draggedNote || !draggedNote.groupId) return;
+    e.preventDefault();
+    const id = dragNoteId;
+    endDrag();
+    moveNote(id, null);
+  };
+
   if (loading) {
     return <Loader text="Loading Notes..." />;
   }
@@ -306,7 +539,7 @@ const Notes = () => {
     return <div className="error-state">Error: {error}</div>;
   }
 
-  const renderNoteCard = (note) => {
+  const renderNoteCard = (note, inGroup = false) => {
     const cardColor = note.colorTag || '#eab308';
     const isTodo = note.type === 'todo';
     const checklist = Array.isArray(note.checklist) ? note.checklist : [];
@@ -317,7 +550,13 @@ const Notes = () => {
       <div
         key={note.id}
         onClick={() => navigate(`/note/${note.id}`)}
-        className="glass-card note-card-curved"
+        draggable
+        onDragStart={(e) => onNoteDragStart(e, note)}
+        onDragEnd={endDrag}
+        onDragOver={(e) => dragOverTarget(e, `note:${note.id}`, dragNoteId !== note.id)}
+        onDragLeave={(e) => dragLeaveTarget(e, `note:${note.id}`)}
+        onDrop={(e) => onDropOnNote(e, note)}
+        className={`glass-card note-card-curved${dragNoteId === note.id ? ' notes-dragging' : ''}${dropTarget === `note:${note.id}` ? ' notes-drop-target' : ''}`}
         style={{
           '--note-color': cardColor,
           position: 'relative',
@@ -524,6 +763,35 @@ const Notes = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            {/* Move to group (keyboard / touch friendly) */}
+            <label className="notes-move" title="Move to group" onClick={(e) => e.stopPropagation()}>
+              <FolderInput size={14} />
+              <select
+                aria-label={`Move "${note.title}" to group`}
+                value=""
+                onChange={(e) => handleMoveSelect(e, note)}
+              >
+                <option value="">Move to group</option>
+                {note.groupId && <option value="__none">No group</option>}
+                {movableGroups.filter(g => g.id !== note.groupId).map(g => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+                <option value="__new">New group</option>
+              </select>
+            </label>
+
+            {inGroup && (
+              <button
+                type="button"
+                className="notes-card-icon-btn"
+                onClick={(e) => { e.stopPropagation(); moveNote(note.id, null); }}
+                title="Remove from group"
+                aria-label="Remove from group"
+              >
+                <FolderMinus size={14} />
+              </button>
+            )}
+
             {/* Pin Button in Bottom Bar */}
             <button
               onClick={(e) => handleTogglePin(e, note)}
@@ -572,6 +840,79 @@ const Notes = () => {
     );
   };
 
+  const renderGroupTile = (group) => {
+    const key = `group:${group.id}`;
+    const count = group.visibleNotes.length;
+    return (
+      <div
+        key={group.id}
+        role="button"
+        tabIndex={0}
+        aria-label={`Open group ${group.name}, ${count} ${count === 1 ? 'note' : 'notes'}`}
+        aria-expanded={openGroupId === group.id}
+        className={`notes-group-tile${dropTarget === key ? ' notes-drop-target' : ''}`}
+        onClick={() => setOpenGroupId(openGroupId === group.id ? null : group.id)}
+        onKeyDown={(e) => {
+          if (e.target !== e.currentTarget) return;
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setOpenGroupId(openGroupId === group.id ? null : group.id);
+          }
+        }}
+        onDragOver={(e) => dragOverTarget(e, key, true)}
+        onDragLeave={(e) => dragLeaveTarget(e, key)}
+        onDrop={(e) => onDropOnGroup(e, group)}
+      >
+        <div className="notes-group-preview" aria-hidden="true">
+          {[0, 1, 2, 3].map(i => (
+            <span key={i} style={group.visibleNotes[i] ? { background: group.visibleNotes[i].colorTag || '#eab308' } : undefined} />
+          ))}
+        </div>
+        <div className="notes-group-meta">
+          <span className="notes-group-name" title={group.name}>{group.name}</span>
+          <span className="notes-group-count">{count} {count === 1 ? 'note' : 'notes'}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderGroupPanel = (group) => (
+    <section
+      ref={panelRef}
+      className="cc-tile notes-group-panel"
+      aria-label={`Group ${group.name}`}
+      onDragOver={(e) => { if (dragNoteId) e.stopPropagation(); }}
+      onDrop={(e) => { if (dragNoteId) { e.stopPropagation(); endDrag(); } }}
+    >
+      <div className="notes-group-head">
+        <Folder size={18} color="var(--tone)" aria-hidden="true" />
+        <GroupNameField
+          key={group.id}
+          name={group.name}
+          autoFocus={renameFocusId === group.id}
+          onCommit={(name) => renameGroup(group.id, name)}
+        />
+        <span className="cc-meta">{group.visibleNotes.length} {group.visibleNotes.length === 1 ? 'note' : 'notes'}</span>
+        <span style={{ flex: 1 }} />
+        <button type="button" className="ui-btn ui-btn-ghost" onClick={() => handleDeleteGroup(group)}>
+          <Trash2 size={14} />
+          <span>Delete group</span>
+        </button>
+        <button type="button" className="ui-icon-btn" onClick={() => setOpenGroupId(null)} aria-label="Close group">
+          <X size={16} />
+        </button>
+      </div>
+      <p className="notes-group-hint">
+        {dragNoteId && draggedNote && draggedNote.groupId === group.id
+          ? 'Drop the note outside this panel to remove it from the group.'
+          : 'Drag a note out of this panel to remove it, or use the folder buttons on each note.'}
+      </p>
+      <div className="notes-group-grid">
+        {group.visibleNotes.map(n => renderNoteCard(n, true))}
+      </div>
+    </section>
+  );
+
   return (
     <div className="notes-page" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem', width: '100%', minHeight: 'calc(100vh - 8rem)', paddingBottom: '3rem' }}>
       
@@ -618,42 +959,47 @@ const Notes = () => {
 
         {/* Action Controls: Search & Create */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Search Box */}
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={15} style={{ position: 'absolute', left: '0.85rem', color: 'var(--text-muted)' }} />
-            <input
-              type="text"
-              placeholder="Search notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-control"
-              style={{
-                paddingLeft: '2.3rem',
-                paddingRight: '0.85rem',
-                paddingTop: '0.55rem',
-                paddingBottom: '0.55rem',
-                fontSize: '0.85rem',
-                borderRadius: '10px',
-                width: '190px'
-              }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                style={{
-                  position: 'absolute',
-                  right: '0.6rem',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  padding: 0,
-                  display: 'flex'
+          {/* Expanding search */}
+          <div className={`notes-search${(searchOpen || searchQuery) ? ' open' : ''}`} role="search">
+            <div className="notes-search-field">
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search notes"
+                aria-label="Search notes"
+                value={searchQuery}
+                tabIndex={(searchOpen || searchQuery) ? 0 : -1}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setSearchQuery('');
+                    setSearchOpen(false);
+                    e.currentTarget.blur();
+                  }
                 }}
-              >
-                <X size={13} />
-              </button>
-            )}
+                className="input-control"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="notes-search-clear"
+                  aria-label="Clear search"
+                  onClick={() => { setSearchQuery(''); if (searchInputRef.current) searchInputRef.current.focus(); }}
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+            <button
+              type="button"
+              className="ui-icon-btn"
+              aria-label="Search notes"
+              aria-expanded={Boolean(searchOpen || searchQuery)}
+              onClick={() => { setSearchOpen(true); if (searchInputRef.current) searchInputRef.current.focus(); }}
+            >
+              <Search size={16} />
+            </button>
           </div>
 
           {/* Single Create Button */}
@@ -723,7 +1069,15 @@ const Notes = () => {
           )}
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}
+          className={dropTarget === 'page' ? 'notes-drop-zone-active' : undefined}
+          onDragOver={(e) => dragOverTarget(e, 'page', Boolean(draggedNote && draggedNote.groupId))}
+          onDragLeave={(e) => dragLeaveTarget(e, 'page')}
+          onDrop={onDropOnPage}
+        >
+
+          {openGroup && renderGroupPanel(openGroup)}
           
           {/* Pinned Notes Section */}
           {pinnedNotes.length > 0 && (
@@ -735,13 +1089,13 @@ const Notes = () => {
                 </h2>
               </div>
               <div className="notes-3col-grid">
-                {pinnedNotes.map(renderNoteCard)}
+                {pinnedNotes.map(n => renderNoteCard(n))}
               </div>
             </div>
           )}
 
           {/* Others / Unpinned Notes Section */}
-          {unpinnedNotes.length > 0 && (
+          {(unpinnedNotes.length > 0 || visibleGroups.length > 0) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {pinnedNotes.length > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -751,7 +1105,8 @@ const Notes = () => {
                 </div>
               )}
               <div className="notes-3col-grid">
-                {unpinnedNotes.map(renderNoteCard)}
+                {visibleGroups.map(renderGroupTile)}
+                {unpinnedNotes.map(n => renderNoteCard(n))}
               </div>
             </div>
           )}
