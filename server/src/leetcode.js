@@ -3,6 +3,8 @@
 const cache = new Map(); // questionNumber -> problem | null
 const MISS_RETRY_MS = 60 * 60 * 1000;
 const missedAt = new Map();
+// Numbers LeetCode answered for but did not list: no point asking again
+const permanentMisses = new Set();
 
 const QUERY = `query($k: String) {
   questionList(categorySlug: "", limit: 20, skip: 0, filters: { searchKeywords: $k }) {
@@ -13,6 +15,7 @@ const QUERY = `query($k: String) {
 async function getProblem(questionNumber) {
   const key = String(questionNumber).trim();
   if (cache.has(key)) return cache.get(key);
+  if (permanentMisses.has(key)) return null;
   if (missedAt.has(key) && Date.now() - missedAt.get(key) < MISS_RETRY_MS) return null;
 
   try {
@@ -25,7 +28,7 @@ async function getProblem(questionNumber) {
     const json = await res.json();
     const match = json.data?.questionList?.data?.find((q) => q.questionFrontendId === key);
     if (!match) {
-      missedAt.set(key, Date.now());
+      permanentMisses.add(key);
       return null;
     }
     const problem = {
@@ -43,4 +46,8 @@ async function getProblem(questionNumber) {
   }
 }
 
-module.exports = { getProblem };
+function isPermanentMiss(questionNumber) {
+  return permanentMisses.has(String(questionNumber).trim());
+}
+
+module.exports = { getProblem, isPermanentMiss };

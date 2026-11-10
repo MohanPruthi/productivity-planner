@@ -1,5 +1,5 @@
 const prisma = require('../db');
-const { getProblem } = require('../leetcode');
+const { getProblem, isPermanentMiss } = require('../leetcode');
 
 // Helper to get start and end dates of the current week (Monday-Sunday or Sunday-Saturday)
 // Let's use Monday-Sunday as standard week
@@ -73,7 +73,8 @@ async function getDsaLogs(req, res) {
     const userId = req.user.id;
     const { date, q, difficulty, topic, revisit } = req.query;
 
-    await enrichMissingDetails(userId);
+    // Background: don't make the response wait on LeetCode
+    enrichMissingDetails(userId).catch((err) => console.error('DSA enrichment failed:', err));
 
     let whereClause = { userId };
 
@@ -237,7 +238,7 @@ function enrichMissingDetails(userId) {
 
 async function runEnrichment(userId) {
   const missing = await prisma.dsaLog.findMany({
-    where: { userId, titleSlug: null },
+    where: { userId, titleSlug: null }, // '' marks a permanent LeetCode miss
     select: { id: true, questionNumber: true, title: true },
   });
 
@@ -246,7 +247,12 @@ async function runEnrichment(userId) {
     while (queue.length) {
       const log = queue.shift();
       const problem = await getProblem(log.questionNumber);
-      if (!problem) continue;
+      if (!problem) {
+        if (isPermanentMiss(log.questionNumber)) {
+          await prisma.dsaLog.update({ where: { id: log.id }, data: { titleSlug: '' } });
+        }
+        continue;
+      }
       await prisma.dsaLog.update({
         where: { id: log.id },
         data: {
@@ -291,7 +297,8 @@ async function updateDsaLog(req, res) {
 async function getDsaInsights(req, res) {
   try {
     const userId = req.user.id;
-    await enrichMissingDetails(userId);
+    // Background: don't make the response wait on LeetCode
+    enrichMissingDetails(userId).catch((err) => console.error('DSA enrichment failed:', err));
 
     const logs = await prisma.dsaLog.findMany({
       where: { userId },
