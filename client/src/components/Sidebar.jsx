@@ -65,18 +65,43 @@ const renderThemeIcon = (currentTheme) => {
   );
 };
 
-// Same life-grid mark as the favicon. In personal space the top-left tile turns
-// soft violet, echoing the sidebar lamp.
+// Day ring logo: a ring three-quarters closed with a dot for today and a tick
+// inside. Personal space lights it in the theme's accent (--cue); office space
+// shows it as a quiet outline. Themes add small touches (see .brand-logo rules).
+const RING_TICK_PATHS = {
+  disc: 'M32 8a24 24 0 1 1 0 48a24 24 0 1 1 0-48z',
+  ring: 'M32 8a24 24 0 1 1-24 24',
+  echo: 'M32 2a30 30 0 1 1-30 30',
+  tick: 'M23 33l6 6 12-13',
+};
+
 const LogoIcon = ({ personal }) => {
   return (
-    <svg className={`brand-logo ${personal ? 'lit' : ''}`} width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect className="bl-bg" x="1.5" y="1.5" width="61" height="61" rx="14" />
-      <rect className="bl-t1" x="13" y="13" width="17" height="17" rx="4" />
-      <rect className="bl-t2" x="34" y="13" width="17" height="17" rx="4" />
-      <rect className="bl-t2" x="13" y="34" width="17" height="17" rx="4" />
-      <rect className="bl-t3" x="34" y="34" width="17" height="17" rx="4" />
+    <svg className={`brand-logo ${personal ? 'lit' : ''}`} width="30" height="30" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path className="bl-disc" d={RING_TICK_PATHS.disc} />
+      <path className="bl-echo" d={RING_TICK_PATHS.echo} />
+      <g className="bl-ticks">
+        {Array.from({ length: 12 }, (_, i) => {
+          const a = (i * Math.PI) / 6;
+          const r2 = i % 3 ? 29 : 27.5;
+          return <line key={i} x1={32 + 30.5 * Math.cos(a)} y1={32 + 30.5 * Math.sin(a)} x2={32 + r2 * Math.cos(a)} y2={32 + r2 * Math.sin(a)} />;
+        })}
+      </g>
+      <path className="bl-ring" d={RING_TICK_PATHS.ring} />
+      <circle className="bl-dot" cx="32" cy="8" r="4.5" />
+      <path className="bl-tick" d={RING_TICK_PATHS.tick} />
     </svg>
   );
+};
+
+// Tab icon: the same mark drawn with the current theme's colours
+const faviconHref = (personal) => {
+  const css = getComputedStyle(document.documentElement);
+  const cue = css.getPropertyValue('--cue').trim() || '#6366f1';
+  const ink = css.getPropertyValue('--cue-off').trim() || '#9ca3af';
+  const c = personal ? cue : ink;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${personal ? `<circle cx="32" cy="32" r="24" fill="${c}" opacity=".2"/>` : ''}<path d="${RING_TICK_PATHS.ring}" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round"/><circle cx="32" cy="8" r="6" fill="${c}"/><path d="${RING_TICK_PATHS.tick}" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 };
 
 const Sidebar = () => {
@@ -91,15 +116,17 @@ const Sidebar = () => {
     return () => window.removeEventListener('ui-theme-changed', onChange);
   }, []);
 
-  // Tab icon carries the same quiet workspace cue as the sidebar logo
+  // Tab icon carries the same quiet workspace cue as the sidebar logo, in the theme's colours
   useEffect(() => {
     const icon = document.querySelector("link[rel='icon']");
     if (!icon) return;
-    icon.href = privacyMode ? '/favicon.svg' : '/favicon-personal.svg';
+    icon.href = faviconHref(!privacyMode);
     return () => {
       icon.href = '/favicon.svg';
     };
-  }, [privacyMode]);
+  }, [privacyMode, skin]);
+
+
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
   // Initialize theme from localStorage or default to dark

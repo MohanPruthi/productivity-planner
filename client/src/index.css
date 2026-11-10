@@ -4409,19 +4409,36 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
 .themes-toggle-btn:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
 
 /* ======================================================================
-   Redo 17 · Personal vs office cue, the same in every theme: the lamp
-   (violet light at the top of the sidebar) plus a lit logo. Personal:
-   the logo glows violet. Office: the logo is a plain outline and the
-   lamp is off. Fixed violet on purpose, so it reads the same in every
-   theme; no labels.
+   Redo 17/18 · Personal vs office cue, in every theme: the lamp (light at
+   the top of the sidebar) plus the Day ring logo. Personal: the logo is lit
+   in the theme's accent (--cue) and the lamp glows in the same colour.
+   Office: the logo is a quiet outline (--cue-off) and the lamp is off.
+   No labels. Themes set --cue / --cue-off and may add small logo touches.
    ====================================================================== */
-:root { --me: #8b5cf6; }
-.brand-logo { overflow: visible; transition: filter 0.5s ease; }
-.brand-logo rect { transition: fill 0.5s ease, stroke 0.5s ease, opacity 0.5s ease; }
-.brand-logo .bl-bg { fill: transparent; stroke: color-mix(in srgb, var(--text-primary) 45%, transparent); stroke-width: 3; }
-.brand-logo .bl-t1, .brand-logo .bl-t2, .brand-logo .bl-t3 { fill: color-mix(in srgb, var(--text-primary) 45%, transparent); }
-.brand-logo.lit { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--me) 75%, transparent)); }
-.brand-logo.lit .bl-bg { fill: var(--me); stroke: var(--me); }
-.brand-logo.lit .bl-t1 { fill: #ede9fe; }
-.brand-logo.lit .bl-t2 { fill: #c4b5fd; }
-.brand-logo.lit .bl-t3 { fill: #fff; }
+:root { --cue: var(--accent-primary); --cue-off: var(--text-muted); }
+.brand-logo { overflow: visible; color: var(--cue-off); transition: color 0.5s ease, filter 0.5s ease; }
+.brand-logo path, .brand-logo circle, .brand-logo line { transition: fill 0.5s ease, stroke 0.5s ease, opacity 0.5s ease; }
+.brand-logo .bl-ring, .brand-logo .bl-tick { fill: none; stroke: currentColor; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.brand-logo .bl-dot { fill: currentColor; }
+.brand-logo .bl-disc { fill: currentColor; opacity: 0; }
+.brand-logo .bl-echo, .brand-logo .bl-ticks { display: none; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+.brand-logo.lit { color: var(--cue); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--cue) 70%, transparent)); }
+.brand-logo.lit .bl-disc { opacity: 0.18; }
+
+/* The lamp now glows in the theme's accent instead of a fixed violet */
+.sidebar-aside {
+  background-image:
+    radial-gradient(120% 340px at 22% 0%,
+      color-mix(in srgb, var(--cue) calc(22% * var(--lamp)), transparent),
+      color-mix(in srgb, var(--cue) calc(7% * var(--lamp)), transparent) 48%,
+      transparent 78%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--cue) calc(40% * var(--lamp)), transparent),
+      transparent 45%);
+}
+.sidebar-brand .brand-title {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--text-primary);
+  animation: none;
+}
