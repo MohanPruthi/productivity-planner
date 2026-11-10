@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PinModal from './PinModal';
+import { openQuickAdd } from './QuickAdd';
 import { 
   LayoutDashboard, 
   Brain, 
@@ -17,7 +18,8 @@ import {
   Briefcase,
   Laptop,
   StickyNote,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Plus
 } from 'lucide-react';
 
 const renderThemeIcon = (currentTheme) => {
@@ -146,6 +148,11 @@ const Sidebar = () => {
           <h2 className="brand-title animated-gradient-purple" style={{ margin: 0, fontSize: '1.45rem', fontWeight: 600 }}>Planner</h2>
         </div>
       </div>
+
+      <button type="button" className="rail-quick-add" onClick={openQuickAdd} aria-label="Quick add (Ctrl K)" title="Quick add (Ctrl K)">
+        <Plus size={18} />
+        <span>Quick add</span>
+      </button>
 
       <nav className="sidebar-nav">
         {filteredNavItems.map((item) => {

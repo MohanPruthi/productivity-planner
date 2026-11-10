@@ -318,6 +318,10 @@ const TaskHistory = () => {
 
   useEffect(() => {
     fetchHistory();
+    // Tasks added from Quick add (Ctrl K)
+    const onTasksChanged = () => fetchHistory();
+    window.addEventListener('tasks-changed', onTasksChanged);
+    return () => window.removeEventListener('tasks-changed', onTasksChanged);
   }, []);
 
   // HTML5 Drag and Drop handlers

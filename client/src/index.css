@@ -4021,3 +4021,39 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
   .zen-dock-label { font-size: 0.72rem; font-weight: 700; color: #ff6b3d; }
   .zen-dock-time { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); }
 }
+
+/* ======================================================================
+   Redo 10 · Quick add: a "+" under the logo and Ctrl K anywhere open a
+   small dialog that adds a task for today or tomorrow.
+   ====================================================================== */
+.rail-quick-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  margin-bottom: 1.25rem;
+  padding: 0 0.9rem;
+  border-radius: 12px;
+  border: 1px dashed var(--hairline-strong);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rail-quick-add:hover { color: var(--text-primary); border-style: solid; background: var(--surface-2); }
+.rail-quick-add:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.quick-add-error { font-size: 0.78rem; color: #f87171; }
+@media (min-width: 1101px) {
+  .rail-quick-add { width: 48px; padding: 0; }
+  .rail-quick-add span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+@media (max-width: 1100px) {
+  .rail-quick-add { margin: 0 0 1rem; align-self: flex-start; }
+}
+@media (max-width: 720px) {
+  .rail-quick-add { margin: 0 0 0 auto; width: 36px; height: 36px; padding: 0; }
+  .rail-quick-add span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}

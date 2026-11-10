@@ -73,6 +73,15 @@ const Dashboard = () => {
     fetchData(activeDateStr);
   }, [activeDateStr]);
 
+  // Tasks added from Quick add (Ctrl K)
+  useEffect(() => {
+    const onTasksChanged = (e) => {
+      if (e.detail?.date === activeDateStr) fetchData(activeDateStr);
+    };
+    window.addEventListener('tasks-changed', onTasksChanged);
+    return () => window.removeEventListener('tasks-changed', onTasksChanged);
+  }, [activeDateStr]);
+
   useEffect(() => {
     const handleMedLogUpdated = (e) => {
       const { date, log } = e.detail || {};
