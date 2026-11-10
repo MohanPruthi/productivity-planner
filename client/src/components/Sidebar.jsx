@@ -21,7 +21,9 @@ import {
   StickyNote,
   Settings as SettingsIcon,
   Plus,
-  Palette
+  Palette,
+  PanelLeftOpen,
+  PanelLeftClose
 } from 'lucide-react';
 
 const renderThemeIcon = (currentTheme) => {
@@ -141,6 +143,15 @@ const Sidebar = () => {
 
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
+  // Desktop rail can expand to show section names; remembered between visits
+  const [railOpen, setRailOpen] = useState(() => {
+    try { return localStorage.getItem('rail_open') === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.rail = railOpen ? 'open' : 'closed';
+    try { localStorage.setItem('rail_open', railOpen ? '1' : '0'); } catch { /* not remembered */ }
+  }, [railOpen]);
+
   // Initialize theme from localStorage or default to dark
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'dark';
@@ -192,13 +203,24 @@ const Sidebar = () => {
   });
 
   return (
-    <aside className={`sidebar-aside ${privacyMode ? '' : 'workspace-lamp'}`}>
+    <aside className={`sidebar-aside ${privacyMode ? '' : 'workspace-lamp'} ${railOpen ? 'rail-open' : ''}`}>
       <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', marginBottom: '3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <LogoIcon personal={!privacyMode} />
           <h2 className="brand-title animated-gradient-purple" style={{ margin: 0, fontSize: '1.45rem', fontWeight: 600 }}>Planner</h2>
         </div>
       </div>
+
+      <button
+        type="button"
+        className="rail-toggle"
+        onClick={() => setRailOpen((v) => !v)}
+        aria-expanded={railOpen}
+        aria-label={railOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        title={railOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+      >
+        {railOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
+      </button>
 
       <button type="button" className="rail-quick-add" onClick={openQuickAdd} aria-label="Quick add (Ctrl K)" title="Quick add (Ctrl K)">
         <Plus size={18} />
