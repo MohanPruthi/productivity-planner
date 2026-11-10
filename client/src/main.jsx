@@ -7,6 +7,7 @@ import './themes/classic.css';
 import './themes/synthwave.css';
 import './themes/holo.css';
 import './themes/aurora.css';
+import './themes/notebook.css';
 
 initTheme();
 

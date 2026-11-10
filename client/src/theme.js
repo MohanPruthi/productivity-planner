@@ -31,6 +31,12 @@ export const THEMES = [
     description: 'Frosted panels over a slowly drifting aurora; cards light up under your cursor.',
     mode: 'dark',
   },
+  {
+    id: 'notebook',
+    name: 'Living notebook',
+    description: 'Warm dotted paper, serif headings and ink: ticks are written in and lines struck through.',
+    mode: 'light',
+  },
 ];
 
 const THEME_KEY = 'ui_theme';
