@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { API_BASE_URL } from '../config';
 
 const AuthContext = createContext(null);
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -37,9 +37,9 @@ export const AuthProvider = ({ children }) => {
       console.error(err);
       throw err;
     }
-  };
+  }, []);
 
-  const signup = async (name, email, password) => {
+  const signup = useCallback(async (name, email, password) => {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
@@ -58,14 +58,14 @@ export const AuthProvider = ({ children }) => {
       console.error(err);
       throw err;
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     setToken(null);
-  };
+  }, []);
 
   // The server answers 403 only for an invalid/expired token: sign out instead of showing broken pages
   useEffect(() => {
@@ -86,8 +86,7 @@ export const AuthProvider = ({ children }) => {
 
   const DEFAULT_WORKSPACE_VISIBILITY = {
     dashboard: { showInOffice: true, showOnDashboard: true },
-    aiPlan: { showInOffice: true, showOnDashboard: true },
-    sdPlan: { showInOffice: true, showOnDashboard: true },
+    plans: { showInOffice: true, showOnDashboard: true },
     dsaLog: { showInOffice: false, showOnDashboard: false },
     taskHistory: { showInOffice: true, showOnDashboard: true },
     meds: { showInOffice: true, showOnDashboard: true },
@@ -109,6 +108,10 @@ export const AuthProvider = ({ children }) => {
               : (val.hideFromDashboard !== undefined ? !val.hideFromDashboard : true)
           };
         }
+        // AI and SD plans were merged into Plans: carry the AI plan's settings over once
+        if (!normalized.plans && normalized.aiPlan) {
+          normalized.plans = normalized.aiPlan;
+        }
         return { ...DEFAULT_WORKSPACE_VISIBILITY, ...normalized };
       }
       return DEFAULT_WORKSPACE_VISIBILITY;
@@ -117,7 +120,7 @@ export const AuthProvider = ({ children }) => {
     }
   });
 
-  const updateWorkspaceVisibility = (systemKey, updates) => {
+  const updateWorkspaceVisibility = useCallback((systemKey, updates) => {
     setWorkspaceVisibility(prev => {
       const updated = {
         ...prev,
@@ -129,37 +132,39 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('workspaceVisibilityConfig', JSON.stringify(updated));
       return updated;
     });
-  };
+  }, []);
 
-  const togglePrivacyMode = () => {
+  const togglePrivacyMode = useCallback(() => {
     setPrivacyMode(prev => {
       const nextVal = !prev;
       localStorage.setItem('privacyMode', String(nextVal));
       return nextVal;
     });
-  };
+  }, []);
 
-  const getAuthHeaders = () => {
+  const getAuthHeaders = useCallback(() => {
     return {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
-  };
+  }, [token]);
+
+  const value = useMemo(() => ({
+    user,
+    token,
+    loading,
+    login,
+    signup,
+    logout,
+    getAuthHeaders,
+    privacyMode,
+    togglePrivacyMode,
+    workspaceVisibility,
+    updateWorkspaceVisibility,
+  }), [user, token, loading, login, signup, logout, getAuthHeaders, privacyMode, togglePrivacyMode, workspaceVisibility, updateWorkspaceVisibility]);
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      token, 
-      loading, 
-      login, 
-      signup, 
-      logout, 
-      getAuthHeaders, 
-      privacyMode, 
-      togglePrivacyMode,
-      workspaceVisibility,
-      updateWorkspaceVisibility
-    }}>
+    <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );

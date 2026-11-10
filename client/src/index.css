@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
-
 :root {
   /* Colors */
   --bg-primary: #0a0b10;
@@ -26,8 +24,8 @@
   --glass-blur: blur(12px);
 
   /* Fonts */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-sans);
   
   /* Shadows */
   --glow-ai: 0 0 20px rgba(59, 130, 246, 0.15);
@@ -71,6 +69,7 @@
 }
 
 body {
+  font-variant-numeric: tabular-nums;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -134,7 +133,7 @@ body {
 .brand-title {
   font-family: var(--font-display);
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 600;
   color: #e0e7ff;
   text-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
 }
@@ -462,8 +461,6 @@ label {
   border-radius: 4px;
   font-size: 0.7rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   border: 1px solid transparent;
 }
 
@@ -702,8 +699,7 @@ label {
 
 .pomo-tab-label {
   font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--text-secondary);
   margin-bottom: 0.15rem;
@@ -723,7 +719,7 @@ label {
 
 .pomo-big-timer {
   font-size: 3.5rem;
-  font-weight: 800;
+  font-weight: 600;
   font-family: var(--font-display);
   letter-spacing: -0.01em;
   text-align: center;
@@ -835,7 +831,7 @@ label {
   background: linear-gradient(135deg, var(--accent-primary), #8b5cf6, var(--accent-primary));
   background-size: 200% auto;
   color: white;
-  font-weight: 700;
+  font-weight: 600;
   border-radius: 9999px; /* Pill shape */
   padding: 0.7rem 1.6rem;
   border: none;
@@ -861,7 +857,7 @@ label {
   background: var(--pomo-btn-bg, linear-gradient(135deg, var(--track-dsa-start), var(--track-dsa-end), var(--track-dsa-start)));
   background-size: 200% auto;
   color: white;
-  font-weight: 700;
+  font-weight: 600;
   border-radius: 9999px; /* Pill shape */
   padding: 0.7rem 1.6rem;
   border: none;
@@ -1058,7 +1054,7 @@ label {
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   position: relative;
   overflow: hidden;
-  font-weight: 700;
+  font-weight: 600;
   font-family: var(--font-sans);
 }
 
@@ -1327,10 +1323,8 @@ label {
 
 .premium-loader-text {
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-secondary);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   animation: pulseText 1.8s infinite ease-in-out;
 }
 
@@ -1661,7 +1655,7 @@ label {
   color: #007aff;
   box-shadow: 0 4px 15px rgba(0, 122, 255, 0.05);
   backdrop-filter: blur(8px);
-  font-weight: 800;
+  font-weight: 600;
   transition: all 0.2s ease;
 }
 .mirror-btn-pill.directory-submit:hover {
@@ -2123,7 +2117,7 @@ label {
 
 .rich-editor-canvas strong,
 .rich-editor-canvas b {
-  font-weight: 750;
+  font-weight: 600;
   color: #ffffff;
 }
 
@@ -2332,3 +2326,2326 @@ label {
   animation: savePulse 1.2s infinite ease-in-out;
 }
 
+
+/* ---------- DSA insights, filters and revisit ---------- */
+.dsa-insights {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+.dsa-insights-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+.dsa-insights-label span {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.dsa-heatmap {
+  display: flex;
+  gap: 3px;
+}
+.dsa-heatmap-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dsa-heatmap-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--border-light);
+}
+.dsa-heatmap-cell.empty { background: transparent; }
+.dsa-heatmap-cell.level-1 { background: rgba(255, 161, 22, 0.3); }
+.dsa-heatmap-cell.level-2 { background: rgba(255, 161, 22, 0.55); }
+.dsa-heatmap-cell.level-3 { background: rgba(255, 161, 22, 0.8); }
+.dsa-heatmap-cell.level-4 { background: #ffa116; }
+.dsa-insights-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.dsa-difficulty-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--border-light);
+}
+.dsa-difficulty-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.dsa-difficulty-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.35rem;
+}
+.dsa-topic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.dsa-topic-chip {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.dsa-topic-chip span {
+  color: var(--text-muted);
+  margin-left: 0.2rem;
+}
+.dsa-topic-chip:hover,
+.dsa-topic-chip.active {
+  border-color: rgba(255, 161, 22, 0.5);
+  color: #ffa116;
+}
+.dsa-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.dsa-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 160px;
+  min-width: 0;
+  padding: 0 0.75rem;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+}
+.dsa-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+.dsa-filter-select {
+  width: auto;
+  height: 36px;
+  padding: 0 0.6rem;
+  font-size: 0.8rem;
+}
+.dsa-revisit-filter,
+.dsa-clear-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 36px;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.dsa-clear-filters { border-color: transparent; }
+.dsa-revisit-filter.active {
+  border-color: rgba(255, 161, 22, 0.5);
+  color: #ffa116;
+}
+.dsa-problem-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.dsa-problem-link svg { color: var(--text-muted); }
+.dsa-problem-link:hover,
+.dsa-problem-link:hover svg { color: #ffa116; }
+.dsa-topics {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+.dsa-revisit-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+.dsa-revisit-btn:hover,
+.dsa-revisit-btn.active { color: #ffa116; }
+@media (max-width: 900px) {
+  .dsa-insights { grid-template-columns: minmax(0, 1fr); }
+  .dsa-heatmap { overflow-x: auto; }
+}
+
+/* Illustration slot above the auth card heading */
+.auth-illustration {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+.auth-illustration:empty { display: none; }
+
+/* ======================================================================
+   UI kit: shared page header, buttons, section titles and stat tiles.
+   Module colors ("tones") only tint icons and progress, never text or buttons.
+   ====================================================================== */
+/* Module colors: the sidebar and every page read these, so a page's theme always
+   matches its sidebar color. --tone-ink is the text color used on top of the tone. */
+:root {
+  --mod-dashboard: #6366f1;
+  --mod-plans: #8b5cf6;
+  --mod-dsa: #ffa116;
+  --mod-board: #14b8a6;
+  --mod-meds: #ff2d55;
+  --mod-contacts: #007aff;
+  --mod-notes: #eab308;
+  --mod-settings: #94a3b8;
+  --accent-secondary: var(--mod-board);
+}
+.tone-default, .tone-dashboard { --tone: var(--mod-dashboard); --tone-ink: #fff; }
+.tone-plans    { --tone: var(--mod-plans); --tone-ink: #fff; }
+.tone-ai       { --tone: var(--track-ai-start); --tone-ink: #fff; }
+.tone-sd       { --tone: var(--track-sd-start); --tone-ink: #fff; }
+.tone-dsa      { --tone: var(--mod-dsa); --tone-ink: #1f1300; }
+.tone-board    { --tone: var(--mod-board); --tone-ink: #fff; }
+.tone-meds     { --tone: var(--mod-meds); --tone-ink: #fff; }
+.tone-contacts { --tone: var(--mod-contacts); --tone-ink: #fff; }
+.tone-notes    { --tone: var(--mod-notes); --tone-ink: #1f1a00; }
+.tone-settings { --tone: var(--mod-settings); --tone-ink: #0f1117; }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.25rem 0 0.5rem;
+}
+.page-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+.page-header-icon {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+}
+.page-header-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.page-header-subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 36px;
+  padding: 0 0.9rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.ui-btn:disabled { opacity: 0.6; cursor: default; }
+.ui-btn-primary {
+  background: var(--tone, var(--accent-primary));
+  color: var(--tone-ink, #fff);
+}
+.ui-btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+.ui-btn-secondary {
+  background: transparent;
+  border-color: var(--border-light);
+  color: var(--text-primary);
+}
+.ui-btn-secondary:hover:not(:disabled) { background: var(--border-light); }
+.ui-btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.ui-btn-ghost:hover:not(:disabled) { color: var(--text-primary); background: var(--border-light); }
+.ui-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.ui-icon-btn:hover { color: var(--text-primary); background: var(--border-light); }
+.ui-icon-btn.danger:hover { color: #f43f5e; }
+
+.ui-section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ui-section-title small {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.ui-stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+.ui-stat {
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+}
+.ui-stat-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.ui-stat-value {
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ui-stat-meta {
+  margin-top: 0.1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.ui-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border-light);
+  overflow: hidden;
+}
+.ui-progress > div {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tone, var(--accent-primary));
+  transition: width 0.3s ease;
+}
+
+/* ---------- Plan pages (AI / SD) ---------- */
+.plan-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.plan-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.plan-add-form label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.plan-add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.plan-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+}
+.plan-empty-title { margin: 0.5rem 0 0; font-weight: 600; color: var(--text-primary); }
+.plan-empty-text { margin: 0 0 0.75rem; font-size: 0.875rem; color: var(--text-secondary); }
+.plan-weeks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.plan-week {
+  padding: 0;
+  overflow: hidden;
+}
+.plan-week-head {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 1.1rem 1rem 1.25rem;
+  cursor: pointer;
+}
+.plan-week-title { flex: 1; min-width: 0; }
+.plan-week-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.plan-pill {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+}
+.plan-week-meta {
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.plan-week-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 160px;
+  flex: none;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.plan-week-progress .ui-progress { flex: 1; }
+.plan-week-actions { display: flex; align-items: center; gap: 0.15rem; }
+.plan-chevron { transition: transform 0.2s ease; }
+.plan-chevron.up { transform: rotate(180deg); }
+.plan-days {
+  border-top: 1px solid var(--border-light);
+  padding: 0.25rem 0;
+}
+.plan-day {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.7rem 1.25rem;
+}
+.plan-day + .plan-day { border-top: 1px solid var(--border-light); }
+.plan-day.today { background: color-mix(in srgb, var(--tone) 6%, transparent); }
+.plan-check {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.45rem;
+  border-radius: 6px;
+  border: 1.5px solid var(--text-muted);
+  background: transparent;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.plan-check:hover { border-color: var(--tone); }
+.plan-check.checked { background: var(--tone); border-color: var(--tone); }
+.plan-day-label {
+  flex: none;
+  width: 92px;
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.3rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+.plan-day-label em { font-style: normal; color: var(--tone); font-size: 0.8rem; }
+.plan-day-label small { font-size: 0.75rem; color: var(--text-muted); }
+.plan-topic {
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.5;
+  resize: none;
+  overflow: hidden;
+}
+.plan-topic::placeholder { color: var(--text-muted); }
+.plan-topic:hover { background: var(--border-light); }
+.plan-topic:focus { outline: none; border-color: color-mix(in srgb, var(--tone) 50%, transparent); background: var(--bg-tertiary); }
+.plan-day.done .plan-topic { color: var(--text-muted); text-decoration: line-through; }
+.plan-save {
+  flex: none;
+  width: 64px;
+  padding-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+.plan-save.error { color: #f43f5e; }
+@media (max-width: 720px) {
+  .plan-week-progress { width: 90px; }
+  .plan-day-label { width: 70px; }
+  .plan-save { display: none; }
+}
+.page-header-title-row { display: flex; align-items: center; gap: 0.35rem; }
+.page-header-rename { display: flex; align-items: center; gap: 0.5rem; }
+.page-header-rename .input-control { width: 220px; height: 36px; padding: 0 0.75rem; }
+
+/* ---------- DSA page layout ---------- */
+.dsa-log-page { gap: 1.25rem !important; }
+.dsa-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.dsa-tallies {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.dsa-tally-split {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.dsa-tally-split span::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+.dsa-tally-split .easy::before { background: #30d158; }
+.dsa-tally-split .medium::before { background: #ffcc00; }
+.dsa-tally-split .hard::before { background: #ff2d55; }
+.dsa-submit-btn { width: 100%; margin-top: 0.25rem; }
+@media (max-width: 1100px) {
+  .dsa-top { grid-template-columns: minmax(0, 1fr); }
+}
+
+.dsa-qnum { color: var(--text-muted); margin-right: 0.45rem; font-variant-numeric: tabular-nums; }
+
+/* ---------- Workspace lamp ----------
+   Personal space: a soft indigo-violet light pools behind the logo and the
+   sidebar's edge catches it near the top. Office space: unlit. */
+@property --lamp {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+.sidebar-aside {
+  --lamp: 0;
+  background-image:
+    radial-gradient(120% 340px at 22% 0%,
+      rgba(139, 92, 246, calc(0.22 * var(--lamp))),
+      rgba(99, 102, 241, calc(0.07 * var(--lamp))) 48%,
+      transparent 78%),
+    linear-gradient(180deg,
+      rgba(165, 180, 252, calc(0.40 * var(--lamp))),
+      transparent 45%);
+  background-size: 100% 100%, 1px 100%;
+  background-position: 0 0, 100% 0;
+  background-repeat: no-repeat;
+  transition: --lamp 0.6s ease;
+}
+.sidebar-aside.workspace-lamp { --lamp: 1; }
+.light-theme .sidebar-aside.workspace-lamp { --lamp: 0.7; }
+
+/* ======================================================================
+   Motion: calm, short, ease-out. Everything here is decorative and is
+   switched off for people who ask their system to reduce motion.
+   Zen Zone (TimeLogger) is intentionally left alone.
+   ====================================================================== */
+:root {
+  --ease-out-soft: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --motion-fast: 160ms;
+  --motion-base: 280ms;
+  --motion-slow: 520ms;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes check-pop {
+  0% { transform: scale(0.7); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@keyframes progress-in {
+  from { width: 0; }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes unfold {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Page entrance on every navigation. Fill mode is 'backwards' on purpose: a held
+   transform would make this wrapper the containing block for fixed pop-ups. */
+.page-enter {
+  animation: rise-in var(--motion-slow) var(--ease-out-soft) backwards;
+}
+
+/* Auth card (login, sign-up, reset) */
+.auth-card {
+  animation: rise-in var(--motion-slow) var(--ease-out-soft) backwards;
+}
+
+/* Staggered entrance for repeated blocks: stat tiles, week cards, tallies */
+.ui-stat-row > *,
+.dsa-tallies > *,
+.plan-weeks > * {
+  animation: rise-in var(--motion-slow) var(--ease-out-soft) backwards;
+}
+.ui-stat-row > :nth-child(2), .dsa-tallies > :nth-child(2), .plan-weeks > :nth-child(2) { animation-delay: 50ms; }
+.ui-stat-row > :nth-child(3), .dsa-tallies > :nth-child(3), .plan-weeks > :nth-child(3) { animation-delay: 100ms; }
+.ui-stat-row > :nth-child(4), .dsa-tallies > :nth-child(4), .plan-weeks > :nth-child(4) { animation-delay: 150ms; }
+.plan-weeks > :nth-child(5) { animation-delay: 200ms; }
+.plan-weeks > :nth-child(n + 6) { animation-delay: 240ms; }
+
+/* Week card opening */
+.plan-days {
+  animation: unfold var(--motion-base) var(--ease-out-soft) backwards;
+}
+
+/* Progress bars fill up when they appear, then glide on change */
+.ui-progress > div {
+  animation: progress-in 0.9s var(--ease-out-soft) backwards;
+  transition: width 0.5s var(--ease-out-soft);
+}
+
+/* Checkboxes: a small pop when ticked */
+.plan-check {
+  transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+.plan-check.checked,
+.mirror-checkbox.checked-ai,
+.mirror-checkbox.checked-sd,
+.mirror-checkbox.checked-gen {
+  animation: check-pop 0.32s var(--ease-spring);
+}
+.plan-day .plan-topic {
+  transition: color var(--motion-base) ease, background var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+
+/* Gentle lift on hover for cards you interact with */
+.plan-week,
+.ui-stat,
+.dsa-topic-chip {
+  transition: transform var(--motion-base) var(--ease-out-soft), border-color var(--motion-base) ease, background var(--motion-base) ease;
+}
+.plan-week:hover,
+.ui-stat:hover {
+  transform: translateY(-1px);
+}
+.plan-chevron {
+  transition: transform var(--motion-base) var(--ease-out-soft);
+}
+
+/* Buttons: a soft press */
+.ui-btn,
+.ui-icon-btn {
+  transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, color var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+.ui-btn:active:not(:disabled),
+.ui-icon-btn:active {
+  transform: scale(0.97);
+}
+
+/* Page header icon settles in */
+.page-header-icon {
+  animation: check-pop 0.5s var(--ease-spring) backwards;
+}
+
+/* The login illustration floats slowly (see .auth-illustration below). Only there:
+   a never-ending animation gets its own compositing layer, which painted over in-page dialogs. */
+
+/* DSA heatmap cells fade in column by column */
+.dsa-heatmap-week {
+  animation: fade-in 0.6s ease backwards;
+}
+.dsa-heatmap-week:nth-child(n) { animation-delay: calc(var(--col, 0) * 18ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Shared dialog and form bits ---------- */
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.ui-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(5, 6, 10, 0.6);
+  backdrop-filter: blur(6px);
+  animation: fade-in 0.2s ease backwards;
+}
+.ui-dialog {
+  width: 100%;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: dialog-in 0.28s var(--ease-out-soft, ease) backwards;
+}
+.ui-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem 0.5rem;
+}
+.ui-dialog-title { margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--text-primary); }
+.ui-dialog-subtitle { margin: 0.2rem 0 0; font-size: 0.82rem; color: var(--text-secondary); }
+.ui-dialog-body { padding: 0.75rem 1.25rem 1rem; display: flex; flex-direction: column; gap: 1rem; }
+.ui-dialog-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid var(--border-light);
+}
+.ui-dialog-foot .spacer { flex: 1; }
+
+.ui-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.ui-field > label, .ui-field > .ui-label { font-size: 0.78rem; color: var(--text-secondary); }
+.ui-field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.ui-hint { font-size: 0.75rem; color: var(--text-muted); }
+
+.ui-segmented {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+}
+.ui-segmented button {
+  flex: 1;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background var(--motion-fast, 0.15s) ease, color var(--motion-fast, 0.15s) ease;
+}
+.ui-segmented button.active { background: var(--bg-secondary); color: var(--text-primary); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+
+.ui-swatches { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.ui-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform var(--motion-fast, 0.15s) ease;
+}
+.ui-swatch:hover { transform: scale(1.08); }
+.ui-swatch.active { border-color: var(--text-primary); box-shadow: inset 0 0 0 2px var(--bg-secondary); }
+
+.ui-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+}
+.ui-switch-row strong { display: block; font-size: 0.875rem; font-weight: 500; color: var(--text-primary); }
+.ui-switch-row span { font-size: 0.78rem; color: var(--text-secondary); }
+.ui-switch {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: var(--border-light);
+  cursor: pointer;
+  transition: background var(--motion-base, 0.25s) ease;
+}
+.ui-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--motion-base, 0.25s) var(--ease-spring, ease);
+}
+.ui-switch.on { background: var(--tone, var(--accent-primary)); }
+.ui-switch.on::after { transform: translateX(16px); }
+.ui-btn-danger { background: transparent; color: #f43f5e; }
+.ui-btn-danger:hover:not(:disabled) { background: rgba(244, 63, 94, 0.1); }
+@media (max-width: 520px) { .ui-field-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Plans page ---------- */
+.plans-page {
+  --tone: var(--accent-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.plan-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.plan-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 34px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background var(--motion-fast, 0.15s) ease, color var(--motion-fast, 0.15s) ease, border-color var(--motion-fast, 0.15s) ease;
+}
+.plan-tab:hover { color: var(--text-primary); background: var(--border-light); }
+.plan-tab.active {
+  color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--tone) 45%, transparent);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+}
+.plan-tab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+.plan-tab-lock { color: var(--text-muted); }
+.plan-tabs-hidden { font-size: 0.78rem; color: var(--text-muted); margin-left: 0.25rem; }
+.plan-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: rise-in var(--motion-slow, 0.5s) var(--ease-out-soft, ease) backwards;
+}
+.plan-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.plan-summary-text h2 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+.plan-summary-text p { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--text-secondary); }
+.plan-summary-actions { display: flex; gap: 0.5rem; }
+.plan-goal {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem 1.25rem;
+  border-bottom: 1px solid var(--border-light);
+}
+.plan-goal > span {
+  flex: none;
+  width: calc(20px + 0.9rem + 92px);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Inputs inside a themed page focus in the page color */
+[class*='tone-'] .input-control:focus {
+  border-color: color-mix(in srgb, var(--tone) 60%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 18%, transparent);
+}
+
+/* Plan tasks shown on the dashboard and work board wear their plan's color */
+.plan-badge {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.45rem;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  border-color: color-mix(in srgb, var(--tone) 30%, transparent);
+}
+.mirror-checkbox.checked-plan {
+  color: #fff;
+  background: var(--tone);
+  border-color: var(--tone);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tone) 45%, transparent);
+}
+
+/* ======================================================================
+   Neon layer: a living, page-colored backdrop, glowing edges and motion.
+   Everything keys off --tone (the current page's sidebar color, set on
+   <body> by Layout). Scoped to the sidebar and main content: Zen Zone is
+   left as it was.
+   ====================================================================== */
+
+/* --- Page transition: blur, rise and fade in --- */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+.page-enter {
+  animation: page-in 0.6s var(--ease-out-soft) backwards;
+}
+
+/* --- Cards: neon edge on hover, cursor spotlight, staggered entrance --- */
+.main-content .glass-card {
+  --mx: 50%;
+  --my: 50%;
+  background-image: radial-gradient(420px circle at var(--mx) var(--my),
+    color-mix(in srgb, var(--tone, #6366f1) 9%, transparent), transparent 45%);
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s var(--ease-out-soft);
+}
+.main-content .glass-card:hover {
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 38%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tone, #6366f1) 14%, transparent),
+    0 12px 40px -12px color-mix(in srgb, var(--tone, #6366f1) 35%, transparent);
+}
+.page-enter .glass-card {
+  animation: rise-in 0.6s var(--ease-out-soft) backwards;
+}
+.page-enter .glass-card:nth-child(2) { animation-delay: 60ms; }
+.page-enter .glass-card:nth-child(3) { animation-delay: 120ms; }
+.page-enter .glass-card:nth-child(4) { animation-delay: 180ms; }
+.page-enter .glass-card:nth-child(5) { animation-delay: 240ms; }
+.page-enter .glass-card:nth-child(n + 6) { animation-delay: 300ms; }
+
+/* --- Page header: glowing icon tile with a slow breathing halo --- */
+@keyframes halo {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 0%, transparent), 0 0 18px color-mix(in srgb, var(--tone) 30%, transparent); }
+  50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--tone) 8%, transparent), 0 0 28px color-mix(in srgb, var(--tone) 45%, transparent); }
+}
+.page-header-icon {
+  border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  animation: check-pop 0.5s var(--ease-spring) backwards, halo 4s ease-in-out 0.6s infinite;
+}
+.page-header-title {
+  background: linear-gradient(90deg, var(--text-primary) 55%, color-mix(in srgb, var(--tone) 70%, var(--text-primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- Primary buttons: neon glow and a shine that sweeps across on hover --- */
+.ui-btn-primary {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone, #6366f1) 60%, transparent),
+              0 6px 22px -6px color-mix(in srgb, var(--tone, #6366f1) 70%, transparent);
+}
+.ui-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--ease-out-soft);
+  pointer-events: none;
+}
+.ui-btn-primary:hover:not(:disabled)::after { transform: translateX(120%); }
+.ui-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px var(--tone, #6366f1),
+              0 8px 30px -6px color-mix(in srgb, var(--tone, #6366f1) 85%, transparent);
+}
+.ui-btn-secondary:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 50%, transparent);
+  color: var(--text-primary);
+}
+
+/* --- Sidebar: active item glows in its module color --- */
+.nav-link {
+  position: relative;
+  transition: background 0.25s ease, color 0.25s ease, box-shadow 0.35s ease, transform 0.25s var(--ease-out-soft);
+}
+.nav-link:hover { transform: translateX(3px); }
+.nav-link.active {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--active-color) 18%, transparent), transparent 85%);
+  box-shadow: -6px 0 18px -6px var(--active-color);
+}
+.nav-link.active .nav-icon,
+.nav-link.active svg {
+  color: var(--active-color);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--active-color) 70%, transparent));
+}
+
+/* --- Stat tiles: tone hairline on top and a soft glow on the number --- */
+.ui-stat {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+.ui-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--tone, #6366f1), transparent);
+  opacity: 0.7;
+}
+.ui-stat:hover { border-color: color-mix(in srgb, var(--tone, #6366f1) 35%, transparent); }
+.ui-stat-value { text-shadow: 0 0 22px color-mix(in srgb, var(--tone, #6366f1) 45%, transparent); }
+
+/* --- Progress: gradient fill with a moving sheen --- */
+@keyframes sheen {
+  from { background-position: -200% 0, 0 0; }
+  to   { background-position: 200% 0, 0 0; }
+}
+.ui-progress > div {
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent) no-repeat,
+    linear-gradient(90deg, color-mix(in srgb, var(--tone, #6366f1) 70%, #fff 0%), var(--tone, #6366f1));
+  background-size: 40% 100%, 100% 100%;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone, #6366f1) 55%, transparent);
+  animation: progress-in 0.9s var(--ease-out-soft) backwards, sheen 3.2s ease-in-out 1s infinite;
+}
+
+/* --- Checks and pills glow --- */
+.plan-check.checked { box-shadow: 0 0 12px color-mix(in srgb, var(--tone) 55%, transparent); }
+.plan-pill, .plan-tab.active { box-shadow: 0 0 14px -4px color-mix(in srgb, var(--tone) 60%, transparent); }
+.plan-day.today { box-shadow: inset 2px 0 0 var(--tone); }
+
+/* --- Section titles get a small tone marker --- */
+.ui-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: var(--tone, #6366f1);
+  box-shadow: 0 0 8px var(--tone, #6366f1);
+  vertical-align: middle;
+  align-self: center;
+}
+
+/* --- DSA heatmap: brightest days glow --- */
+.dsa-heatmap-cell.level-3 { box-shadow: 0 0 6px rgba(255, 161, 22, 0.35); }
+.dsa-heatmap-cell.level-4 { box-shadow: 0 0 10px rgba(255, 161, 22, 0.6); }
+.dsa-heatmap-cell { transition: transform 0.15s ease; }
+.dsa-heatmap-cell:hover { transform: scale(1.35); }
+
+/* --- Dialogs: tone-lit edge --- */
+.ui-dialog {
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 30%, transparent);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 40px -10px color-mix(in srgb, var(--tone, #6366f1) 45%, transparent);
+}
+
+/* --- Selection and scrollbar in the page color --- */
+::selection { background: color-mix(in srgb, var(--tone, #6366f1) 40%, transparent); }
+.main-content ::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--tone, #6366f1) 35%, transparent); border-radius: 999px; }
+
+
+/* ======================================================================
+   Older controls still used inside pages, brought into the themed look.
+   Scoped to the main area so Zen Zone keeps its own buttons.
+   ====================================================================== */
+.main-content .btn-primary,
+.main-content .mirror-btn-pill.dsa-submit,
+.ui-dialog .btn-primary {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  border-radius: 10px;
+  background: var(--tone, var(--accent-primary)) !important;
+  color: var(--tone-ink, #fff) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone, #6366f1) 60%, transparent),
+              0 6px 22px -6px color-mix(in srgb, var(--tone, #6366f1) 70%, transparent) !important;
+  transition: filter 0.2s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+.main-content .btn-primary:hover,
+.main-content .mirror-btn-pill.dsa-submit:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 1px var(--tone, #6366f1), 0 8px 30px -6px color-mix(in srgb, var(--tone, #6366f1) 85%, transparent) !important;
+}
+.main-content .btn-primary:active,
+.main-content .mirror-btn-pill:active { transform: scale(0.97); }
+
+.main-content .mirror-btn-pill:not(.dsa-submit) {
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-primary);
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.3s ease;
+}
+.main-content .mirror-btn-pill:not(.dsa-submit):hover {
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 55%, transparent);
+  background: color-mix(in srgb, var(--tone, #6366f1) 8%, transparent);
+  box-shadow: 0 0 18px -6px color-mix(in srgb, var(--tone, #6366f1) 60%, transparent);
+}
+
+.main-content .input-control,
+.ui-dialog .input-control {
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
+  transition: border-color 0.2s ease, box-shadow 0.25s ease, background 0.2s ease;
+}
+.main-content .input-control:hover { border-color: color-mix(in srgb, var(--tone, #6366f1) 30%, var(--border-light)); }
+
+.main-content .badge {
+  border-radius: 6px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.main-content .mirror-checkbox {
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+.main-content .mirror-checkbox:hover { border-color: var(--tone, #6366f1); }
+.main-content .mirror-checkbox.checked-gen,
+.main-content .mirror-checkbox.checked-ai,
+.main-content .mirror-checkbox.checked-sd {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tone, #6366f1) 50%, transparent);
+}
+
+/* Lists of cards on Notes and Contacts: lift on hover */
+.main-content .glass-card.note-card:hover,
+.main-content .notes-grid .glass-card:hover,
+.main-content .hr-contact-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Old per-module glow classes are replaced by the shared neon hover */
+.main-content .glow-dsa,
+.main-content .glow-med,
+.main-content .glow-tracker,
+.main-content .glow-ai,
+.main-content .glow-sd,
+.main-content .glow-stats-orange {
+  box-shadow: var(--card-shadow);
+}
+
+/* ---------- Login, sign-up and reset: neon card over the aurora ---------- */
+.auth-page { background: transparent; }
+.auth-card {
+  position: relative;
+  border: 1px solid rgba(139, 92, 246, 0.28) !important;
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6), 0 0 60px -18px rgba(139, 92, 246, 0.55) !important;
+  backdrop-filter: blur(14px);
+}
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 18%;
+  right: 18%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #a5b4fc, transparent);
+}
+.auth-card .btn-primary {
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.6), 0 10px 30px -8px rgba(139, 92, 246, 0.8);
+  transition: filter 0.2s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+.auth-card .btn-primary:hover { filter: brightness(1.1); }
+.auth-card .btn-primary:active { transform: scale(0.98); }
+.auth-card .input-control:focus {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
+
+/* ======================================================================
+   Zen Zone experiment (separate commit, easy to drop): glassier cards
+   with a warm neon edge, a glowing focus ring and livelier calendar days.
+   ====================================================================== */
+@keyframes zen-breathe {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 94, 58, 0.25)); }
+  50%      { filter: drop-shadow(0 0 16px rgba(255, 94, 58, 0.5)); }
+}
+.timelogger-aside {
+  background:
+    radial-gradient(120% 50% at 50% 0%, rgba(255, 120, 60, 0.08), transparent 70%),
+    var(--bg-secondary);
+}
+.timelogger-card {
+  position: relative;
+  border-color: rgba(255, 140, 80, 0.12);
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s var(--ease-out-soft, ease);
+}
+.timelogger-card::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 150, 90, 0.7), transparent);
+  pointer-events: none;
+}
+.timelogger-card:hover {
+  border-color: rgba(255, 140, 80, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 140, 80, 0.12), 0 14px 40px -14px rgba(255, 100, 50, 0.45);
+}
+/* The focus ring breathes softly */
+.timelogger-card:first-of-type svg {
+  animation: zen-breathe 4.5s ease-in-out infinite;
+}
+.calendar-day-cell {
+  transition: transform 0.2s var(--ease-spring, ease), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.calendar-day-cell:hover {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 6px 16px -6px rgba(255, 120, 60, 0.6);
+}
+@media (prefers-reduced-motion: reduce) {
+  .timelogger-card:first-of-type svg { animation: none; }
+}
+
+/* Outline illustrations: drawn in the page color, softened so they stay quiet */
+.illustration-outline {
+  display: inline-block;
+  flex: none;
+  background: var(--tone, var(--accent-primary));
+  opacity: 0.75;
+}
+.auth-illustration .illustration-outline {
+  background: #a5b4fc;
+  animation: drift 6s ease-in-out infinite;
+}
+
+/* ======================================================================
+   Redo 1 · Type: one family (Manrope) for everything, a fixed scale,
+   and plain solid titles (no gradient text).
+   ====================================================================== */
+:root {
+  --fs-title: 1.5rem;     /* page title */
+  --fs-heading: 1.05rem;  /* card / section heading */
+  --fs-body: 0.9rem;
+  --fs-small: 0.8rem;
+  --fs-tiny: 0.72rem;
+}
+body { font-feature-settings: 'tnum' 1, 'cv11' 1; letter-spacing: -0.003em; }
+h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
+.page-header-title {
+  font-size: var(--fs-title);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--text-primary);
+}
+.page-header-subtitle { font-size: var(--fs-small); }
+.ui-section-title { font-size: var(--fs-heading); font-weight: 700; letter-spacing: -0.015em; }
+.brand-title { font-weight: 800; letter-spacing: -0.03em; text-shadow: none; }
+.ui-stat-value { font-weight: 700; letter-spacing: -0.02em; }
+.nav-link { font-size: 0.9rem; }
+
+/* ======================================================================
+   Redo 2 · Surfaces: two flat levels with hairline edges. Nothing glows
+   or moves while idle; color and light only answer the pointer or show
+   state (active nav item, checked box, primary action).
+   ====================================================================== */
+:root {
+  --surface-1: #111219;               /* cards */
+  --surface-2: #171923;               /* tiles, inputs inside cards */
+  --hairline: rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.12);
+  --card-shadow: none;
+}
+.main-content .glass-card {
+  background-color: var(--surface-1);
+  background-image: none;
+  backdrop-filter: none;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: none;
+}
+/* The cursor spotlight only shows while the pointer is on the card */
+.main-content .glass-card:hover {
+  background-image: radial-gradient(360px circle at var(--mx) var(--my),
+    color-mix(in srgb, var(--tone, #6366f1) 6%, transparent), transparent 50%);
+  border-color: color-mix(in srgb, var(--tone, #6366f1) 28%, var(--hairline));
+  box-shadow: none;
+  transform: none;
+}
+.main-content .glow-dsa, .main-content .glow-dsa:hover,
+.main-content .glow-med, .main-content .glow-med:hover,
+.main-content .glow-tracker, .main-content .glow-tracker:hover,
+.main-content .glow-ai, .main-content .glow-ai:hover,
+.main-content .glow-sd, .main-content .glow-sd:hover,
+.main-content .glow-stats-orange, .main-content .glow-stats-orange:hover {
+  box-shadow: none !important;
+}
+
+/* Page header icon: a quiet tinted tile, no breathing halo */
+.page-header-icon {
+  border: 1px solid color-mix(in srgb, var(--tone) 22%, transparent);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  animation: check-pop 0.5s var(--ease-spring) backwards;
+}
+
+/* Primary buttons: solid page color, no halo; the shine still sweeps on hover */
+.ui-btn-primary,
+.ui-btn-primary:hover:not(:disabled) { box-shadow: none; }
+.main-content .btn-primary,
+.main-content .btn-primary:hover,
+.main-content .mirror-btn-pill.dsa-submit,
+.main-content .mirror-btn-pill.dsa-submit:hover,
+.ui-dialog .btn-primary { box-shadow: none !important; }
+.main-content .mirror-btn-pill:not(.dsa-submit):hover { box-shadow: none; }
+
+/* Sidebar: active item is a tinted row with a colored icon, no glow */
+.nav-link:hover { transform: none; }
+.nav-link.active {
+  background: color-mix(in srgb, var(--active-color) 11%, transparent);
+  box-shadow: none;
+}
+.nav-link.active .nav-icon,
+.nav-link.active svg { filter: none; }
+
+/* Stat tiles: flat, no glowing numbers or top light line */
+.ui-stat { background: var(--surface-2); border-color: var(--hairline); }
+.ui-stat::before { display: none; }
+.ui-stat:hover { transform: none; }
+.ui-stat-value { text-shadow: none; }
+
+/* Progress: solid fill that glides, no endless sheen */
+.ui-progress > div {
+  background: var(--tone, #6366f1);
+  box-shadow: none;
+  animation: progress-in 0.9s var(--ease-out-soft) backwards;
+}
+
+/* State marks stay colored but stop glowing */
+.plan-check.checked,
+.plan-pill, .plan-tab.active,
+.mirror-checkbox.checked-plan,
+.main-content .mirror-checkbox.checked-gen,
+.main-content .mirror-checkbox.checked-ai,
+.main-content .mirror-checkbox.checked-sd { box-shadow: none; }
+.ui-section-title::before { box-shadow: none; }
+.dsa-heatmap-cell.level-3, .dsa-heatmap-cell.level-4 { box-shadow: none; }
+.plan-week:hover { transform: none; border-color: var(--hairline-strong); }
+
+/* Inputs sit one level up from their card */
+.main-content .input-control,
+.ui-dialog .input-control {
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+}
+
+/* Dialogs: a plain raised panel */
+.ui-dialog {
+  background: var(--surface-1);
+  border-color: var(--hairline-strong);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Empty-state illustrations: quieter */
+.illustration-outline { opacity: 0.6; }
+.light-theme {
+  --surface-1: #ffffff;
+  --surface-2: #f1f5f9;
+  --hairline: rgba(15, 23, 42, 0.08);
+  --hairline-strong: rgba(15, 23, 42, 0.14);
+}
+.light-theme .ui-dialog { box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18); }
+
+/* ======================================================================
+   Redo 3 · Headings and page layout: one heading size for sections,
+   sentence case, and a Meds layout that stacks on narrow screens.
+   ====================================================================== */
+.section-heading {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.main-content .glass-card h2 { font-size: var(--fs-heading) !important; font-weight: 700 !important; }
+.meds-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .meds-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ======================================================================
+   Redo 4 · Settings: the three sections become rows of one list, each
+   with a one-line description. Rows open in place and work by keyboard.
+   ====================================================================== */
+.settings-list {
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface-1);
+  overflow: hidden;
+}
+.settings-item + .settings-item { border-top: 1px solid var(--hairline); }
+.settings-item-head {
+  padding: 1rem 1.25rem !important;
+  border-radius: 0;
+}
+.settings-item-head:hover { background: color-mix(in srgb, var(--text-primary) 3%, transparent) !important; }
+.settings-item-head:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tone) 70%, transparent);
+  outline-offset: -2px;
+}
+.settings-item-head > div:first-child { gap: 0.85rem !important; }
+.settings-item-icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+}
+.settings-item-title { margin: 0; font-size: 0.95rem !important; font-weight: 600 !important; color: var(--text-primary); }
+.settings-item-desc { margin: 0.1rem 0 0; font-size: var(--fs-small); color: var(--text-secondary); }
+.settings-item form { border-top-color: var(--hairline) !important; }
+
+/* ======================================================================
+   Redo 5 · Phones and small tablets: the page scrolls as a whole, the
+   sidebar shrinks to a slim top bar (logo, theme, workspace, settings,
+   sign out) and the sections move to a tab bar along the bottom.
+   ====================================================================== */
+@media (max-width: 1100px) {
+  body { height: auto; min-height: 100vh; overflow-y: auto; }
+  .app-container { height: auto; min-height: 100vh; overflow: visible; }
+}
+@media (max-width: 720px) {
+  .app-container { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .sidebar-aside {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .sidebar-brand { margin-bottom: 0 !important; }
+  .brand-title { font-size: 1.15rem !important; }
+
+  .sidebar-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    flex: none;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    gap: 0;
+    margin: 0;
+    padding: 0.35rem 0.25rem calc(0.35rem + env(safe-area-inset-bottom));
+    background: var(--surface-1);
+    border-top: 1px solid var(--hairline);
+  }
+  .sidebar-nav .nav-link {
+    flex: 1;
+    max-width: 64px;
+    min-height: 48px;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+  }
+  .sidebar-nav .nav-link.active { border: none; }
+  /* Labels stay for screen readers; the icons carry it on screen */
+  .sidebar-nav .nav-link span,
+  .btn-logout span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sidebar-footer {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0;
+    border: none;
+  }
+  .sidebar-footer > div:first-child {
+    border-top: none !important;
+    padding-top: 0 !important;
+    width: auto !important;
+    gap: 0.4rem !important;
+  }
+  .sidebar-footer .user-profile { display: none !important; }
+  .btn-logout { width: 36px; height: 36px; padding: 0; }
+
+  .main-content { padding: 1.25rem 1rem; }
+  .page-header-title { font-size: 1.3rem; }
+}
+
+/* ======================================================================
+   Redo 6 · Polish: section titles sit left with their count on the right
+   (the decorative dot pushed the title to the middle).
+   ====================================================================== */
+.ui-section-title::before { content: none; }
+.ui-section-title { justify-content: space-between; }
+
+/* ======================================================================
+   Redo 7 · Sign-in, sign-up and reset: the same flat card as the app,
+   a hairline edge and a solid violet button; no glow around the card.
+   ====================================================================== */
+.auth-card {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--hairline-strong) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: none;
+}
+.auth-card::before { content: none; }
+.auth-card .btn-primary {
+  background: #7c6cf2 !important;
+  box-shadow: none !important;
+}
+.auth-card h2 { font-weight: 700; letter-spacing: -0.025em; }
+
+/* ======================================================================
+   Redo 8 · Command center: the sidebar becomes an icon rail on desktop.
+   Labels appear as a tooltip on hover or keyboard focus. The workspace
+   lamp still lights the top of the rail in personal space.
+   ====================================================================== */
+@media (min-width: 1101px) {
+  .sidebar-aside {
+    width: 76px;
+    flex: none;
+    padding: 1.25rem 0.75rem;
+    align-items: center;
+    z-index: 200;
+  }
+  .sidebar-brand { margin-bottom: 1.75rem !important; justify-content: center; }
+  .sidebar-brand .brand-title {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+  }
+  .sidebar-nav { gap: 0.35rem; align-items: center; width: 100%; }
+  .sidebar-nav .nav-link {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    justify-content: center;
+    border-left: none;
+    border-radius: 14px;
+  }
+  .sidebar-nav .nav-link.active { border-left: none; }
+  .sidebar-nav .nav-link .nav-icon { width: 21px; height: 21px; }
+  /* The label becomes a tooltip to the right of the rail */
+  .sidebar-nav .nav-link span {
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translate(-4px, -50%);
+    padding: 0.35rem 0.6rem;
+    border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--hairline-strong);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .sidebar-nav .nav-link:hover span,
+  .sidebar-nav .nav-link:focus-visible span { opacity: 1; transform: translate(0, -50%); }
+  .sidebar-nav .nav-link:focus-visible { outline: 2px solid var(--active-color, #6366f1); outline-offset: 2px; }
+
+  .sidebar-footer { align-items: center; gap: 0.75rem; width: 100%; }
+  .sidebar-footer > div:first-child {
+    flex-direction: column;
+    width: auto !important;
+    gap: 0.5rem !important;
+  }
+  .sidebar-footer .user-profile { justify-content: center; border-top: none !important; padding-top: 0 !important; }
+  .sidebar-footer .user-info { display: none; }
+  .btn-logout { width: 40px; height: 40px; padding: 0; }
+  .btn-logout span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+/* ======================================================================
+   Redo 10 · Quick add: a "+" under the logo and Ctrl K anywhere open a
+   small dialog that adds a task for today or tomorrow.
+   ====================================================================== */
+.rail-quick-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  margin-bottom: 1.25rem;
+  padding: 0 0.9rem;
+  border-radius: 12px;
+  border: 1px dashed var(--hairline-strong);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rail-quick-add:hover { color: var(--text-primary); border-style: solid; background: var(--surface-2); }
+.rail-quick-add:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.quick-add-error { font-size: 0.78rem; color: #f87171; }
+@media (min-width: 1101px) {
+  .rail-quick-add { width: 48px; padding: 0; }
+  .rail-quick-add span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+@media (max-width: 1100px) {
+  .rail-quick-add { margin: 0 0 1rem; align-self: flex-start; }
+}
+@media (max-width: 720px) {
+  .rail-quick-add { margin: 0 0 0 auto; width: 36px; height: 36px; padding: 0; }
+  .rail-quick-add span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+/* ======================================================================
+   Redo 11 · Command center Dashboard: greeting with tasks left, a quick
+   add button, tasks on the left and DSA + Meds tiles stacked on the right.
+   ====================================================================== */
+.dashboard-page { gap: 1.5rem !important; }
+.dashboard-page .page-header-title { font-size: 1.75rem; }
+.dashboard-main-grid {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.dash-side { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.dash-side > .tone-dsa { gap: 0.9rem !important; }
+.dash-dsa-card { min-height: 0; }
+.dash-quick-add { gap: 0.5rem; }
+.dash-quick-add kbd {
+  font: inherit;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding: 0.05rem 0.35rem;
+  border-radius: 5px;
+  border: 1px solid var(--hairline-strong);
+}
+@media (max-width: 900px) {
+  .dashboard-main-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .dash-quick-add { display: none; }
+}
+
+/* ======================================================================
+   Redo 12 · Command center on every page: the page header is a bar
+   pinned to the top while the page scrolls, titles match the Dashboard,
+   and content keeps a comfortable maximum width.
+   ====================================================================== */
+@media (min-width: 1101px) {
+  .main-content { padding: 0 2.25rem 2.5rem; }
+  .main-content .page-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin: 0 -2.25rem;
+    padding: 1.4rem 2.25rem 1.1rem;
+    /* Solid, no backdrop blur: a blur would trap fixed pop-ups opened from the header */
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .page-enter > * { max-width: 1320px; }
+}
+.main-content .page-header-title { font-size: 1.75rem; }
+.main-content .page-header-icon { width: 44px; height: 44px; border-radius: 13px; }
+@media (max-width: 720px) {
+  .main-content .page-header-title { font-size: 1.35rem; }
+}
+
+/* ======================================================================
+   Redo 13 · Tablets (721–1100px) use the phone navigation too: slim top
+   bar and bottom tab bar instead of the wrapped menu block.
+   ====================================================================== */
+@media (min-width: 721px) and (max-width: 1100px) {
+  .app-container { padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
+  .sidebar-aside {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1.25rem;
+    border-right: none;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .sidebar-brand { margin-bottom: 0 !important; }
+  .brand-title { font-size: 1.15rem !important; }
+  .rail-quick-add { margin: 0 0 0 auto; align-self: center; }
+  .sidebar-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    flex: none;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom));
+    background: var(--surface-1);
+    border-top: 1px solid var(--hairline);
+  }
+  .sidebar-nav .nav-link {
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 84px;
+    min-height: 52px;
+    justify-content: center;
+    padding: 0.3rem 0.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.72rem;
+  }
+  .sidebar-nav .nav-link.active { border: none; }
+  .sidebar-footer {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0;
+    border: none;
+  }
+  .sidebar-footer > div:first-child {
+    border-top: none !important;
+    padding-top: 0 !important;
+    width: auto !important;
+    gap: 0.4rem !important;
+  }
+  .sidebar-footer .user-profile { display: none !important; }
+  .btn-logout { width: 36px; height: 36px; padding: 0; }
+  .btn-logout span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+/* ======================================================================
+   Redo 14 · Dashboard rebuilt as plain tiles: no cards inside cards,
+   no badges on every row, no icon chips. Rows are lines with a round
+   check; one large DSA number is the only loud thing on the page.
+   ====================================================================== */
+.cc-dash { display: flex; flex-direction: column; gap: 1.75rem; padding-top: 2rem; }
+.cc-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  flex-wrap: wrap;
+}
+.cc-greet {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.cc-sub { margin: 0.4rem 0 0; font-size: 0.92rem; color: var(--text-secondary); }
+.cc-head-tools { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.cc-days {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+}
+.cc-days button {
+  height: 32px;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cc-days button:hover { color: var(--text-primary); }
+.cc-days button.active { background: var(--surface-2); color: var(--text-primary); }
+.cc-days .cc-day-step { width: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
+.cc-quick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 38px;
+  padding: 0 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cc-quick:hover { border-color: var(--hairline-strong); }
+.cc-quick kbd {
+  font: inherit;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding: 0.05rem 0.35rem;
+  border-radius: 5px;
+  border: 1px solid var(--hairline-strong);
+}
+.cc-days button:focus-visible, .cc-quick:focus-visible, .cc-check:focus-visible,
+.cc-link:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+.cc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  grid-template-areas: "tasks dsa" "tasks meds" "plans plans";
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
+  align-items: stretch;
+}
+.cc-grid.single { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tasks" "plans"; }
+.cc-tasks { grid-area: tasks; }
+.cc-dsa { grid-area: dsa; }
+.cc-meds { grid-area: meds; align-self: start; }
+.cc-plans { grid-area: plans; }
+
+.cc-tile {
+  min-width: 0;
+  padding: 1.15rem 1.35rem 1.25rem;
+  border-radius: 16px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+}
+.cc-tile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.cc-tile-head h2 {
+  margin: 0;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.cc-meta { font-size: 0.8rem; color: var(--text-muted); }
+.cc-link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--tone, var(--accent-primary));
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cc-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.cc-empty { margin: 0.75rem 0 0.5rem; font-size: 0.88rem; color: var(--text-secondary); }
+
+.cc-list { list-style: none; margin: 0; padding: 0; }
+.cc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 48px;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.cc-list .cc-row:last-child { border-bottom: none; }
+.cc-check {
+  --check: var(--tone, var(--accent-primary));
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--text-muted) 80%, transparent);
+  background: transparent;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.cc-check:hover { border-color: var(--check); }
+.cc-row.done .cc-check { background: var(--check); border-color: var(--check); animation: check-pop 0.32s var(--ease-spring); }
+.cc-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.cc-row-text span { font-size: 0.92rem; color: var(--text-primary); overflow-wrap: anywhere; }
+.cc-row-text small {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+.cc-row-text small i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.cc-row.done .cc-row-text span { color: var(--text-muted); text-decoration: line-through; }
+.cc-row-actions { display: flex; gap: 0.1rem; opacity: 0; transition: opacity 0.15s ease; }
+.cc-row:hover .cc-row-actions, .cc-row:focus-within .cc-row-actions { opacity: 1; }
+@media (hover: none) { .cc-row-actions { opacity: 1; } }
+.cc-row-edit { flex: 1; display: flex; gap: 0.5rem; }
+.cc-row-edit input, .cc-add input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 0.6rem;
+  border-radius: 9px;
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.cc-add {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--hairline);
+  color: var(--text-muted);
+}
+.cc-add input { border-color: transparent; background: transparent; padding: 0 0.25rem; }
+.cc-add input:focus { outline: none; border-color: var(--hairline-strong); background: var(--surface-2); }
+.cc-add input::placeholder { color: var(--text-muted); }
+
+.cc-figure { display: flex; align-items: baseline; gap: 0.6rem; margin: 0.4rem 0 0.6rem; }
+.cc-figure strong {
+  font-size: 3.4rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--tone);
+}
+.cc-figure span { font-size: 0.9rem; color: var(--text-secondary); }
+.cc-mini-list { list-style: none; margin: 0; padding: 0; }
+.cc-mini-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.85rem;
+}
+.cc-qnum { color: var(--text-muted); }
+.cc-qtitle { flex: 1; min-width: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-diff { font-size: 0.75rem; font-weight: 600; }
+.cc-diff.easy { color: #30d158; }
+.cc-diff.medium { color: #ffcc00; }
+.cc-diff.hard { color: #ff375f; }
+
+.cc-plan-list { list-style: none; margin: 0; padding: 0; }
+.cc-plan-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.8fr) 3rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--hairline);
+}
+.cc-plan-list li:first-child { border-top: none; }
+.cc-plan-name { display: flex; flex-direction: column; min-width: 0; }
+.cc-plan-name span { font-size: 0.9rem; color: var(--text-primary); }
+.cc-plan-name small { font-size: 0.76rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-plan-pct { font-size: 0.82rem; color: var(--text-secondary); text-align: right; }
+
+@media (max-width: 900px) {
+  .cc-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tasks" "dsa" "meds" "plans"; grid-template-rows: none; }
+  .cc-greet { font-size: 1.7rem; }
+}
+@media (max-width: 720px) {
+  .cc-dash { padding-top: 0.5rem; }
+  .cc-quick { display: none; }
+  .cc-days { width: 100%; justify-content: space-between; }
+}
+
+/* ======================================================================
+   Redo 15 · Zen Zone is a main panel (Zen Zone change, own commit).
+   Next to the rail the screen splits 70/30 (default) or 75/25 between
+   the page and Zen Zone; the split is picked in the Theme factory.
+   ====================================================================== */
+:root { --zen-share: 0.30; }
+:root[data-zen-split="20"] { --zen-share: 0.20; }
+@media (min-width: 1101px) {
+  .timelogger-aside {
+    width: calc((100vw - 76px) * var(--zen-share));
+    min-width: 340px;
+    max-width: 680px;
+    flex: none;
+  }
+  .main-content { min-width: 0; }
+}
+
+/* ======================================================================
+   Redo 16 · Theme factory button: sits with the theme, workspace and
+   settings buttons and has the same springy tilt on hover.
+   ====================================================================== */
+.themes-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.45rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.themes-toggle-btn:hover {
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.2);
+  transform: scale(1.12) rotate(-12deg);
+}
+.themes-toggle-btn.active {
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+.themes-toggle-btn:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+/* ======================================================================
+   Redo 17/18 · Personal vs office cue, in every theme: the lamp (light at
+   the top of the sidebar) plus the Day ring logo. Personal: the logo is lit
+   in the theme's accent (--cue) and the lamp glows in the same colour.
+   Office: the logo is a quiet outline (--cue-off) and the lamp is off.
+   No labels. Themes set --cue / --cue-off and may add small logo touches.
+   ====================================================================== */
+:root { --cue: var(--accent-primary); --cue-off: var(--text-muted); }
+.brand-logo { overflow: visible; color: var(--cue-off); transition: color 0.5s ease, filter 0.5s ease; }
+.brand-logo path, .brand-logo circle, .brand-logo line { transition: fill 0.5s ease, stroke 0.5s ease, opacity 0.5s ease; }
+.brand-logo .bl-ring, .brand-logo .bl-tick { fill: none; stroke: currentColor; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.brand-logo .bl-dot { fill: currentColor; }
+.brand-logo .bl-disc { fill: currentColor; opacity: 0; }
+.brand-logo .bl-echo, .brand-logo .bl-ticks { display: none; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+.brand-logo.lit { color: var(--cue); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--cue) 70%, transparent)); }
+.brand-logo.lit .bl-disc { opacity: 0.18; }
+
+/* The lamp now glows in the theme's accent instead of a fixed violet */
+.sidebar-aside {
+  background-image:
+    radial-gradient(120% 340px at 22% 0%,
+      color-mix(in srgb, var(--cue) calc(22% * var(--lamp)), transparent),
+      color-mix(in srgb, var(--cue) calc(7% * var(--lamp)), transparent) 48%,
+      transparent 78%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--cue) calc(40% * var(--lamp)), transparent),
+      transparent 45%);
+}
+.sidebar-brand .brand-title {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--text-primary);
+  animation: none;
+}
+
+/* ======================================================================
+   Redo 19 · Expandable rail: a toggle under the logo widens the desktop
+   rail to show section names; the four buttons (theme, workspace,
+   settings, themes) sit in one row and your name shows. Remembered.
+   ====================================================================== */
+.rail-toggle { display: none; }
+:root { --rail-w: 76px; }
+:root[data-rail="open"] { --rail-w: 236px; }
+@media (min-width: 1101px) {
+  .sidebar-aside { transition: width 0.25s cubic-bezier(0.22, 0.8, 0.24, 1), padding 0.25s ease; }
+  .timelogger-aside { width: calc((100vw - var(--rail-w)) * var(--zen-share)); }
+  .rail-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 32px;
+    margin: -0.75rem 0 0.75rem;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .rail-toggle:hover { color: var(--text-primary); background: var(--hover-bg, rgba(255, 255, 255, 0.05)); transform: scale(1.08); }
+  .rail-toggle:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+  .sidebar-aside.rail-open { width: 236px; align-items: stretch; padding: 1.25rem 0.9rem; }
+  .rail-open .sidebar-brand { justify-content: flex-start; padding-left: 0.35rem; }
+  .rail-open .sidebar-brand .brand-title {
+    position: static; width: auto; height: auto; overflow: visible; clip: auto;
+    font-size: 1.15rem !important;
+  }
+  .rail-open .rail-toggle { align-self: flex-end; margin-top: -3.6rem; margin-bottom: 1.6rem; }
+  .rail-open .rail-quick-add { width: 100%; justify-content: flex-start; padding: 0 0.85rem; }
+  .rail-open .rail-quick-add span { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+
+  .rail-open .sidebar-nav { align-items: stretch; }
+  .rail-open .sidebar-nav .nav-link {
+    width: 100%;
+    height: 44px;
+    justify-content: flex-start;
+    gap: 0.8rem;
+    padding: 0 0.85rem;
+  }
+  .rail-open .sidebar-nav .nav-link span {
+    position: static;
+    transform: none;
+    opacity: 1;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    pointer-events: auto;
+  }
+
+  .rail-open .sidebar-footer { align-items: stretch; }
+  .rail-open .sidebar-footer > div:first-child {
+    flex-direction: row !important;
+    justify-content: space-between;
+    width: 100% !important;
+  }
+  .rail-open .sidebar-footer .user-profile { justify-content: flex-start; }
+  .rail-open .sidebar-footer .user-info { display: flex; }
+  .rail-open .btn-logout { width: 100%; justify-content: flex-start !important; padding: 0 0.6rem; gap: 0.6rem; }
+  .rail-open .btn-logout span { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+}
+@media (min-width: 1101px) {
+  /* Zen Zone's calendar needs about 390px to show all seven days */
+  .timelogger-aside { min-width: 390px; }
+}
+
+/* Dashboard task tags: "Gen" for general tasks, the plan's name in its colour for plan tasks */
+.cc-row-text .cc-tags { display: flex; align-items: center; gap: 0.45rem; font-size: 0.72rem; color: var(--text-muted); }
+.cc-row-text .cc-tags small { font-size: 0.72rem; }
+.cc-tag {
+  --tag: var(--mod-dashboard);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.68rem;
+  line-height: 1;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  color: var(--tag);
+  background: color-mix(in srgb, var(--tag) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tag) 30%, transparent);
+}
+.cc-row.done .cc-tag { opacity: 0.55; }
+.cc-row.done .cc-row-text .cc-tags { text-decoration: none; }
+
+/* ======================================================================
+   Redo 20 · Header buttons: one size and shape on every page. Primary is
+   filled in the page colour with a soft lift; secondary is a quiet
+   outlined button that takes the page colour on hover. The + icon turns
+   a quarter on hover. Themes still restyle shape and colour.
+   ====================================================================== */
+.page-header .ui-btn,
+.page-header .btn {
+  height: 38px;
+  padding: 0 1rem;
+  gap: 0.45rem;
+  border-radius: 11px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
+}
+.page-header .ui-btn-primary,
+.page-header .btn-primary {
+  background: var(--tone, var(--accent-primary)) !important;
+  color: var(--tone-ink, #fff) !important;
+  border: 1px solid color-mix(in srgb, var(--tone, var(--accent-primary)) 80%, #fff) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 8px 18px -10px color-mix(in srgb, var(--tone, var(--accent-primary)) 80%, transparent) !important;
+}
+.page-header .ui-btn-primary:hover:not(:disabled),
+.page-header .btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 12px 24px -10px color-mix(in srgb, var(--tone, var(--accent-primary)) 90%, transparent) !important;
+}
+.page-header .ui-btn-secondary,
+.page-header .ui-btn-ghost {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline-strong);
+  color: var(--text-primary);
+}
+.page-header .ui-btn-secondary:hover:not(:disabled),
+.page-header .ui-btn-ghost:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--tone, var(--accent-primary)) 50%, var(--hairline-strong));
+  background: color-mix(in srgb, var(--tone, var(--accent-primary)) 8%, var(--surface-1));
+  color: var(--text-primary);
+}
+.page-header .ui-btn:active:not(:disabled),
+.page-header .btn:active:not(:disabled) { transform: scale(0.97); }
+.page-header .ui-btn:focus-visible,
+.page-header .btn:focus-visible { outline: 2px solid var(--tone, var(--accent-primary)); outline-offset: 2px; }
+.page-header .ui-btn svg,
+.page-header .btn svg { flex: none; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.page-header .ui-btn:hover .lucide-plus,
+.page-header .btn:hover .lucide-plus { transform: rotate(90deg); }
+.page-header .ui-btn-primary::after { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .page-header .ui-btn:hover, .page-header .btn:hover { transform: none; }
+}
+
+/* 80/20 split: Zen Zone draws at 80% scale so its ring, calendar and
+   Pomodoro fit a narrower panel without cutting anything off. */
+@media (min-width: 1101px) {
+  :root[data-zen-split="20"] .timelogger-aside {
+    zoom: 0.8;
+    width: calc((100vw - var(--rail-w)) * 0.2 / 0.8);
+    min-width: 390px;
+    height: calc(100vh / 0.8);
+  }
+}
+
+/* ---------- Speed: shorter entrance animations ---------- */
+/* Fill mode stays 'backwards' so wrappers do not hold a transform (fixed dialogs). */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-enter {
+  animation: page-in 0.25s var(--ease-out-soft) backwards;
+}
+.page-enter .glass-card {
+  animation: rise-in 0.3s var(--ease-out-soft) backwards;
+}
+.page-enter .glass-card:nth-child(2) { animation-delay: 30ms; }
+.page-enter .glass-card:nth-child(3) { animation-delay: 60ms; }
+.page-enter .glass-card:nth-child(4) { animation-delay: 90ms; }
+.page-enter .glass-card:nth-child(n + 5) { animation-delay: 120ms; }
+
+.auth-card,
+.plan-body {
+  animation: rise-in 0.3s var(--ease-out-soft) backwards;
+}
+.ui-stat-row > *,
+.dsa-tallies > *,
+.plan-weeks > * {
+  animation: rise-in 0.3s var(--ease-out-soft) backwards;
+}
+.ui-stat-row > :nth-child(2), .dsa-tallies > :nth-child(2), .plan-weeks > :nth-child(2) { animation-delay: 30ms; }
+.ui-stat-row > :nth-child(3), .dsa-tallies > :nth-child(3), .plan-weeks > :nth-child(3) { animation-delay: 60ms; }
+.ui-stat-row > :nth-child(4), .dsa-tallies > :nth-child(4), .plan-weeks > :nth-child(4) { animation-delay: 90ms; }
+.plan-weeks > :nth-child(n + 5) { animation-delay: 120ms; }
+.dsa-heatmap-week {
+  animation: fade-in 0.3s ease backwards;
+}
+.dsa-heatmap-week:nth-child(n) { animation-delay: calc(min(var(--col, 0), 6) * 18ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .page-enter .glass-card,
+  .auth-card,
+  .plan-body,
+  .ui-stat-row > *,
+  .dsa-tallies > *,
+  .plan-weeks > *,
+  .dsa-heatmap-week {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+}

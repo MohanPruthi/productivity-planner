@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { getTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import PinModal from './PinModal';
+import { openQuickAdd } from './QuickAdd';
 import { 
   LayoutDashboard, 
   Brain, 
@@ -17,7 +19,11 @@ import {
   Briefcase,
   Laptop,
   StickyNote,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Plus,
+  Palette,
+  PanelLeftOpen,
+  PanelLeftClose
 } from 'lucide-react';
 
 const renderThemeIcon = (currentTheme) => {
@@ -61,48 +67,90 @@ const renderThemeIcon = (currentTheme) => {
   );
 };
 
-const LogoIcon = () => {
+// Day ring logo: a ring three-quarters closed with a dot for today and a tick
+// inside. Personal space lights it in the theme's accent (--cue); office space
+// shows it as a quiet outline. Themes add small touches (see .brand-logo rules).
+const RING_TICK_PATHS = {
+  disc: 'M32 8a24 24 0 1 1 0 48a24 24 0 1 1 0-48z',
+  ring: 'M32 8a24 24 0 1 1-24 24',
+  echo: 'M32 2a30 30 0 1 1-30 30',
+  tick: 'M23 33l6 6 12-13',
+};
+
+const LogoIcon = ({ personal }) => {
   return (
-    <svg 
-      width="28" 
-      height="28" 
-      viewBox="0 0 32 32" 
-      fill="none" 
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ filter: 'drop-shadow(0 0 8px rgba(99, 102, 241, 0.4))' }}
-    >
+    <svg className={`brand-logo ${personal ? 'lit' : ''}`} width="30" height="30" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
-        <linearGradient id="logoGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="var(--accent-primary)" />
-          <stop offset="100%" stopColor="#8b5cf6" />
+        {/* Used by themes: Aurora's gradient stroke and Notebook's inked line */}
+        <linearGradient id="logo-aurora" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#a78bfa" />
+          <stop offset="0.55" stopColor="#22d3ee" />
+          <stop offset="1" stopColor="#f472b6" />
         </linearGradient>
+        <filter id="logo-ink">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="3" />
+          <feDisplacementMap in="SourceGraphic" scale="2.2" />
+        </filter>
       </defs>
-      
-      {/* Outer Classic Outline Ring */}
-      <circle cx="16" cy="16" r="14" stroke="url(#logoGlowGrad)" strokeWidth="1.75" strokeLinecap="round" />
-      
-      {/* Inner Dash Alignment Ring */}
-      <circle cx="16" cy="16" r="11" stroke="var(--text-muted)" strokeWidth="1" strokeDasharray="2,3" opacity="0.5" />
-      
-      {/* Compass Needle / Star Core */}
-      <path 
-        d="M16 6 L20 14 L28 16 L20 18 L16 26 L12 18 L4 16 L12 14 Z" 
-        stroke="url(#logoGlowGrad)" 
-        strokeWidth="1.75" 
-        strokeLinejoin="round" 
-        fill="rgba(99, 102, 241, 0.05)" 
-      />
-      
-      {/* Center Pivot Point */}
-      <circle cx="16" cy="16" r="2" fill="var(--text-primary)" />
+      <path className="bl-disc" d={RING_TICK_PATHS.disc} />
+      <path className="bl-echo" d={RING_TICK_PATHS.echo} />
+      <g className="bl-ticks">
+        {Array.from({ length: 12 }, (_, i) => {
+          const a = (i * Math.PI) / 6;
+          const r2 = i % 3 ? 29 : 27.5;
+          return <line key={i} x1={32 + 30.5 * Math.cos(a)} y1={32 + 30.5 * Math.sin(a)} x2={32 + r2 * Math.cos(a)} y2={32 + r2 * Math.sin(a)} />;
+        })}
+      </g>
+      <path className="bl-ring" d={RING_TICK_PATHS.ring} />
+      <circle className="bl-dot" cx="32" cy="8" r="4.5" />
+      <path className="bl-tick" d={RING_TICK_PATHS.tick} />
     </svg>
   );
+};
+
+// Tab icon: the same mark drawn with the current theme's colours
+const faviconHref = (personal) => {
+  const css = getComputedStyle(document.documentElement);
+  const cue = css.getPropertyValue('--cue').trim() || '#6366f1';
+  const ink = css.getPropertyValue('--cue-off').trim() || '#9ca3af';
+  const c = personal ? cue : ink;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${personal ? `<circle cx="32" cy="32" r="24" fill="${c}" opacity=".2"/>` : ''}<path d="${RING_TICK_PATHS.ring}" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round"/><circle cx="32" cy="8" r="6" fill="${c}"/><path d="${RING_TICK_PATHS.tick}" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 };
 
 const Sidebar = () => {
   const { user, logout, privacyMode, togglePrivacyMode, workspaceVisibility } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  // Active skin from the Theme factory; only Classic has its own light/dark switch
+  const [skin, setSkin] = useState(getTheme);
+  useEffect(() => {
+    const onChange = (e) => setSkin(e.detail);
+    window.addEventListener('ui-theme-changed', onChange);
+    return () => window.removeEventListener('ui-theme-changed', onChange);
+  }, []);
+
+  // Tab icon carries the same quiet workspace cue as the sidebar logo, in the theme's colours
+  useEffect(() => {
+    const icon = document.querySelector("link[rel='icon']");
+    if (!icon) return;
+    icon.href = faviconHref(!privacyMode);
+    return () => {
+      icon.href = '/favicon.svg';
+    };
+  }, [privacyMode, skin]);
+
+
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+
+  // Desktop rail can expand to show section names; remembered between visits
+  const [railOpen, setRailOpen] = useState(() => {
+    try { return localStorage.getItem('rail_open') === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.rail = railOpen ? 'open' : 'closed';
+    try { localStorage.setItem('rail_open', railOpen ? '1' : '0'); } catch { /* not remembered */ }
+  }, [railOpen]);
 
   // Initialize theme from localStorage or default to dark
   const [theme, setTheme] = useState(() => {
@@ -110,15 +158,17 @@ const Sidebar = () => {
   });
 
   useEffect(() => {
-    if (theme === 'light') {
-      document.body.classList.add('light-theme');
-    } else {
-      document.body.classList.remove('light-theme');
-    }
+    const light = skin.mode === 'both' ? theme === 'light' : skin.mode === 'light';
+    document.body.classList.toggle('light-theme', light);
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, skin]);
 
   const toggleTheme = () => {
+    // Other themes come as light or dark already: send people to the Theme factory
+    if (skin.mode !== 'both') {
+      navigate('/themes');
+      return;
+    }
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
@@ -133,14 +183,13 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard, color: 'var(--accent-primary)' },
-    { id: 'aiPlan', path: '/ai-plan', label: 'AI Plan', icon: Brain, color: 'var(--track-ai-start)' },
-    { id: 'sdPlan', path: '/sd-plan', label: 'SD Plan', icon: Layers, color: 'var(--track-sd-start)' },
-    { id: 'dsaLog', path: '/dsa-log', label: 'DSA Log', icon: Code2, color: '#ffa116' },
-    { id: 'taskHistory', path: '/task-history', label: 'Work Board', icon: History, color: 'var(--accent-secondary)' },
-    { id: 'meds', path: '/meds', label: 'Meds Tracker', icon: Pill, color: '#ff2d55' },
-    { id: 'hrDirectory', path: '/hr-directory', label: 'Directory', icon: Phone, color: '#007aff' },
-    { id: 'notes', path: '/notes', label: 'Notes', icon: StickyNote, color: '#eab308' },
+    { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard, color: 'var(--mod-dashboard)' },
+    { id: 'plans', path: '/plans', label: 'Plans', icon: Layers, color: 'var(--mod-plans)' },
+    { id: 'dsaLog', path: '/dsa-log', label: 'DSA Log', icon: Code2, color: 'var(--mod-dsa)' },
+    { id: 'taskHistory', path: '/task-history', label: 'Work Board', icon: History, color: 'var(--mod-board)' },
+    { id: 'meds', path: '/meds', label: 'Meds Tracker', icon: Pill, color: 'var(--mod-meds)' },
+    { id: 'hrDirectory', path: '/hr-directory', label: 'Directory', icon: Phone, color: 'var(--mod-contacts)' },
+    { id: 'notes', path: '/notes', label: 'Notes', icon: StickyNote, color: 'var(--mod-notes)' },
   ];
 
   const filteredNavItems = navItems.filter(item => {
@@ -154,13 +203,29 @@ const Sidebar = () => {
   });
 
   return (
-    <aside className="sidebar-aside">
+    <aside className={`sidebar-aside ${privacyMode ? '' : 'workspace-lamp'} ${railOpen ? 'rail-open' : ''}`}>
       <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', marginBottom: '3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <LogoIcon />
-          <h2 className="brand-title animated-gradient-purple" style={{ margin: 0, fontSize: '1.45rem', letterSpacing: '0.08em', fontWeight: 900, textTransform: 'uppercase' }}>PLANNER</h2>
+          <LogoIcon personal={!privacyMode} />
+          <h2 className="brand-title animated-gradient-purple" style={{ margin: 0, fontSize: '1.45rem', fontWeight: 600 }}>Planner</h2>
         </div>
       </div>
+
+      <button
+        type="button"
+        className="rail-toggle"
+        onClick={() => setRailOpen((v) => !v)}
+        aria-expanded={railOpen}
+        aria-label={railOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        title={railOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+      >
+        {railOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
+      </button>
+
+      <button type="button" className="rail-quick-add" onClick={openQuickAdd} aria-label="Quick add (Ctrl K)" title="Quick add (Ctrl K)">
+        <Plus size={18} />
+        <span>Quick add</span>
+      </button>
 
       <nav className="sidebar-nav">
         {filteredNavItems.map((item) => {
@@ -171,6 +236,7 @@ const Sidebar = () => {
               key={item.path} 
               to={item.path} 
               className={`nav-link ${isActive ? 'active' : ''}`}
+              aria-current={isActive ? 'page' : undefined}
               style={isActive ? { '--active-color': item.color } : {}}
             >
               <Icon size={20} className="nav-icon" />
@@ -207,6 +273,7 @@ const Sidebar = () => {
               flexShrink: 0
             }}
             className="theme-toggle-btn"
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
             title={theme === 'light' ? 'Switch to Dark Mode (Study at Night)' : 'Switch to Light Mode (Study in Day)'}
             onMouseOver={(e) => {
               e.currentTarget.style.color = 'var(--accent-primary)';
@@ -242,6 +309,7 @@ const Sidebar = () => {
               flexShrink: 0
             }}
             className="privacy-toggle-btn"
+            aria-label={privacyMode ? 'Switch to personal workspace' : 'Switch to office workspace'}
             title={privacyMode ? 'Switch to Personal Workspace' : 'Switch to Office Workspace'}
             onMouseOver={(e) => {
               e.currentTarget.style.color = 'var(--accent-primary)';
@@ -278,6 +346,7 @@ const Sidebar = () => {
               textDecoration: 'none'
             }}
             className="settings-toggle-btn"
+            aria-label="Settings"
             title="Settings"
             onMouseOver={(e) => {
               e.currentTarget.style.color = 'var(--accent-primary)';
@@ -295,6 +364,16 @@ const Sidebar = () => {
             }}
           >
             <SettingsIcon size={18} />
+          </Link>
+
+          {/* Theme factory */}
+          <Link
+            to="/themes"
+            className={`themes-toggle-btn ${location.pathname === '/themes' ? 'active' : ''}`}
+            aria-label="Themes"
+            title="Themes"
+          >
+            <Palette size={18} />
           </Link>
         </div>
 
@@ -322,9 +401,9 @@ const Sidebar = () => {
           </div>
         </div>
         
-        <button className="btn-logout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={logout}>
+        <button className="btn-logout" aria-label="Sign out" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={logout}>
           <LogOut size={18} />
-          <span>Sign Out</span>
+          <span>Sign out</span>
         </button>
       </div>
     </aside>

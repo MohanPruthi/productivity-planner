@@ -1,20 +1,23 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import Plan from './pages/Plan';
-import DsaLog from './pages/DsaLog';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
-import TaskHistory from './pages/TaskHistory';
-import Meds from './pages/Meds';
-import HrDirectory from './pages/HrDirectory';
-import Notes from './pages/Notes';
-import NoteDetail from './pages/NoteDetail';
-import Settings from './pages/Settings';
 import Loader from './components/Loader';
+
+// Less-used pages load on demand so the first visit downloads less JavaScript
+const Plans = lazy(() => import('./pages/Plans'));
+const DsaLog = lazy(() => import('./pages/DsaLog'));
+const TaskHistory = lazy(() => import('./pages/TaskHistory'));
+const Meds = lazy(() => import('./pages/Meds'));
+const HrDirectory = lazy(() => import('./pages/HrDirectory'));
+const ThemeFactory = lazy(() => import('./pages/ThemeFactory'));
+const Notes = lazy(() => import('./pages/Notes'));
+const NoteDetail = lazy(() => import('./pages/NoteDetail'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -64,6 +67,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Layout>
+          <Suspense fallback={<Loader />}>
           <Routes>
             {/* Public Auth Routes */}
             <Route 
@@ -101,25 +105,18 @@ function App() {
               } 
             />
             <Route 
-              path="/ai-plan" 
+              path="/plans" 
               element={
                 <ProtectedRoute>
-                  <WorkspaceProtectedRoute systemId="aiPlan">
-                    <Plan track="AI" />
+                  <WorkspaceProtectedRoute systemId="plans">
+                    <Plans />
                   </WorkspaceProtectedRoute>
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/sd-plan" 
-              element={
-                <ProtectedRoute>
-                  <WorkspaceProtectedRoute systemId="sdPlan">
-                    <Plan track="SD" />
-                  </WorkspaceProtectedRoute>
-                </ProtectedRoute>
-              } 
-            />
+            {/* The old AI and SD plans now live under Plans */}
+            <Route path="/ai-plan" element={<Navigate to="/plans" replace />} />
+            <Route path="/sd-plan" element={<Navigate to="/plans" replace />} />
             <Route 
               path="/dsa-log" 
               element={
@@ -193,9 +190,19 @@ function App() {
               } 
             />
 
+            <Route
+              path="/themes"
+              element={
+                <ProtectedRoute>
+                  <ThemeFactory />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Catch-all redirect */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </Suspense>
         </Layout>
       </AuthProvider>
     </BrowserRouter>

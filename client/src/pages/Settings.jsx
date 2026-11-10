@@ -184,17 +184,10 @@ const Settings = () => {
       canHideFromDashboard: false
     },
     {
-      id: 'aiPlan',
-      name: 'AI Study Plan',
-      icon: Brain,
-      color: 'var(--track-ai-start)',
-      canHideFromDashboard: true
-    },
-    {
-      id: 'sdPlan',
-      name: 'System Design Plan',
+      id: 'plans',
+      name: 'Plans',
       icon: Layers,
-      color: 'var(--track-sd-start)',
+      color: 'var(--mod-plans)',
       canHideFromDashboard: true
     },
     {
@@ -238,37 +231,15 @@ const Settings = () => {
     <div className="settings-page" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem', width: '100%', paddingBottom: '3rem' }}>
       
       {/* Top Header Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '1.5rem 2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          boxShadow: '0 10px 30px rgba(255,255,255,0.01), inset 0 1px 0 rgba(255,255,255,0.02)',
-          borderRadius: '20px',
-          flexShrink: 0
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: 'rgba(99, 102, 241, 0.1)',
-            border: '1px solid rgba(99, 102, 241, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.18)'
-          }}>
-            <SettingsIcon size={22} color="var(--accent-primary)" />
+      <header className="page-header tone-settings">
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <SettingsIcon size={20} />
           </div>
-          <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
-            System <span className="gradient-text">Settings</span>
-          </h1>
+          <div>
+            <h1 className="page-header-title">Settings</h1>
+            <p className="page-header-subtitle">Focus targets, office workspace and PIN</p>
+          </div>
         </div>
 
         {/* Current Workspace Status Badge */}
@@ -283,31 +254,30 @@ const Settings = () => {
         }}>
           {privacyMode ? <Lock size={15} color="var(--text-muted)" /> : <Unlock size={15} color="var(--accent-primary)" />}
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 600 }}>
               Active Mode
             </div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 800, color: privacyMode ? 'var(--text-secondary)' : 'var(--accent-primary)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: privacyMode ? 'var(--text-secondary)' : 'var(--accent-primary)' }}>
               {privacyMode ? 'Office Workspace' : 'Personal Workspace'}
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
+      <div className="settings-list">
       {/* ========================================================= */}
       {/* 1. ZEN ZONE TARGETS CARD (Accordion Dropdown)             */}
       {/* ========================================================= */}
       <div 
-        className="glass-card" 
-        style={{ 
-          borderRadius: '20px', 
-          overflow: 'hidden',
-          border: '1px solid var(--border-light)',
-          transition: 'all 0.25s ease'
-        }}
+        className="settings-item"
       >
         {/* Accordion Header */}
         <div 
           onClick={() => setIsZenSectionOpen(prev => !prev)}
+          role="button"
+          tabIndex={0}
+          className="settings-item-head"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsZenSectionOpen(prev => !prev); } }}
           style={{ 
             padding: '1.25rem 1.75rem',
             display: 'flex', 
@@ -320,10 +290,8 @@ const Settings = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <Flame size={18} color="#ff9500" />
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>
-              Zen Zone Targets
-            </h2>
+            <span className="settings-item-icon"><Flame size={17} /></span>
+            <div><h2 className="settings-item-title">Zen Zone targets</h2><p className="settings-item-desc">Daily focus goals for the Zen Zone timer</p></div>
           </div>
 
           <div 
@@ -359,42 +327,42 @@ const Settings = () => {
           >
             {/* Daily Study Targets */}
             <div>
-              <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#ff9500', fontWeight: 800, letterSpacing: '0.06em', display: 'block', marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.72rem', color: '#ff9500', fontWeight: 600, display: 'block', marginBottom: '0.75rem' }}>
                 Daily Study Targets
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {/* Weekdays */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Weekdays</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Weekdays</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setWeekdayTarget(prev => Math.max(0, prev - 0.5))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{weekdayTarget}h</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{weekdayTarget}h</span>
                     <button 
                       type="button" 
                       onClick={() => setWeekdayTarget(prev => prev + 0.5)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}
                     >+</button>
                   </div>
                 </div>
 
                 {/* Weekends */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Weekends</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Weekends</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setWeekendTarget(prev => Math.max(0, prev - 0.5))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{weekendTarget}h</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{weekendTarget}h</span>
                     <button 
                       type="button" 
                       onClick={() => setWeekendTarget(prev => prev + 0.5)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}
                     >+</button>
                   </div>
                 </div>
@@ -403,60 +371,60 @@ const Settings = () => {
 
             {/* Pomodoro Durations */}
             <div>
-              <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#ff2d55', fontWeight: 800, letterSpacing: '0.06em', display: 'block', marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.72rem', color: '#ff2d55', fontWeight: 600, display: 'block', marginBottom: '0.75rem' }}>
                 Pomodoro Durations
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {/* Focus */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Focus Session</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Focus Session</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setPomoWorkMinutes(prev => Math.max(1, prev - 1))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{pomoWorkMinutes}m</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{pomoWorkMinutes}m</span>
                     <button 
                       type="button" 
                       onClick={() => setPomoWorkMinutes(prev => prev + 1)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >+</button>
                   </div>
                 </div>
 
                 {/* Short Break */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Short Break</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Short Break</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setPomoShortMinutes(prev => Math.max(1, prev - 1))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{pomoShortMinutes}m</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{pomoShortMinutes}m</span>
                     <button 
                       type="button" 
                       onClick={() => setPomoShortMinutes(prev => prev + 1)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >+</button>
                   </div>
                 </div>
 
                 {/* Long Break */}
                 <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Long Break</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Long Break</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', padding: '0.15rem' }}>
                     <button 
                       type="button" 
                       onClick={() => setPomoLongMinutes(prev => Math.max(1, prev - 1))}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >-</button>
-                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 800 }}>{pomoLongMinutes}m</span>
+                    <span style={{ width: '38px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{pomoLongMinutes}m</span>
                     <button 
                       type="button" 
                       onClick={() => setPomoLongMinutes(prev => prev + 1)}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800 }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 600 }}
                     >+</button>
                   </div>
                 </div>
@@ -465,7 +433,7 @@ const Settings = () => {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginTop: '0.25rem' }}>
               {zenSuccessMsg && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.82rem', fontWeight: 700 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.82rem', fontWeight: 600 }}>
                   <CheckCircle2 size={16} />
                   <span>{zenSuccessMsg}</span>
                 </div>
@@ -477,7 +445,7 @@ const Settings = () => {
                 style={{
                   padding: '0.65rem 1.8rem',
                   fontSize: '0.85rem',
-                  fontWeight: 750,
+                  fontWeight: 600,
                   borderRadius: '12px',
                   cursor: 'pointer'
                 }}
@@ -494,17 +462,15 @@ const Settings = () => {
       {/* ========================================================= */}
       {!privacyMode && (
         <div 
-          className="glass-card" 
-          style={{ 
-            borderRadius: '20px', 
-            overflow: 'hidden',
-            border: '1px solid var(--border-light)',
-            transition: 'all 0.25s ease'
-          }}
+          className="settings-item"
         >
           {/* Accordion Header */}
           <div 
             onClick={() => setIsVisibilitySectionOpen(prev => !prev)}
+          role="button"
+          tabIndex={0}
+          className="settings-item-head"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsVisibilitySectionOpen(prev => !prev); } }}
             style={{ 
               padding: '1.25rem 1.75rem',
               display: 'flex', 
@@ -517,10 +483,8 @@ const Settings = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <Sliders size={18} color="var(--accent-primary)" />
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>
-                Office Workspace Visibility
-              </h2>
+              <span className="settings-item-icon"><Sliders size={17} /></span>
+              <div><h2 className="settings-item-title">Office workspace</h2><p className="settings-item-desc">Choose what stays hidden in office space</p></div>
             </div>
 
             <div 
@@ -590,7 +554,7 @@ const Settings = () => {
                           <Icon size={18} />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.92rem', fontWeight: 750 }}>
+                          <span style={{ fontSize: '0.92rem', fontWeight: 600 }}>
                             {sys.name}
                           </span>
                           {!isShownInOffice && (
@@ -647,7 +611,7 @@ const Settings = () => {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           <ChevronRight size={14} color="var(--text-muted)" />
-                          <span style={{ fontSize: '0.8rem', fontWeight: 650, color: 'var(--text-primary)' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                             Show on Dashboard
                           </span>
                         </div>
@@ -695,17 +659,15 @@ const Settings = () => {
       {/* 3. CHANGE SECURITY PIN (At Bottom with Accordion)        */}
       {/* ========================================================= */}
       <div 
-        className="glass-card" 
-        style={{ 
-          borderRadius: '20px', 
-          overflow: 'hidden',
-          border: '1px solid var(--border-light)',
-          transition: 'all 0.25s ease'
-        }}
+        className="settings-item"
       >
         {/* Accordion Header */}
         <div 
           onClick={() => setIsPinSectionOpen(prev => !prev)}
+          role="button"
+          tabIndex={0}
+          className="settings-item-head"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsPinSectionOpen(prev => !prev); } }}
           style={{ 
             padding: '1.25rem 1.75rem',
             display: 'flex', 
@@ -719,10 +681,8 @@ const Settings = () => {
         >
           {/* Left Title */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <KeyRound size={18} color="#007aff" />
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>
-              Change Security PIN
-            </h2>
+            <span className="settings-item-icon"><KeyRound size={17} /></span>
+            <div><h2 className="settings-item-title">Security PIN</h2><p className="settings-item-desc">The 4-digit PIN that opens personal space</p></div>
           </div>
 
           {/* Right Chevron Icon */}
@@ -762,7 +722,7 @@ const Settings = () => {
               
               {/* 1. Current PIN */}
               <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem' }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
                   Current PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.45rem' }}>
@@ -780,7 +740,7 @@ const Settings = () => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: digit ? 'rgba(0, 122, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid #007aff' : '1px solid var(--border-light)',
@@ -795,7 +755,7 @@ const Settings = () => {
 
               {/* 2. New PIN */}
               <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem' }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
                   New PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.45rem' }}>
@@ -813,7 +773,7 @@ const Settings = () => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: digit ? 'rgba(0, 122, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid #007aff' : '1px solid var(--border-light)',
@@ -828,7 +788,7 @@ const Settings = () => {
 
               {/* 3. Confirm New PIN */}
               <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', borderRadius: '14px', padding: '1rem' }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.6rem' }}>
                   Confirm PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.45rem' }}>
@@ -846,7 +806,7 @@ const Settings = () => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: digit ? 'rgba(0, 122, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid #007aff' : '1px solid var(--border-light)',
@@ -870,7 +830,7 @@ const Settings = () => {
               )}
 
               {pinSuccess && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.8rem', fontWeight: 700 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.8rem', fontWeight: 600 }}>
                   <CheckCircle2 size={16} />
                   <span>{pinSuccess}</span>
                 </div>
@@ -884,7 +844,7 @@ const Settings = () => {
                 style={{
                   padding: '0.65rem 1.8rem',
                   fontSize: '0.85rem',
-                  fontWeight: 750,
+                  fontWeight: 600,
                   borderRadius: '12px',
                   cursor: 'pointer'
                 }}
@@ -894,6 +854,7 @@ const Settings = () => {
             </div>
           </form>
         )}
+      </div>
       </div>
 
       {/* When NOT in Personal Space: Yellow Glass Unlock Button */}
@@ -909,7 +870,7 @@ const Settings = () => {
               color: '#fbbf24',
               padding: '0.7rem 1.75rem',
               fontSize: '0.85rem',
-              fontWeight: 750,
+              fontWeight: 600,
               borderRadius: '14px',
               display: 'flex',
               alignItems: 'center',

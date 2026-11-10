@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* Classic: the look from main. Inter + Outfit, glassy cards with soft
+   depth, indigo accents and gradient primary buttons. Light and dark follow
+   the sun and moon button. */
+[data-theme="classic"] {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --cue: #8b5cf6;
+  --cue-off: #6b7280;
+  --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+[data-theme="classic"] body { font-family: var(--font-sans); }
+[data-theme="classic"] h1, [data-theme="classic"] h2, [data-theme="classic"] h3,
+[data-theme="classic"] .cc-greet, [data-theme="classic"] .page-header-title { font-family: var(--font-display); font-weight: 600; }
+
+:root[data-theme="classic"] .main-content .glass-card,
+:root[data-theme="classic"] .cc-tile {
+  background-color: var(--glass-bg);
+  border-color: var(--glass-border);
+  box-shadow: var(--card-shadow);
+}
+:root[data-theme="classic"] .main-content .glass-card:hover,
+:root[data-theme="classic"] .cc-tile:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: var(--card-shadow), 0 0 20px rgba(99, 102, 241, 0.12);
+}
+:root[data-theme="classic"] .ui-btn-primary,
+:root[data-theme="classic"] .main-content .btn-primary {
+  background: linear-gradient(135deg, var(--tone, #6366f1), color-mix(in srgb, var(--tone, #6366f1) 78%, #000)) !important;
+  color: var(--tone-ink, #fff) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--tone, #6366f1) 30%, transparent) !important;
+}
+:root[data-theme="classic"] .nav-link.active {
+  box-shadow: -6px 0 18px -8px var(--active-color);
+}
+:root[data-theme="classic"] .cc-figure strong { text-shadow: 0 0 22px color-mix(in srgb, var(--tone) 35%, transparent); }
+
+/* Theme factory preview */
+.tf-preview[data-theme="classic"] { background: #0a0b10; }
+.tf-preview[data-theme="classic"] .tf-tile { box-shadow: 0 6px 14px -8px #000; }

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
+const compression = require('compression');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const planRoutes = require('./routes/planRoutes');
@@ -12,6 +13,9 @@ const normalTaskRoutes = require('./routes/normalTaskRoutes');
 const medsRoutes = require('./routes/medsRoutes');
 const hrRoutes = require('./routes/hrRoutes');
 const notesRoutes = require('./routes/notesRoutes');
+const noteGroupsRoutes = require('./routes/noteGroupsRoutes');
+const plansRoutes = require('./routes/plansRoutes');
+const { migrateLegacyPlans } = require('./controllers/plansController');
 const prisma = require('./db');
 
 const app = express();
@@ -24,10 +28,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+app.use(compression());
 app.use(express.json());
 
 // Request logging middleware
-app.use((req, res, next) => {
+if (process.env.NODE_ENV !== 'production') app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
@@ -44,6 +49,8 @@ app.use('/api/normal-tasks', normalTaskRoutes);
 app.use('/api/meds', medsRoutes);
 app.use('/api/hr-contacts', hrRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/note-groups', noteGroupsRoutes);
+app.use('/api/plans', plansRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -53,6 +60,8 @@ app.get('/health', (req, res) => {
 // In production, serve the built React app and let client-side routing handle unknown paths
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
+  // Hashed build assets never change, so browsers can keep them for a year
+  app.use('/assets', express.static(path.join(clientDist, 'assets'), { immutable: true, maxAge: '1y' }));
   app.use(express.static(clientDist));
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientDist, 'index.html'));
@@ -65,19 +74,17 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-async function main() {
-  try {
-    // Verify database connection
-    await prisma.$connect();
-    console.log('Successfully connected to the database.');
-    
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to connect to the database:', error);
-    process.exit(1);
-  }
+function main() {
+  // Listen first so the host can route traffic; DB work happens in the background
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    prisma.$connect()
+      .then(() => {
+        console.log('Successfully connected to the database.');
+        return migrateLegacyPlans();
+      })
+      .catch((error) => console.error('Background startup task failed:', error));
+  });
 }
 
 main();

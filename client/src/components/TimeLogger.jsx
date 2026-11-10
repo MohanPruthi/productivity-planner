@@ -286,20 +286,18 @@ const TimeLogger = () => {
 
   const [plannedDates, setPlannedDates] = useState(new Set());
 
-  const fetchPlannedDates = async () => {
+  const fetchPlannedDates = async (year = calendarYear, month = calendarMonth) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/dashboard/history`, {
+      const pad = (n) => String(n).padStart(2, '0');
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      const from = `${year}-${pad(month + 1)}-01`;
+      const to = `${year}-${pad(month + 1)}-${pad(lastDay)}`;
+      const res = await fetch(`${API_BASE_URL}/api/dashboard/planned-dates?from=${from}&to=${to}`, {
         headers: getAuthHeaders(),
       });
       if (res.ok) {
-        const groups = await res.json();
-        const dates = new Set();
-        groups.forEach(g => {
-          if (g.planDays?.length > 0 || g.normalTasks?.length > 0) {
-            dates.add(g.date);
-          }
-        });
-        setPlannedDates(dates);
+        const data = await res.json();
+        setPlannedDates(new Set(data.plannedDates || []));
       }
     } catch (err) {
       console.error('Error fetching planned dates:', err);
@@ -352,8 +350,12 @@ const TimeLogger = () => {
 
   useEffect(() => {
     fetchStudyLogs();
-    fetchPlannedDates();
   }, [selectedDateStr]);
+
+  // Planned-date dots only for the visible calendar month
+  useEffect(() => {
+    fetchPlannedDates(calendarYear, calendarMonth);
+  }, [calendarYear, calendarMonth, selectedDateStr]);
 
   // Synchronize calendar month/year with the selected date (e.g. from dashboard navigation)
   useEffect(() => {
@@ -386,13 +388,14 @@ const TimeLogger = () => {
       });
       if (res.ok) {
         setLastSyncSeconds(secondsToSync);
-        // Refresh logs
-        const logsRes = await fetch(`${API_BASE_URL}/api/study-logs`, {
-          headers: getAuthHeaders(),
-        });
-        if (logsRes.ok) {
-          const logs = await logsRes.json();
-          setStudyLogs(logs);
+        // Merge the upserted row into local state instead of re-downloading all logs
+        const saved = await res.json();
+        if (saved && saved.date) {
+          const savedKey = getLocalDateString(new Date(saved.date));
+          setStudyLogs(prev => [
+            ...prev.filter(l => getLocalDateString(new Date(l.date)) !== savedKey),
+            saved,
+          ].sort((x, y) => new Date(x.date) - new Date(y.date)));
         }
       }
     } catch (err) {
@@ -665,7 +668,7 @@ const TimeLogger = () => {
           alignItems: 'center', 
           justifyContent: 'center', 
           fontSize: '1.45rem', 
-          fontWeight: 800, 
+          fontWeight: 600, 
           fontFamily: 'var(--font-display)', 
           color: 'var(--text-primary)', 
           letterSpacing: '-0.03em',
@@ -733,11 +736,9 @@ const TimeLogger = () => {
       <div className="calendar-widget" style={{ padding: '0' }}>
         <div className="calendar-header-title" style={{ 
           fontSize: '0.8rem', 
-          fontWeight: 800, 
+          fontWeight: 600, 
           color: 'var(--text-primary)', 
-          marginBottom: '0.75rem', 
-          textTransform: 'uppercase', 
-          letterSpacing: '0.15em',
+          marginBottom: '0.75rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -768,7 +769,7 @@ const TimeLogger = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.2rem', justifyItems: 'center' }}>
           {/* Header */}
           {weekdaysHeader.map((day, idx) => (
-            <div key={idx} style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', width: '44px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div key={idx} style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', width: '44px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {day}
             </div>
           ))}
@@ -855,7 +856,7 @@ const TimeLogger = () => {
                 <span 
                   style={{ 
                     fontSize: '0.75rem', 
-                    fontWeight: 700, 
+                    fontWeight: 600, 
                     color: isToday 
                       ? '#f97316' 
                       : isSelected 
@@ -1038,7 +1039,7 @@ const TimeLogger = () => {
                         />
                       </div>
                     ) : (
-                      <span style={{ fontSize: '0.62rem', fontWeight: 800, color: loggedMinutes > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                      <span style={{ fontSize: '0.62rem', fontWeight: 600, color: loggedMinutes > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                         {totalHrsDecimal}h
                       </span>
                     )}
@@ -1124,7 +1125,7 @@ const TimeLogger = () => {
       
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 className="animated-gradient-orange" style={{ fontSize: '1.3rem', fontFamily: 'var(--font-display)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>
+        <h2 className="animated-gradient-orange" style={{ fontSize: '1.3rem', fontFamily: 'var(--font-display)', fontWeight: 600, margin: 0 }}>
           Zen Zone
         </h2>
       </div>
@@ -1148,14 +1149,14 @@ const TimeLogger = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
             <Flame size={15} color={activeRingColor} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.05rem' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-primary)' }}>Focus Logger</span>
-              <span style={{ fontSize: '0.62rem', color: 'rgba(156, 163, 175, 0.65)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.08rem' }}>Target: {currentTodayTargetHours}h</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>Focus Logger</span>
+              <span style={{ fontSize: '0.62rem', color: 'rgba(156, 163, 175, 0.65)', fontWeight: 500, marginTop: '0.08rem' }}>Target: {currentTodayTargetHours}h</span>
             </div>
           </div>
           {isCurrentlyTracking && (
              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: `${activeRingColor}15`, padding: '0.2rem 0.6rem', borderRadius: '9999px', border: `1px solid ${activeRingColor}30` }}>
                <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: activeRingColor, boxShadow: `0 0 6px ${activeRingColor}` }} />
-               <span style={{ fontSize: '0.65rem', fontWeight: 700, color: activeRingColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Locked In</span>
+               <span style={{ fontSize: '0.65rem', fontWeight: 600, color: activeRingColor }}>Locked In</span>
              </div>
           )}
         </div>
@@ -1314,7 +1315,7 @@ const TimeLogger = () => {
         {/* Pomodoro Heading */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.85rem' }}>
           <Timer size={15} color="#ff9500" />
-          <span style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-primary)' }}>Pomodoro Timer</span>
+          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>Pomodoro Timer</span>
         </div>
 
         {/* Header Tabs: Focus, Short, Long */}

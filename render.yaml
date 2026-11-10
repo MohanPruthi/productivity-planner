@@ -5,12 +5,14 @@ services:
     name: productivity-planner
     runtime: node
     plan: free
+    # Same region as the Neon database; keeps each query ~5ms instead of a trans-Pacific hop
+    region: singapore
     branch: main
     buildCommand: >-
-      cd server && npm ci --include=dev && npx prisma generate &&
+      cd server && npm ci --include=dev && npx prisma generate && npx prisma db push --skip-generate &&
       cd ../client && npm ci --include=dev && npm run build
-    # db push applies schema changes on boot and refuses anything that would drop data
-    startCommand: cd server && npx prisma db push --skip-generate && node src/index.js
+    # db push now runs in the build (refuses anything that would drop data); boot just starts node
+    startCommand: cd server && node src/index.js
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION

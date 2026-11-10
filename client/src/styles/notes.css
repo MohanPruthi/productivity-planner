@@ -1,0 +1,176 @@
+/* Notes page: expanding search + note groups */
+
+/* ---------- Expanding search ---------- */
+.notes-search {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.notes-search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 0;
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+  transition: width 200ms ease-out, opacity 200ms ease-out, visibility 0s linear 200ms;
+}
+.notes-search.open .notes-search-field {
+  width: 200px;
+  opacity: 1;
+  visibility: visible;
+  transition: width 200ms ease-out, opacity 200ms ease-out, visibility 0s;
+}
+.notes-search-field .input-control {
+  width: 100%;
+  padding: 0.5rem 1.9rem 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 10px;
+}
+.notes-search-clear {
+  position: absolute;
+  right: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.notes-search-clear:hover { color: var(--text-primary); }
+@media (max-width: 520px) {
+  .notes-search.open .notes-search-field { width: 150px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .notes-search-field,
+  .notes-search.open .notes-search-field { transition: none; }
+}
+
+/* ---------- Group tiles ---------- */
+.notes-group-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.9rem;
+  min-height: 175px;
+  padding: 1.15rem 1.35rem;
+  border-radius: 18px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease-out, border-color 160ms ease-out, opacity 160ms ease-out;
+}
+.notes-group-tile:hover { border-color: var(--hairline-strong); }
+.notes-group-tile:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
+.notes-group-preview {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+  width: 76px;
+  height: 76px;
+  padding: 6px;
+  border-radius: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+}
+.notes-group-preview span {
+  border-radius: 6px;
+  background: var(--hairline);
+}
+.notes-group-meta { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.notes-group-name {
+  font-size: 1.02rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.notes-group-count { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ---------- Open group panel ---------- */
+.notes-group-panel { display: flex; flex-direction: column; gap: 1rem; }
+.notes-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.notes-group-name-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  max-width: 360px;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+}
+.notes-group-hint { font-size: 0.78rem; color: var(--text-muted); margin: 0; }
+.notes-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 1.25rem;
+}
+
+/* ---------- Move-to-group control on cards ---------- */
+.notes-move {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.notes-move:hover { color: var(--text-primary); background: var(--hairline); }
+.notes-move:focus-within { outline: 2px solid var(--tone); outline-offset: 1px; }
+.notes-move select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.notes-card-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.notes-card-icon-btn:hover { color: var(--text-primary); background: var(--hairline); }
+.notes-card-icon-btn:focus-visible { outline: 2px solid var(--tone); outline-offset: 1px; }
+
+/* ---------- Drag and drop ---------- */
+.notes-dragging { opacity: 0.45 !important; }
+.notes-drop-target {
+  outline: 2px solid var(--tone) !important;
+  outline-offset: 3px;
+  transform: scale(1.02) !important;
+}
+.notes-drop-zone-active {
+  outline: 2px dashed var(--tone);
+  outline-offset: 6px;
+  border-radius: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .notes-group-tile { transition: none; }
+  .notes-drop-target { transform: none !important; }
+}

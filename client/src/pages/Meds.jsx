@@ -271,96 +271,57 @@ const Meds = () => {
     <div className="meds-page" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', minHeight: 'calc(100vh - 8rem)' }}>
       
       {/* Banner / Header */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '1.25rem 2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          boxShadow: '0 10px 30px rgba(255,255,255,0.01), inset 0 1px 0 rgba(255,255,255,0.02)',
-          borderRadius: '16px',
-          flexShrink: 0
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-          <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: 'rgba(255, 45, 85, 0.08)',
-            border: '1px solid rgba(255, 45, 85, 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 15px rgba(255, 45, 85, 0.15)'
-          }}>
-            <Pill size={22} color="#ff2d55" />
+      <header className="page-header tone-meds">
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <Pill size={20} />
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              {editingName ? (
-                <form onSubmit={handleUpdateMedName} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    value={medNameInput}
-                    onChange={(e) => setMedNameInput(e.target.value)}
-                    className="input-control"
-                    style={{ padding: '0.35rem 0.75rem', fontSize: '1rem', width: '220px' }}
-                    autoFocus
-                  />
-                  <button type="submit" className="mirror-btn-pill dsa-submit" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} disabled={submitting}>
-                    Save
-                  </button>
-                  <button type="button" onClick={() => setEditingName(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>
-                    Cancel
-                  </button>
-                </form>
-              ) : (
-                <>
-                  <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
-                    {schedule.medName} <span className="gradient-text" style={{ background: 'linear-gradient(135deg, #ff2d55, #ff9500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Course</span>
-                  </h1>
-                  <button 
-                    onClick={() => setEditingName(true)}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', padding: '0.25rem' }}
-                    title="Rename Medication"
-                  >
-                    <Edit2 size={13} />
-                  </button>
-                </>
-              )}
-            </div>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '0.2rem', fontSize: '0.8rem' }}>
-              Course schedule: 2 pills daily for {totalDuration} days (Morning & After Dinner)
-            </p>
+          <div>
+            {editingName ? (
+              <form onSubmit={handleUpdateMedName} className="page-header-rename">
+                <input
+                  type="text"
+                  value={medNameInput}
+                  onChange={(e) => setMedNameInput(e.target.value)}
+                  className="input-control"
+                  autoFocus
+                />
+                <button type="submit" className="ui-btn ui-btn-primary" disabled={submitting}>Save</button>
+                <button type="button" className="ui-btn ui-btn-ghost" onClick={() => setEditingName(false)}>Cancel</button>
+              </form>
+            ) : (
+              <div className="page-header-title-row">
+                <h1 className="page-header-title">{schedule.medName}</h1>
+                <button className="ui-icon-btn" onClick={() => setEditingName(true)} title="Rename medication">
+                  <Edit2 size={14} />
+                </button>
+              </div>
+            )}
+            <p className="page-header-subtitle">2 pills a day for {totalDuration} days, morning and after dinner</p>
           </div>
         </div>
 
         <button 
           onClick={handleResetCourse}
-          style={{ background: 'transparent', border: '1px solid rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', transition: 'all 0.2s ease' }}
-          className="btn-trash-hover"
-          title="Reset Medication Course"
+          className="ui-btn ui-btn-secondary"
+          title="Restart the course from today"
           disabled={submitting}
         >
           <RotateCcw size={14} />
-          <span>Reset Course</span>
+          <span>Reset course</span>
         </button>
-      </div>
+      </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '1.5rem', alignItems: 'stretch' }}>
+      <div className="meds-layout">
         
         {/* Left Side: Check-in & Stats */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* Daily Tracker check-in card */}
           <div className="glass-card glow-med" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 850, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.45rem', margin: 0 }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 600, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.45rem', margin: 0 }}>
               <Calendar size={18} color="#ff2d55" />
-              <span>Today's Log</span>
+              <span>Today's log</span>
               {currentDayNum >= 1 && currentDayNum <= totalDuration ? (
                 <span className="badge" style={{ marginLeft: 'auto', background: 'rgba(255, 45, 85, 0.08)', color: '#ff2d55', borderColor: 'rgba(255, 45, 85, 0.15)' }}>
                   Day {currentDayNum} of {totalDuration}
@@ -413,7 +374,7 @@ const Meds = () => {
                   {todayLog.morning && <Check size={14} strokeWidth={3} />}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 750, fontSize: '0.9rem', color: todayLog.morning ? '#30d158' : 'var(--text-primary)' }}>Morning Pill</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: todayLog.morning ? '#30d158' : 'var(--text-primary)' }}>Morning pill</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>Take before 12:00 PM</div>
                 </div>
               </button>
@@ -453,7 +414,7 @@ const Meds = () => {
                   {todayLog.evening && <Check size={14} strokeWidth={3} />}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 750, fontSize: '0.9rem', color: todayLog.evening ? '#30d158' : 'var(--text-primary)' }}>Dinner Pill</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: todayLog.evening ? '#30d158' : 'var(--text-primary)' }}>Dinner pill</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>Take after 8:00 PM</div>
                 </div>
               </button>
@@ -463,18 +424,18 @@ const Meds = () => {
 
           {/* Stats Card */}
           <div className="glass-card glow-med" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0, color: 'var(--text-secondary)' }}>
-              Course Statistics
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0, color: 'var(--text-secondary)' }}>
+              Course stats
             </h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.25rem' }}>
               <div style={{ padding: '0.85rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Perfect Days</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: '0.2rem', color: '#30d158' }}>{completedDaysCount}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Perfect days</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 600, marginTop: '0.2rem', color: '#30d158' }}>{completedDaysCount}</div>
               </div>
               <div style={{ padding: '0.85rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Completion</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: '0.2rem', color: 'var(--text-primary)' }}>{completionPercentage}%</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Completion</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 600, marginTop: '0.2rem', color: 'var(--text-primary)' }}>{completionPercentage}%</div>
               </div>
             </div>
 
@@ -495,11 +456,11 @@ const Meds = () => {
           {/* Header with Timeline Title and Back / Forward Page Navigation */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <h2 style={{ fontSize: '1.15rem', fontWeight: 850, fontFamily: 'var(--font-display)', margin: 0 }}>
-                Course Timeline ({totalDuration} Days)
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 600, fontFamily: 'var(--font-display)', margin: 0 }}>
+                Course timeline
               </h2>
               <span className="badge" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-secondary)', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-                Days {startIndex + 1}–{endIndex}
+                Days {startIndex + 1}–{endIndex} of {totalDuration}
               </span>
             </div>
 
@@ -611,11 +572,11 @@ const Meds = () => {
                   }}
                   title={`Date: ${day.dateStr}`}
                 >
-                  <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Day</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0.1rem 0 0 0', color: textColor, lineHeight: 1.1 }}>{day.dayNum}</div>
+                  <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600 }}>Day</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 600, margin: '0.1rem 0 0 0', color: textColor, lineHeight: 1.1 }}>{day.dayNum}</div>
                   
                   {/* Small Date and Day name */}
-                  <div style={{ fontSize: '0.52rem', color: 'var(--text-muted)', opacity: 0.85, fontWeight: 700, textTransform: 'uppercase', marginTop: '0.05rem', letterSpacing: '0.01em', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                  <div style={{ fontSize: '0.52rem', color: 'var(--text-muted)', opacity: 0.85, fontWeight: 600, marginTop: '0.05rem', letterSpacing: '0.01em', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
                     <span>{formatDateLabel(day.dateStr)}</span>
                     <span style={{ fontSize: '0.48rem', opacity: 0.7, fontWeight: 500 }}>{formatDayName(day.dateStr)}</span>
                   </div>

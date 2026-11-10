@@ -46,7 +46,7 @@ const getCurrentMedWindow = () => {
 };
 
 const MedReminder = () => {
-  const { user, getAuthHeaders } = useAuth();
+  const { user, token, getAuthHeaders } = useAuth();
   const [schedule, setSchedule] = useState(null);
   const [logs, setLogs] = useState([]);
   const [visible, setVisible] = useState(false);
@@ -59,13 +59,18 @@ const MedReminder = () => {
   const startTimeRef = useRef(null);
   const remainingTimeRef = useRef(DURATION_MS);
 
+  // Keep the latest getAuthHeaders in a ref so unrelated context changes never trigger a refetch
+  const getAuthHeadersRef = useRef(getAuthHeaders);
+  getAuthHeadersRef.current = getAuthHeaders;
+  const userId = user?.id;
+
   // Fetch schedule and logs from server
   const fetchMedData = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
     try {
       const [schedRes, logsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/meds/schedule`, { headers: getAuthHeaders() }),
-        fetch(`${API_BASE_URL}/api/meds/logs`, { headers: getAuthHeaders() })
+        fetch(`${API_BASE_URL}/api/meds/schedule`, { headers: getAuthHeadersRef.current() }),
+        fetch(`${API_BASE_URL}/api/meds/logs`, { headers: getAuthHeadersRef.current() })
       ]);
 
       if (schedRes.ok && logsRes.ok) {
@@ -77,7 +82,7 @@ const MedReminder = () => {
     } catch (err) {
       console.error('Error fetching med reminder data:', err);
     }
-  }, [user, getAuthHeaders]);
+  }, [userId, token]);
 
   useEffect(() => {
     fetchMedData();
@@ -303,7 +308,7 @@ const MedReminder = () => {
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ fontSize: '0.86rem', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                <span style={{ fontSize: '0.86rem', fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                   {schedule?.medName ? `${schedule.medName} Reminder` : 'Medication Reminder'}
                 </span>
               </div>

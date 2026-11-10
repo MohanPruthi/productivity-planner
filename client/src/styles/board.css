@@ -1,0 +1,64 @@
+/* Work board: pending tasks dialog */
+.bd-pending { display: flex; flex-direction: column; }
+.bd-group-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.75rem 0 0.35rem;
+}
+.bd-group-label:first-child { padding-top: 0; }
+.bd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  max-height: 140px;
+  overflow: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.2s ease, padding 0.2s ease;
+}
+.bd-row.is-leaving {
+  opacity: 0;
+  transform: translateX(10px);
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+.bd-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; }
+.bd-row-text { font-size: 0.88rem; color: var(--text-primary); overflow-wrap: anywhere; }
+.bd-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.05rem 0.4rem;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-left: 2px solid var(--tag, var(--tone));
+}
+.bd-row-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+.bd-act {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  color: var(--text-primary);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  cursor: pointer;
+}
+.bd-act:hover { border-color: var(--tone); }
+.bd-empty {
+  margin: 0;
+  padding: 1.5rem 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+@media (max-width: 520px) {
+  .bd-row { flex-direction: column; align-items: stretch; }
+  .bd-row-actions { justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bd-row { transition: none; }
+}

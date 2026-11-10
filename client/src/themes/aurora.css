@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* Aurora glass: frosted panels over a slow aurora, rounded everything,
+   gradient accents, cards light up under the cursor. Dark only.
+   No backdrop blur on in-page panels (it would trap pop-ups): panels are
+   translucent instead, over a softly blurred backdrop layer. */
+[data-theme="aurora"], [data-theme="aurora"] body {
+  --bg-primary: #090b16;
+  --bg-secondary: rgba(16, 19, 36, 0.72);
+  --bg-tertiary: rgba(255, 255, 255, 0.06);
+  --accent-primary: #8b5cf6;
+  --text-primary: #eceefe;
+  --text-secondary: #a8add6;
+  --text-muted: #7c81a8;
+  --border-light: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --surface-1: rgba(255, 255, 255, 0.055);
+  --surface-2: rgba(255, 255, 255, 0.08);
+  --hairline: rgba(255, 255, 255, 0.11);
+  --hairline-strong: rgba(255, 255, 255, 0.2);
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --cue: #a78bfa;
+  --cue-off: #7c81a8;
+  --timer-track-default: rgba(255, 255, 255, 0.05);
+  --cal-ring-default: rgba(255, 255, 255, 0.1);
+  --cal-track-default: rgba(255, 255, 255, 0.04);
+}
+[data-theme="aurora"] body { font-family: var(--font-sans); }
+
+:root[data-theme="aurora"] body { background: #090b16; }
+:root[data-theme="aurora"] body::before {
+  content: ''; position: fixed; inset: -20%; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(35% 40% at 20% 20%, rgba(109, 40, 217, 0.55), transparent 70%),
+    radial-gradient(30% 35% at 80% 30%, rgba(14, 165, 233, 0.4), transparent 70%),
+    radial-gradient(35% 40% at 50% 90%, rgba(219, 39, 119, 0.4), transparent 70%);
+  filter: blur(60px);
+  animation: aurora-drift 22s ease-in-out infinite alternate;
+}
+@keyframes aurora-drift { to { transform: translate(4%, -3%) rotate(8deg) scale(1.08); } }
+
+:root[data-theme="aurora"] .sidebar-aside,
+:root[data-theme="aurora"] .timelogger-aside { background-color: rgba(16, 19, 36, 0.55); }
+:root[data-theme="aurora"] .main-content .page-header { background: rgba(9, 11, 22, 0.82); }
+
+:root[data-theme="aurora"] .main-content .glass-card,
+:root[data-theme="aurora"] .cc-tile,
+:root[data-theme="aurora"] .timelogger-card { border-radius: 24px !important; }
+:root[data-theme="aurora"] .cc-tile:hover,
+:root[data-theme="aurora"] .main-content .glass-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.24);
+  background-image: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.07), transparent 55%);
+}
+:root[data-theme="aurora"] .cc-tile { transition: transform 0.4s cubic-bezier(0.22, 0.8, 0.24, 1), border-color 0.3s ease; }
+:root[data-theme="aurora"] .cc-greet { font-weight: 800; }
+:root[data-theme="aurora"] .cc-row.done .cc-check { background: linear-gradient(135deg, #7c3aed, #22d3ee); border-color: transparent; box-shadow: 0 0 14px rgba(124, 58, 237, 0.6); }
+:root[data-theme="aurora"] .cc-figure strong { background: linear-gradient(135deg, #ffd27a, #ff7a00); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:root[data-theme="aurora"] .ui-progress > div { background: linear-gradient(90deg, #8b5cf6, #22d3ee); }
+:root[data-theme="aurora"] .sidebar-nav .nav-link.active { background: linear-gradient(135deg, color-mix(in srgb, var(--active-color) 55%, #7c3aed), color-mix(in srgb, var(--active-color) 70%, transparent)); color: #fff; box-shadow: 0 10px 26px -10px var(--active-color); }
+:root[data-theme="aurora"] .sidebar-nav .nav-link.active .nav-icon, :root[data-theme="aurora"] .sidebar-nav .nav-link.active svg { color: #fff; }
+:root[data-theme="aurora"] .ui-btn-primary { background: linear-gradient(135deg, #7c3aed, #6366f1); color: #fff; }
+
+/* Logo touch: gradient stroke when lit */
+:root[data-theme="aurora"] .brand-logo.lit .bl-ring,
+:root[data-theme="aurora"] .brand-logo.lit .bl-tick { stroke: url(#logo-aurora); }
+:root[data-theme="aurora"] .brand-logo.lit .bl-dot { fill: url(#logo-aurora); }
+
+@media (prefers-reduced-motion: reduce) { :root[data-theme="aurora"] body::before { animation: none; } }
+
+/* Theme factory preview */
+.tf-preview[data-theme="aurora"] {
+  background: radial-gradient(60% 70% at 20% 20%, rgba(109, 40, 217, 0.6), transparent 70%), radial-gradient(60% 70% at 90% 40%, rgba(14, 165, 233, 0.45), transparent 70%), radial-gradient(60% 70% at 50% 100%, rgba(219, 39, 119, 0.45), transparent 70%), #090b16;
+}
+.tf-preview[data-theme="aurora"] .tf-tile, .tf-preview[data-theme="aurora"] .tf-zen, .tf-preview[data-theme="aurora"] .tf-rail { border-radius: 9px; }
+.tf-preview[data-theme="aurora"] .tf-zen, .tf-preview[data-theme="aurora"] .tf-rail { margin: 4px; }
+.tf-preview[data-theme="aurora"] .tf-logo { background: linear-gradient(135deg, #7c3aed, #6366f1); }
+.tf-preview[data-theme="aurora"] .tf-ring { border-color: #ff6a3d; }

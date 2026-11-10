@@ -3,8 +3,11 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
-import { 
-  CheckCircle2, 
+import Dialog from '../components/Dialog';
+import '../styles/board.css';
+import {
+  CalendarClock,
+  CheckCircle2,
   Circle, 
   Plus, 
   Trash2, 
@@ -162,7 +165,7 @@ const CustomDatePickerButton = ({ onSelectDate, buttonStyle, label = "Custom" })
               >
                 <ChevronLeft size={13} />
               </button>
-              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {monthName}
               </span>
               <button
@@ -176,7 +179,7 @@ const CustomDatePickerButton = ({ onSelectDate, buttonStyle, label = "Custom" })
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center', marginBottom: '4px' }}>
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(w => (
-                <span key={w} style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+                <span key={w} style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-muted)' }}>
                   {w}
                 </span>
               ))}
@@ -246,6 +249,8 @@ const TaskHistory = () => {
   const [draggedOverDate, setDraggedOverDate] = useState(null);
   const [boardCenterOffset, setBoardCenterOffset] = useState(0);
   const [activeTooltip, setActiveTooltip] = useState(null); // { text, x, y }
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [leavingIds, setLeavingIds] = useState(() => new Set());
 
   const handleTaskTextClick = (e, text, taskId = null, category = null, sourceDate = null) => {
     e.stopPropagation();
@@ -318,6 +323,10 @@ const TaskHistory = () => {
 
   useEffect(() => {
     fetchHistory();
+    // Tasks added from Quick add (Ctrl K)
+    const onTasksChanged = () => fetchHistory();
+    window.addEventListener('tasks-changed', onTasksChanged);
+    return () => window.removeEventListener('tasks-changed', onTasksChanged);
   }, []);
 
   // HTML5 Drag and Drop handlers
@@ -569,6 +578,61 @@ const TaskHistory = () => {
     }
   };
 
+  // Pending = not done and dated before today (same rule as the board's overdue actions)
+  const pendingTasks = [];
+  historyData.forEach(group => {
+    if (!group.date || group.date >= todayStr) return;
+    (group.planDays || []).forEach(d => {
+      if (!d.isDone) pendingTasks.push({
+        id: d.id, category: 'planDay', date: group.date, text: d.topic,
+        tag: d.planWeek?.plan?.name || d.track || 'Plan',
+        color: d.planWeek?.plan?.color || 'var(--mod-plans)'
+      });
+    });
+    (group.normalTasks || []).forEach(t => {
+      if (!t.isDone) pendingTasks.push({
+        id: t.id, category: 'normalTask', date: group.date, text: t.text,
+        tag: 'Gen', color: 'var(--tone)'
+      });
+    });
+  });
+  pendingTasks.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+  const daysAgoLabel = (dateStr) => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const base = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const diff = Math.round((base - dt) / 86400000);
+    const short = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${short} · ${diff === 1 ? 'yesterday' : `${diff} days ago`}`;
+  };
+
+  // Fade the row(s) out, then run the existing reschedule handler
+  const movePending = (items, targetDate) => {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setLeavingIds(prev => {
+      const next = new Set(prev);
+      items.forEach(i => next.add(i.id));
+      return next;
+    });
+    setTimeout(() => {
+      items.forEach(i => handleRescheduleTask(i.id, i.category, i.date, targetDate));
+      setLeavingIds(prev => {
+        const next = new Set(prev);
+        items.forEach(i => next.delete(i.id));
+        return next;
+      });
+    }, reduce ? 0 : 220);
+  };
+
+  const pendingGroups = [];
+  pendingTasks.forEach(t => {
+    const last = pendingGroups[pendingGroups.length - 1];
+    if (last && last.date === t.date) last.items.push(t);
+    else pendingGroups.push({ date: t.date, items: [t] });
+  });
+  const pendingCount = pendingTasks.length;
+
   if (loading) {
     return <Loader text="Loading Jira Work Board..." />;
   }
@@ -581,109 +645,81 @@ const TaskHistory = () => {
     <div className="jira-board-page" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', minHeight: 'calc(100vh - 8rem)' }}>
       
       {/* Header Banner */}
-      <div 
-        className="glass-card" 
-        style={{ 
-          padding: '1.25rem 2rem', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          background: 'rgba(255, 255, 255, 0.01)',
-          border: '1px solid rgba(255, 255, 255, 0.03)',
-          boxShadow: '0 10px 30px rgba(255,255,255,0.01), inset 0 1px 0 rgba(255,255,255,0.02)',
-          borderRadius: '16px',
-          flexShrink: 0
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: 'rgba(99, 102, 241, 0.08)',
-            border: '1px solid rgba(99, 102, 241, 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 15px rgba(99, 102, 241, 0.15)'
-          }}>
-            <History size={22} color="var(--accent-primary)" />
+      <header className="page-header tone-board">
+        <div className="page-header-main">
+          <div className="page-header-icon">
+            <History size={20} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <h1 style={{ fontSize: '1.65rem', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
-                Work <span className="gradient-text">Board</span>
-              </h1>
-              
-              {/* Navigation controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '9999px', padding: '0.15rem 0.4rem', border: '1px solid rgba(255, 255, 255, 0.05)', userSelect: 'none' }}>
-                <button
-                  onClick={() => setBoardCenterOffset(prev => prev - 1)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    padding: '0.2rem',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                  }}
-                  className="nav-arrow-btn"
-                  title="Navigate back 1 day"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                
-                {boardCenterOffset !== 0 && (
-                  <button
-                    onClick={() => setBoardCenterOffset(0)}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--accent-primary)',
-                      fontSize: '0.65rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      cursor: 'pointer',
-                      padding: '0 0.4rem',
-                      transition: 'all 0.2s ease',
-                    }}
-                    title="Jump back to Today"
-                  >
-                    Today
-                  </button>
-                )}
-                
-                <button
-                  onClick={() => setBoardCenterOffset(prev => prev + 1)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    padding: '0.2rem',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                  }}
-                  className="nav-arrow-btn"
-                  title="Navigate forward 1 day"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '0.2rem', fontSize: '0.8rem' }}>
-              Drag and drop tasks between days to reschedule them
-            </p>
+            <h1 className="page-header-title">Work board</h1>
+            <p className="page-header-subtitle">Drag tasks between days to reschedule them</p>
           </div>
         </div>
-      </div>
+        {pendingCount > 0 && (
+          <div className="page-header-actions">
+            <button type="button" className="ui-btn ui-btn-secondary" onClick={() => setPendingOpen(true)}>
+              <CalendarClock size={15} />
+              Pending {pendingCount}
+            </button>
+          </div>
+        )}
+      </header>
+
+      <Dialog
+        open={pendingOpen}
+        onClose={() => setPendingOpen(false)}
+        title="Pending tasks"
+        subtitle={pendingCount === 0 ? 'Nothing left over' : `${pendingCount} ${pendingCount === 1 ? 'task' : 'tasks'} from earlier days`}
+        width={560}
+        footer={
+          <>
+            <button type="button" className="ui-btn ui-btn-ghost" onClick={() => setPendingOpen(false)}>Close</button>
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              disabled={pendingCount === 0}
+              onClick={() => movePending(pendingTasks, todayStr)}
+            >
+              Move all to today
+            </button>
+          </>
+        }
+      >
+        {pendingCount === 0 ? (
+          <p className="bd-empty">All caught up.</p>
+        ) : (
+          <ul className="cc-list bd-pending">
+            {pendingGroups.map(g => (
+              <React.Fragment key={g.date}>
+                <li className="bd-group-label" role="presentation">{daysAgoLabel(g.date)}</li>
+                {g.items.map(t => (
+                  <li key={t.id} className={`cc-row bd-row${leavingIds.has(t.id) ? ' is-leaving' : ''}`}>
+                    <div className="bd-row-main">
+                      <span className="bd-row-text">{t.text}</span>
+                      <span className="bd-tag" style={{ '--tag': t.color }}>{t.tag}</span>
+                    </div>
+                    <div className="bd-row-actions">
+                      <button
+                        type="button"
+                        className="bd-act"
+                        onClick={() => movePending([t], todayStr)}
+                        aria-label={`Move "${t.text}" to today`}
+                      >
+                        Today
+                      </button>
+                      <CustomDatePickerButton
+                        label="Pick date"
+                        buttonStyle={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                        onSelectDate={(dateVal) => movePending([t], dateVal)}
+                      />
+                    </div>
+                  </li>
+                ))}
+              </React.Fragment>
+            ))}
+          </ul>
+        )}
+      </Dialog>
 
       {/* Board columns container */}
       <div 
@@ -752,7 +788,7 @@ const TaskHistory = () => {
                 }}
               >
                 <span style={{ 
-                  fontWeight: 800, 
+                  fontWeight: 600, 
                   fontSize: '0.9rem', 
                   color: isColToday ? 'var(--accent-primary)' : 'var(--text-primary)' 
                 }}>
@@ -810,8 +846,8 @@ const TaskHistory = () => {
                     
                     <button 
                       onClick={() => handleToggleTask(day.id, 'planDay', day.isDone)}
-                      className={`mirror-checkbox ${day.isDone ? (day.track === 'AI' ? 'checked-ai' : 'checked-sd') : ''}`}
-                      style={{ width: '22px', height: '22px', flexShrink: 0, marginTop: '2px' }}
+                      className={`mirror-checkbox ${day.isDone ? 'checked-plan' : ''}`}
+                      style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)', width: '22px', height: '22px', flexShrink: 0, marginTop: '2px' }}
                     >
                       {day.isDone ? (
                         <CheckCircle2 size={11} />
@@ -821,8 +857,8 @@ const TaskHistory = () => {
                     </button>
 
                     <div style={{ flex: 1 }}>
-                      <span className={`badge ${day.track === 'AI' ? 'badge-ai' : 'badge-sd'}`} style={{ fontSize: '0.55rem', padding: '0.05rem 0.3rem', marginBottom: '0.2rem', display: 'inline-block' }}>
-                        {day.track}
+                      <span className="badge plan-badge" style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)', marginBottom: '0.2rem', display: 'inline-block' }}>
+                        {day.planWeek?.plan?.name || day.track}
                       </span>
                       <p 
                         onClick={(e) => handleTaskTextClick(e, day.topic, day.id, 'planDay', col.dateStr)}
@@ -860,7 +896,7 @@ const TaskHistory = () => {
                               borderRadius: '6px',
                               padding: '0.12rem 0.4rem',
                               fontSize: '0.65rem',
-                              fontWeight: 700,
+                              fontWeight: 600,
                               color: 'var(--accent-primary)',
                               cursor: 'pointer',
                               whiteSpace: 'nowrap',
@@ -957,7 +993,7 @@ const TaskHistory = () => {
                               borderRadius: '6px',
                               padding: '0.12rem 0.4rem',
                               fontSize: '0.65rem',
-                              fontWeight: 700,
+                              fontWeight: 600,
                               color: 'var(--accent-primary)',
                               cursor: 'pointer',
                               whiteSpace: 'nowrap',
@@ -1018,7 +1054,7 @@ const TaskHistory = () => {
                         onClick={() => handleAddColTaskSubmit(col.dateStr)}
                         style={{ padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.7rem' }}
                       >
-                        <span style={{ fontWeight: 700 }}>Add</span>
+                        <span style={{ fontWeight: 600 }}>Add</span>
                       </button>
                     </div>
                   </div>
@@ -1050,7 +1086,7 @@ const TaskHistory = () => {
                     }}
                   >
                     <Plus size={12} />
-                    <span style={{ fontWeight: 600 }}>Create Task</span>
+                    <span style={{ fontWeight: 600 }}>Add task</span>
                   </button>
                 )}
               </div>
@@ -1097,7 +1133,7 @@ const TaskHistory = () => {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.45rem' }}>
-              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Full Task Description</span>
+              <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-muted)' }}>Full Task Description</span>
               <button 
                 onClick={() => setActiveTooltip(null)}
                 style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
@@ -1109,7 +1145,7 @@ const TaskHistory = () => {
 
             {activeTooltip.taskId && (
               <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>Reschedule:</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>Reschedule:</span>
                 {activeTooltip.sourceDate !== todayStr && (
                   <button
                     onClick={() => {
@@ -1125,7 +1161,7 @@ const TaskHistory = () => {
                       borderRadius: '6px',
                       padding: '0.15rem 0.45rem',
                       fontSize: '0.68rem',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       color: 'var(--accent-primary)',
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',

@@ -319,7 +319,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
               {(mode === 'forgot' || mode === 'forgot_new_pin') && <Mail size={20} color="#f43f5e" />}
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
                 {mode === 'enter' && 'Unlock Personal Workspace'}
                 {mode === 'reset' && 'Reset Security PIN'}
                 {mode === 'forgot' && 'Forgot Workspace PIN'}
@@ -383,7 +383,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                     height: '54px',
                     textAlign: 'center',
                     fontSize: '1.4rem',
-                    fontWeight: 800,
+                    fontWeight: 600,
                     borderRadius: '12px',
                     background: digit ? 'rgba(99, 102, 241, 0.12)' : 'rgba(255, 255, 255, 0.03)',
                     border: digit ? '1.5px solid var(--accent-primary)' : error ? '1.5px solid #ff2d55' : '1px solid var(--border-light)',
@@ -452,7 +452,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
           <form onSubmit={handleResetSubmit}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', margin: '1rem 0' }}>
               <div>
-                <label style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
+                <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
                   1. Current PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -470,7 +470,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-light)',
@@ -483,7 +483,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
 
               <div>
-                <label style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
+                <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
                   2. New 4-Digit PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -501,7 +501,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-light)',
@@ -514,7 +514,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
 
               <div>
-                <label style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
+                <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
                   3. Confirm New PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -532,7 +532,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-light)',
@@ -552,7 +552,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
             )}
 
             {successMsg && (
-              <p style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 700, margin: '-0.25rem 0 0.75rem 0' }}>
+              <p style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 600, margin: '-0.25rem 0 0.75rem 0' }}>
                 {successMsg}
               </p>
             )}
@@ -589,7 +589,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                   flex: 1.5,
                   padding: '0.55rem',
                   fontSize: '0.75rem',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   borderRadius: '10px'
                 }}
               >
@@ -612,7 +612,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
               lineHeight: '1.45',
               color: 'var(--text-secondary)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#f43f5e', fontWeight: 700, marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#f43f5e', fontWeight: 600, marginBottom: '0.25rem' }}>
                 <Mail size={14} />
                 <span>Security Reset Dispatched</span>
               </div>
@@ -622,7 +622,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div style={{ marginBottom: '0.5rem' }}>
-              <label style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem', textAlign: 'center' }}>
+              <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem', textAlign: 'center' }}>
                 Enter Dispatched 4-Digit OTP
               </label>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.55rem' }}>
@@ -640,7 +640,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                       height: '48px',
                       textAlign: 'center',
                       fontSize: '1.3rem',
-                      fontWeight: 800,
+                      fontWeight: 600,
                       borderRadius: '10px',
                       background: 'rgba(255, 255, 255, 0.03)',
                       border: digit ? '1.5px solid #f43f5e' : '1px solid var(--border-light)',
@@ -691,7 +691,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', margin: '1rem 0' }}>
               <div>
-                <label style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
+                <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
                   1. Set New 4-Digit PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -709,7 +709,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-light)',
@@ -722,7 +722,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
 
               <div>
-                <label style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
+                <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
                   2. Confirm New 4-Digit PIN
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -740,7 +740,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                         height: '42px',
                         textAlign: 'center',
                         fontSize: '1.2rem',
-                        fontWeight: 800,
+                        fontWeight: 600,
                         borderRadius: '10px',
                         background: 'rgba(255, 255, 255, 0.03)',
                         border: digit ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-light)',
@@ -760,7 +760,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
             )}
 
             {successMsg && (
-              <p style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 700, margin: '-0.25rem 0 0.75rem 0' }}>
+              <p style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 600, margin: '-0.25rem 0 0.75rem 0' }}>
                 {successMsg}
               </p>
             )}
@@ -795,7 +795,7 @@ const PinModal = ({ isOpen, onClose, onSuccess }) => {
                   flex: 1.5,
                   padding: '0.55rem',
                   fontSize: '0.75rem',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   borderRadius: '10px'
                 }}
               >

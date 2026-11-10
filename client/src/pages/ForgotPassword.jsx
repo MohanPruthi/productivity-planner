@@ -139,7 +139,7 @@ const ForgotPassword = () => {
 
         <p className="auth-switch-text">
           Remembered it?
-          <Link to="/login" className="auth-switch-link">Sign In</Link>
+          <Link to="/login" className="auth-switch-link">Sign in</Link>
         </p>
       </div>
     </div>

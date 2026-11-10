@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Illustration from '../components/Illustration';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -33,8 +34,11 @@ const Signup = () => {
   return (
     <div className="auth-page">
       <div className="auth-card glass-card">
+        <div className="auth-illustration">
+          <Illustration name="welcome" size={150} />
+        </div>
         <div className="auth-header">
-          <h2>Create Account</h2>
+          <h2>Create your account</h2>
           <p className="auth-subheader">Sign up to kickstart your weekly learning tracks</p>
         </div>
 
@@ -81,13 +85,13 @@ const Signup = () => {
           </div>
 
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
 
         <p className="auth-switch-text">
           Already have an account?
-          <Link to="/login" className="auth-switch-link">Sign In</Link>
+          <Link to="/login" className="auth-switch-link">Sign in</Link>
         </p>
       </div>
     </div>
