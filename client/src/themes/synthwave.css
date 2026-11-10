@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* Synthwave: neon pink and cyan over a purple night, a grid floor that
+   scrolls toward a striped sunset, glowing headings. Dark only. */
+[data-theme="synthwave"], [data-theme="synthwave"] body {
+  --bg-primary: #12061f;
+  --bg-secondary: #180a29;
+  --bg-tertiary: #24103a;
+  --accent-primary: #ff3cac;
+  --text-primary: #fbe9ff;
+  --text-secondary: #c6a4d8;
+  --text-muted: #8f6ea6;
+  --border-light: rgba(255, 60, 172, 0.16);
+  --glass-bg: rgba(27, 11, 46, 0.78);
+  --glass-border: rgba(255, 60, 172, 0.2);
+  --surface-1: rgba(27, 11, 46, 0.82);
+  --surface-2: rgba(44, 17, 70, 0.9);
+  --hairline: rgba(255, 60, 172, 0.18);
+  --hairline-strong: rgba(255, 60, 172, 0.34);
+  --font-sans: 'Space Grotesk', sans-serif;
+  --font-display: 'Orbitron', sans-serif;
+  --cue: #ff3cac;
+  --cue-off: #8f6ea6;
+  --timer-track-default: rgba(255, 60, 172, 0.06);
+  --cal-ring-default: rgba(255, 60, 172, 0.14);
+  --cal-track-default: rgba(255, 60, 172, 0.05);
+}
+[data-theme="synthwave"] body { font-family: var(--font-sans); }
+
+/* Backdrop: night gradient, striped sun and a moving grid floor (fixed layer behind everything) */
+:root[data-theme="synthwave"] body {
+  background: linear-gradient(#12061f 0%, #2a0b45 58%, #12061f 59%);
+}
+:root[data-theme="synthwave"] body::before,
+:root[data-theme="synthwave"] body::after { content: ''; position: fixed; z-index: -1; pointer-events: none; }
+:root[data-theme="synthwave"] body::before {
+  left: -50%; right: -50%; bottom: 0; height: 42%;
+  background-image: linear-gradient(rgba(255, 60, 172, 0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 60, 172, 0.35) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: top;
+  mask-image: linear-gradient(transparent, #000 45%);
+  animation: synth-grid 4s linear infinite;
+}
+:root[data-theme="synthwave"] body::after {
+  left: 50%; top: 22%; width: 360px; height: 360px; margin-left: -180px; border-radius: 50%;
+  background: linear-gradient(#ffd23f, #ff3cac 72%);
+  opacity: 0.12;
+  mask-image: repeating-linear-gradient(transparent 0 12px, #000 12px 26px);
+}
+@keyframes synth-grid { to { background-position: 0 56px; } }
+
+:root[data-theme="synthwave"] .sidebar-aside,
+:root[data-theme="synthwave"] .timelogger-aside { background-color: rgba(18, 6, 31, 0.86); }
+:root[data-theme="synthwave"] .main-content .page-header { background: rgba(18, 6, 31, 0.92); }
+
+:root[data-theme="synthwave"] h1, :root[data-theme="synthwave"] .cc-greet,
+:root[data-theme="synthwave"] .page-header-title {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+  color: #ffd6f3;
+  text-shadow: 0 0 18px rgba(255, 60, 172, 0.6);
+}
+:root[data-theme="synthwave"] .cc-greet { font-size: 1.85rem; }
+:root[data-theme="synthwave"] .main-content .glass-card,
+:root[data-theme="synthwave"] .cc-tile,
+:root[data-theme="synthwave"] .timelogger-card { border-color: var(--hairline) !important; }
+:root[data-theme="synthwave"] .main-content .glass-card:hover,
+:root[data-theme="synthwave"] .cc-tile:hover,
+:root[data-theme="synthwave"] .timelogger-card:hover {
+  border-color: rgba(255, 60, 172, 0.6) !important;
+  box-shadow: 0 0 0 1px rgba(255, 60, 172, 0.25), 0 0 30px -6px rgba(255, 60, 172, 0.55) !important;
+}
+:root[data-theme="synthwave"] .nav-link.active,
+:root[data-theme="synthwave"] .sidebar-nav .nav-link.active { box-shadow: 0 0 18px -4px var(--active-color); }
+:root[data-theme="synthwave"] .cc-figure strong { font-family: var(--font-display); text-shadow: 0 0 22px color-mix(in srgb, var(--tone) 70%, transparent); }
+:root[data-theme="synthwave"] .cc-row.done .cc-check { box-shadow: 0 0 12px var(--check); }
+:root[data-theme="synthwave"] .ui-progress > div { background: linear-gradient(90deg, #ff3cac, #b967ff, #3cd6ff); box-shadow: 0 0 10px #b967ff; }
+:root[data-theme="synthwave"] .ui-btn-primary { box-shadow: 0 0 18px -4px var(--tone, #ff3cac); }
+:root[data-theme="synthwave"] .timelogger-aside .animated-gradient-orange { font-family: var(--font-display); }
+
+/* Logo touch: neon double glow */
+:root[data-theme="synthwave"] .brand-logo .bl-echo { display: block; opacity: 0.45; }
+:root[data-theme="synthwave"] .brand-logo.lit { filter: drop-shadow(0 0 3px var(--cue)) drop-shadow(0 0 10px var(--cue)); }
+
+@media (prefers-reduced-motion: reduce) { :root[data-theme="synthwave"] body::before { animation: none; } }
+
+/* Theme factory preview */
+.tf-preview[data-theme="synthwave"] {
+  background: linear-gradient(#12061f 0%, #2a0b45 60%, #12061f 61%);
+}
+.tf-preview[data-theme="synthwave"]::before {
+  content: ''; position: absolute; z-index: -1; left: -40%; right: -40%; bottom: 0; height: 45%;
+  background-image: linear-gradient(rgba(255, 60, 172, 0.45) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 60, 172, 0.45) 1px, transparent 1px);
+  background-size: 18px 18px; transform: perspective(120px) rotateX(60deg); transform-origin: top;
+}
+.tf-preview[data-theme="synthwave"] .tf-h { background: #ff9be0; box-shadow: 0 0 8px #ff3cac; }
+.tf-preview[data-theme="synthwave"] .tf-ring { border-color: #ff7a3c; box-shadow: 0 0 10px #ff7a3c; }

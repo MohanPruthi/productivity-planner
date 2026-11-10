@@ -13,6 +13,12 @@ export const THEMES = [
     description: 'Your current planner look. Light and dark follow the sun and moon button.',
     mode: 'both',
   },
+  {
+    id: 'synthwave',
+    name: 'Synthwave',
+    description: 'Neon pink and cyan over a purple night, with a grid floor scrolling toward a striped sunset.',
+    mode: 'dark',
+  },
 ];
 
 const THEME_KEY = 'ui_theme';
