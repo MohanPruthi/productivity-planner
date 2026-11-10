@@ -100,6 +100,9 @@ model PlanDay {
   topic          String
   discussionNote String?
   isDone         Boolean   @default(false)
+
+  @@index([userId, date])
+  @@index([planWeekId])
 }
 
 model DsaLog {
@@ -115,6 +118,8 @@ model DsaLog {
   revisit        Boolean    @default(false)
   notes          String?
   createdAt      DateTime   @default(now())
+
+  @@index([userId, date])
 }
 
 model PomodoroSession {
@@ -126,6 +131,8 @@ model PomodoroSession {
   startedAt       DateTime
   completedAt     DateTime
   isCompleted     Boolean        @default(true)
+
+  @@index([userId, completedAt])
 }
 
 model DailyStudyLog {
@@ -146,6 +153,8 @@ model NormalTask {
   text      String
   isDone    Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([userId, date])
 }
 
 model MedSchedule {
@@ -184,6 +193,8 @@ model HrContact {
   notes           String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
 }
 
 model Note {
