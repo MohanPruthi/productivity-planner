@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // Counts from the previous value to `value` with an ease-out curve.
 // Respects the system's reduce-motion setting.
-const CountUp = ({ value, duration = 900, suffix = '' }) => {
+const CountUp = ({ value, duration = 500, suffix = '' }) => {
   const [shown, setShown] = useState(0);
   const fromRef = useRef(0);
 
