@@ -286,20 +286,18 @@ const TimeLogger = () => {
 
   const [plannedDates, setPlannedDates] = useState(new Set());
 
-  const fetchPlannedDates = async () => {
+  const fetchPlannedDates = async (year = calendarYear, month = calendarMonth) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/dashboard/history`, {
+      const pad = (n) => String(n).padStart(2, '0');
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      const from = `${year}-${pad(month + 1)}-01`;
+      const to = `${year}-${pad(month + 1)}-${pad(lastDay)}`;
+      const res = await fetch(`${API_BASE_URL}/api/dashboard/planned-dates?from=${from}&to=${to}`, {
         headers: getAuthHeaders(),
       });
       if (res.ok) {
-        const groups = await res.json();
-        const dates = new Set();
-        groups.forEach(g => {
-          if (g.planDays?.length > 0 || g.normalTasks?.length > 0) {
-            dates.add(g.date);
-          }
-        });
-        setPlannedDates(dates);
+        const data = await res.json();
+        setPlannedDates(new Set(data.plannedDates || []));
       }
     } catch (err) {
       console.error('Error fetching planned dates:', err);
@@ -352,8 +350,12 @@ const TimeLogger = () => {
 
   useEffect(() => {
     fetchStudyLogs();
-    fetchPlannedDates();
   }, [selectedDateStr]);
+
+  // Planned-date dots only for the visible calendar month
+  useEffect(() => {
+    fetchPlannedDates(calendarYear, calendarMonth);
+  }, [calendarYear, calendarMonth, selectedDateStr]);
 
   // Synchronize calendar month/year with the selected date (e.g. from dashboard navigation)
   useEffect(() => {
@@ -386,13 +388,14 @@ const TimeLogger = () => {
       });
       if (res.ok) {
         setLastSyncSeconds(secondsToSync);
-        // Refresh logs
-        const logsRes = await fetch(`${API_BASE_URL}/api/study-logs`, {
-          headers: getAuthHeaders(),
-        });
-        if (logsRes.ok) {
-          const logs = await logsRes.json();
-          setStudyLogs(logs);
+        // Merge the upserted row into local state instead of re-downloading all logs
+        const saved = await res.json();
+        if (saved && saved.date) {
+          const savedKey = getLocalDateString(new Date(saved.date));
+          setStudyLogs(prev => [
+            ...prev.filter(l => getLocalDateString(new Date(l.date)) !== savedKey),
+            saved,
+          ].sort((x, y) => new Date(x.date) - new Date(y.date)));
         }
       }
     } catch (err) {
