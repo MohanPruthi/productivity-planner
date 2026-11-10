@@ -3880,3 +3880,21 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
    ====================================================================== */
 .ui-section-title::before { content: none; }
 .ui-section-title { justify-content: space-between; }
+
+/* ======================================================================
+   Redo 7 · Sign-in, sign-up and reset: the same flat card as the app,
+   a hairline edge and a solid violet button; no glow around the card.
+   ====================================================================== */
+.auth-card {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--hairline-strong) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: none;
+}
+.auth-card::before { content: none; }
+.auth-card .btn-primary {
+  background: #7c6cf2 !important;
+  box-shadow: none !important;
+}
+.auth-card h2 { font-weight: 700; letter-spacing: -0.025em; }
