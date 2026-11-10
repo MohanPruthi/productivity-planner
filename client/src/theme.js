@@ -62,7 +62,7 @@ export const getThemeId = () => {
   return THEMES.some((t) => t.id === id) ? id : 'classic';
 };
 export const getTheme = () => THEMES.find((t) => t.id === getThemeId()) || THEMES[0];
-export const getZenSplit = () => (read(SPLIT_KEY, '30') === '25' ? '25' : '30');
+export const getZenSplit = () => (read(SPLIT_KEY, '30') === '20' ? '20' : '30');
 
 export const applyTheme = (id) => {
   const theme = THEMES.find((t) => t.id === id) || THEMES[0];
@@ -72,7 +72,7 @@ export const applyTheme = (id) => {
 };
 
 export const applyZenSplit = (value) => {
-  const v = value === '25' ? '25' : '30';
+  const v = value === '20' ? '20' : '30';
   document.documentElement.dataset.zenSplit = v;
   write(SPLIT_KEY, v);
 };

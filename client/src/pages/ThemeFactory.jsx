@@ -84,7 +84,7 @@ const ThemeFactory = () => {
         <p className="tf-help">How the screen is shared between the page and Zen Zone.</p>
         <div className="ui-segmented tf-split" role="group" aria-label="Zen Zone width">
           <button type="button" className={split === '30' ? 'active' : ''} aria-pressed={split === '30'} onClick={() => pickSplit('30')}>Page 70 · Zen 30</button>
-          <button type="button" className={split === '25' ? 'active' : ''} aria-pressed={split === '25'} onClick={() => pickSplit('25')}>Page 75 · Zen 25</button>
+          <button type="button" className={split === '20' ? 'active' : ''} aria-pressed={split === '20'} onClick={() => pickSplit('20')}>Page 80 · Zen 20</button>
         </div>
       </section>
     </div>

@@ -4366,7 +4366,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
    the page and Zen Zone; the split is picked in the Theme factory.
    ====================================================================== */
 :root { --zen-share: 0.30; }
-:root[data-zen-split="25"] { --zen-share: 0.25; }
+:root[data-zen-split="20"] { --zen-share: 0.20; }
 @media (min-width: 1101px) {
   .timelogger-aside {
     width: calc((100vw - 76px) * var(--zen-share));
@@ -4590,4 +4590,15 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
 .page-header .ui-btn-primary::after { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .page-header .ui-btn:hover, .page-header .btn:hover { transform: none; }
+}
+
+/* 80/20 split: Zen Zone draws at 80% scale so its ring, calendar and
+   Pomodoro fit a narrower panel without cutting anything off. */
+@media (min-width: 1101px) {
+  :root[data-zen-split="20"] .timelogger-aside {
+    zoom: 0.8;
+    width: calc((100vw - var(--rail-w)) * 0.2 / 0.8);
+    min-width: 390px;
+    height: calc(100vh / 0.8);
+  }
 }
