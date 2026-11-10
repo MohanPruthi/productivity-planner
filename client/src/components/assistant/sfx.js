@@ -33,8 +33,49 @@ const SOUNDS = {
   cancel: [n(150, 70, 0, 0.1, 'square', 0.4), n(110, 60, 0, 0.12, 'sine', 1)],
 };
 
+// A cute little voiced hum ("hm-hmm?"): a soft buzzy tone with vibrato, shaped by a
+// low nasal formant so it reads as humming rather than a beep.
+const hum = (c, s, f0, f1, d, v = 1) => {
+  const o = c.createOscillator();
+  const lfo = c.createOscillator();
+  const lfoGain = c.createGain();
+  const nasal = c.createBiquadFilter();
+  const soft = c.createBiquadFilter();
+  const g = c.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(f0, s);
+  o.frequency.exponentialRampToValueAtTime(f1, s + d);
+  lfo.frequency.value = 7;
+  lfoGain.gain.value = f0 * 0.02;
+  lfo.connect(lfoGain).connect(o.frequency);
+  nasal.type = 'bandpass';
+  nasal.frequency.value = 280;
+  nasal.Q.value = 1.4;
+  soft.type = 'lowpass';
+  soft.frequency.value = 900;
+  g.gain.setValueAtTime(0.0001, s);
+  g.gain.exponentialRampToValueAtTime(0.5 * v, s + 0.04);
+  g.gain.setValueAtTime(0.5 * v, s + d * 0.6);
+  g.gain.exponentialRampToValueAtTime(0.0001, s + d);
+  o.connect(nasal).connect(soft).connect(g).connect(c.destination);
+  o.start(s);
+  lfo.start(s);
+  o.stop(s + d + 0.03);
+  lfo.stop(s + d + 0.03);
+};
+
+// "hm" then a longer rising "hmm?" (about 0.6 s)
+const HUM = [[330, 350, 0, 0.17, 0.9], [300, 400, 0.24, 0.34, 1]];
+
 export const play = (name, delay = 0) => {
   if (muted || typeof document === 'undefined' || document.hidden) return;
+  if (name === 'hum') {
+    const c = getCtx();
+    if (!c) return;
+    const t0 = c.currentTime + delay;
+    for (const [f0, f1, at, d, v] of HUM) hum(c, t0 + at, f0, f1, d, v);
+    return;
+  }
   const notes = SOUNDS[name];
   const c = notes && getCtx();
   if (!c) return;
