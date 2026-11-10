@@ -4407,3 +4407,21 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
   border-color: rgba(99, 102, 241, 0.3);
 }
 .themes-toggle-btn:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+/* ======================================================================
+   Redo 17 · Personal vs office cue, the same in every theme: the lamp
+   (violet light at the top of the sidebar) plus a lit logo. Personal:
+   the logo glows violet. Office: the logo is a plain outline and the
+   lamp is off. Fixed violet on purpose, so it reads the same in every
+   theme; no labels.
+   ====================================================================== */
+:root { --me: #8b5cf6; }
+.brand-logo { overflow: visible; transition: filter 0.5s ease; }
+.brand-logo rect { transition: fill 0.5s ease, stroke 0.5s ease, opacity 0.5s ease; }
+.brand-logo .bl-bg { fill: transparent; stroke: color-mix(in srgb, var(--text-primary) 45%, transparent); stroke-width: 3; }
+.brand-logo .bl-t1, .brand-logo .bl-t2, .brand-logo .bl-t3 { fill: color-mix(in srgb, var(--text-primary) 45%, transparent); }
+.brand-logo.lit { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--me) 75%, transparent)); }
+.brand-logo.lit .bl-bg { fill: var(--me); stroke: var(--me); }
+.brand-logo.lit .bl-t1 { fill: #ede9fe; }
+.brand-logo.lit .bl-t2 { fill: #c4b5fd; }
+.brand-logo.lit .bl-t3 { fill: #fff; }

@@ -69,12 +69,12 @@ const renderThemeIcon = (currentTheme) => {
 // soft violet, echoing the sidebar lamp.
 const LogoIcon = ({ personal }) => {
   return (
-    <svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="64" height="64" rx="14" fill="var(--accent-primary)" />
-      <rect x="13" y="13" width="17" height="17" rx="4" fill={personal ? '#c4b5fd' : '#fff'} style={{ transition: 'fill 0.4s ease' }} />
-      <rect x="34" y="13" width="17" height="17" rx="4" fill="#a5b4fc" />
-      <rect x="13" y="34" width="17" height="17" rx="4" fill="#a5b4fc" />
-      <rect x="34" y="34" width="17" height="17" rx="4" fill="#fff" />
+    <svg className={`brand-logo ${personal ? 'lit' : ''}`} width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect className="bl-bg" x="1.5" y="1.5" width="61" height="61" rx="14" />
+      <rect className="bl-t1" x="13" y="13" width="17" height="17" rx="4" />
+      <rect className="bl-t2" x="34" y="13" width="17" height="17" rx="4" />
+      <rect className="bl-t2" x="13" y="34" width="17" height="17" rx="4" />
+      <rect className="bl-t3" x="34" y="34" width="17" height="17" rx="4" />
     </svg>
   );
 };
