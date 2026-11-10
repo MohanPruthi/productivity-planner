@@ -238,4 +238,6 @@ module.exports = {
   createPeriod,
   updatePeriod,
   migrateLegacyPlans,
+  periodEnd,
+  buildDays,
 };

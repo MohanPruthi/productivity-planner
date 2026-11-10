@@ -15,6 +15,7 @@ const hrRoutes = require('./routes/hrRoutes');
 const notesRoutes = require('./routes/notesRoutes');
 const noteGroupsRoutes = require('./routes/noteGroupsRoutes');
 const plansRoutes = require('./routes/plansRoutes');
+const assistantRoutes = require('./assistant/routes');
 const { migrateLegacyPlans } = require('./controllers/plansController');
 const prisma = require('./db');
 
@@ -51,6 +52,7 @@ app.use('/api/hr-contacts', hrRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/note-groups', noteGroupsRoutes);
 app.use('/api/plans', plansRoutes);
+app.use('/api/assistant', assistantRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
