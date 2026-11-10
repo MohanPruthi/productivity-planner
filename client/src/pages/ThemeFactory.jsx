@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Palette, Check } from 'lucide-react';
-import { THEMES, getThemeId, getZenSplit, applyTheme, applyZenSplit } from '../theme';
-import { isMuted, setMuted, play } from '../components/assistant/sfx';
+import { THEMES, getThemeId, applyTheme } from '../theme';
 import '../styles/theme-factory.css';
 
 // A small live preview: same markup in every card, styled by that theme's CSS
@@ -29,8 +28,6 @@ const Preview = ({ id }) => (
 
 const ThemeFactory = () => {
   const [current, setCurrent] = useState(getThemeId);
-  const [split, setSplit] = useState(getZenSplit);
-  const [sfxOn, setSfxOn] = useState(() => !isMuted());
 
   useEffect(() => {
     const onChange = (e) => setCurrent(e.detail.id);
@@ -41,17 +38,6 @@ const ThemeFactory = () => {
   const pick = (id) => {
     applyTheme(id);
     setCurrent(id);
-  };
-  const pickSplit = (v) => {
-    applyZenSplit(v);
-    setSplit(v);
-  };
-
-  const toggleSfx = () => {
-    const next = !sfxOn;
-    setMuted(!next);
-    setSfxOn(next);
-    if (next) play('success');
   };
 
   return (
@@ -85,25 +71,6 @@ const ThemeFactory = () => {
         ))}
       </section>
 
-      <section className="cc-tile tf-layout" aria-labelledby="tf-split-title">
-        <div className="cc-tile-head">
-          <h2 id="tf-split-title">Zen Zone width</h2>
-          <span className="cc-meta">Wide screens only</span>
-        </div>
-        <p className="tf-help">How the screen is shared between the page and Zen Zone.</p>
-        <div className="ui-segmented tf-split" role="group" aria-label="Zen Zone width">
-          <button type="button" className={split === '30' ? 'active' : ''} aria-pressed={split === '30'} onClick={() => pickSplit('30')}>Page 70 · Zen 30</button>
-          <button type="button" className={split === '20' ? 'active' : ''} aria-pressed={split === '20'} onClick={() => pickSplit('20')}>Page 80 · Zen 20</button>
-        </div>
-      </section>
-
-      <section className="cc-tile tf-layout" aria-labelledby="tf-sfx-title">
-        <div className="cc-tile-head">
-          <h2 id="tf-sfx-title">Blipo sounds</h2>
-          <button type="button" className={`ui-switch ${sfxOn ? 'on' : ''}`} aria-pressed={sfxOn} aria-label="Blipo sounds" onClick={toggleSfx} />
-        </div>
-        <p className="tf-help">Little bloops when Blipo listens and replies.</p>
-      </section>
     </div>
   );
 };

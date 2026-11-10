@@ -17,9 +17,13 @@ import {
   ChevronRight,
   ChevronDown,
   Flame,
+  Columns2,
+  Volume2,
   Shield
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getZenSplit, applyZenSplit } from '../theme';
+import { isMuted, setMuted, play } from '../components/assistant/sfx';
 import { API_BASE_URL } from '../config';
 import PinModal from '../components/PinModal';
 
@@ -32,6 +36,8 @@ const Settings = () => {
   const [isZenSectionOpen, setIsZenSectionOpen] = useState(false);
   const [isVisibilitySectionOpen, setIsVisibilitySectionOpen] = useState(false);
   const [isPinSectionOpen, setIsPinSectionOpen] = useState(false);
+  const [zenSplit, setZenSplit] = useState(getZenSplit);
+  const [sfxOn, setSfxOn] = useState(() => !isMuted());
 
   // 1. ZEN ZONE SETTINGS STATES
   const [weekdayTarget, setWeekdayTarget] = useState(() => {
@@ -855,6 +861,37 @@ const Settings = () => {
           </form>
         )}
       </div>
+      </div>
+
+      {/* Layout and Blipo: quick one-row settings */}
+      <div className="settings-list">
+        <div className="settings-item">
+          <div className="settings-item-head settings-row">
+            <div className="settings-row-main">
+              <span className="settings-item-icon"><Columns2 size={17} /></span>
+              <div><h2 className="settings-item-title">Zen Zone width</h2><p className="settings-item-desc">How wide screens share space between the page and Zen Zone</p></div>
+            </div>
+            <div className="ui-segmented settings-split" role="group" aria-label="Zen Zone width">
+              <button type="button" className={zenSplit === '30' ? 'active' : ''} aria-pressed={zenSplit === '30'} onClick={() => { applyZenSplit('30'); setZenSplit('30'); }}>70 · 30</button>
+              <button type="button" className={zenSplit === '20' ? 'active' : ''} aria-pressed={zenSplit === '20'} onClick={() => { applyZenSplit('20'); setZenSplit('20'); }}>80 · 20</button>
+            </div>
+          </div>
+        </div>
+        <div className="settings-item">
+          <div className="settings-item-head settings-row">
+            <div className="settings-row-main">
+              <span className="settings-item-icon"><Volume2 size={17} /></span>
+              <div><h2 className="settings-item-title">Blipo sounds</h2><p className="settings-item-desc">Little bloops when Blipo listens and replies</p></div>
+            </div>
+            <button
+              type="button"
+              className={`ui-switch ${sfxOn ? 'on' : ''}`}
+              aria-pressed={sfxOn}
+              aria-label="Blipo sounds"
+              onClick={() => { const next = !sfxOn; setMuted(!next); setSfxOn(next); if (next) play('success'); }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* When NOT in Personal Space: Yellow Glass Unlock Button */}
