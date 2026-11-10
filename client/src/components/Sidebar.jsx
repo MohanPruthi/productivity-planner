@@ -156,6 +156,7 @@ const Sidebar = () => {
               key={item.path} 
               to={item.path} 
               className={`nav-link ${isActive ? 'active' : ''}`}
+              aria-current={isActive ? 'page' : undefined}
               style={isActive ? { '--active-color': item.color } : {}}
             >
               <Icon size={20} className="nav-icon" />
