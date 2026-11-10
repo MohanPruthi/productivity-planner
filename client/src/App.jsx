@@ -14,6 +14,7 @@ const DsaLog = lazy(() => import('./pages/DsaLog'));
 const TaskHistory = lazy(() => import('./pages/TaskHistory'));
 const Meds = lazy(() => import('./pages/Meds'));
 const HrDirectory = lazy(() => import('./pages/HrDirectory'));
+const ThemeFactory = lazy(() => import('./pages/ThemeFactory'));
 const Notes = lazy(() => import('./pages/Notes'));
 const NoteDetail = lazy(() => import('./pages/NoteDetail'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -187,6 +188,15 @@ function App() {
                   <Settings />
                 </ProtectedRoute>
               } 
+            />
+
+            <Route
+              path="/themes"
+              element={
+                <ProtectedRoute>
+                  <ThemeFactory />
+                </ProtectedRoute>
+              }
             />
 
             {/* Catch-all redirect */}

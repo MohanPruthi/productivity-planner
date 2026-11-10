@@ -1,0 +1,59 @@
+// Theme ("skin") engine. A theme only changes how things look: every page,
+// flow and shortcut works the same in all of them. Each theme is one CSS file
+// in src/themes, scoped by [data-theme="<id>"] on <html>, and registers itself
+// in THEMES below so the Theme factory can list it.
+//
+// mode: 'both'  -> follows the sidebar light/dark button (Classic only)
+//       'dark' / 'light' -> the theme sets the mode itself
+
+export const THEMES = [
+  {
+    id: 'classic',
+    name: 'Classic',
+    description: 'Your current planner look. Light and dark follow the sun and moon button.',
+    mode: 'both',
+  },
+];
+
+const THEME_KEY = 'ui_theme';
+const SPLIT_KEY = 'zen_split';
+
+const read = (key, fallback) => {
+  try {
+    return localStorage.getItem(key) || fallback;
+  } catch {
+    return fallback;
+  }
+};
+const write = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* storage unavailable: the choice just isn't remembered */
+  }
+};
+
+export const getThemeId = () => {
+  const id = read(THEME_KEY, 'classic');
+  return THEMES.some((t) => t.id === id) ? id : 'classic';
+};
+export const getTheme = () => THEMES.find((t) => t.id === getThemeId()) || THEMES[0];
+export const getZenSplit = () => (read(SPLIT_KEY, '30') === '25' ? '25' : '30');
+
+export const applyTheme = (id) => {
+  const theme = THEMES.find((t) => t.id === id) || THEMES[0];
+  document.documentElement.dataset.theme = theme.id;
+  write(THEME_KEY, theme.id);
+  window.dispatchEvent(new CustomEvent('ui-theme-changed', { detail: theme }));
+};
+
+export const applyZenSplit = (value) => {
+  const v = value === '25' ? '25' : '30';
+  document.documentElement.dataset.zenSplit = v;
+  write(SPLIT_KEY, v);
+};
+
+export const initTheme = () => {
+  document.documentElement.dataset.theme = getThemeId();
+  document.documentElement.dataset.zenSplit = getZenSplit();
+};

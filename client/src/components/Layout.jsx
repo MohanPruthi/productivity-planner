@@ -15,6 +15,7 @@ const ROUTE_TONES = [
   ['/hr-directory', 'contacts'],
   ['/note', 'notes'],
   ['/settings', 'settings'],
+  ['/themes', 'settings'],
 ];
 
 const toneForPath = (path) => ROUTE_TONES.find(([prefix]) => path.startsWith(prefix))?.[1] || 'dashboard';

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { getTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import PinModal from './PinModal';
 import { openQuickAdd } from './QuickAdd';
@@ -19,7 +20,8 @@ import {
   Laptop,
   StickyNote,
   Settings as SettingsIcon,
-  Plus
+  Plus,
+  Palette
 } from 'lucide-react';
 
 const renderThemeIcon = (currentTheme) => {
@@ -80,6 +82,14 @@ const LogoIcon = ({ personal }) => {
 const Sidebar = () => {
   const { user, logout, privacyMode, togglePrivacyMode, workspaceVisibility } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  // Active skin from the Theme factory; only Classic has its own light/dark switch
+  const [skin, setSkin] = useState(getTheme);
+  useEffect(() => {
+    const onChange = (e) => setSkin(e.detail);
+    window.addEventListener('ui-theme-changed', onChange);
+    return () => window.removeEventListener('ui-theme-changed', onChange);
+  }, []);
 
   // Tab icon carries the same quiet workspace cue as the sidebar logo
   useEffect(() => {
@@ -98,15 +108,17 @@ const Sidebar = () => {
   });
 
   useEffect(() => {
-    if (theme === 'light') {
-      document.body.classList.add('light-theme');
-    } else {
-      document.body.classList.remove('light-theme');
-    }
+    const light = skin.mode === 'both' ? theme === 'light' : skin.mode === 'light';
+    document.body.classList.toggle('light-theme', light);
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, skin]);
 
   const toggleTheme = () => {
+    // Other themes come as light or dark already: send people to the Theme factory
+    if (skin.mode !== 'both') {
+      navigate('/themes');
+      return;
+    }
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
@@ -291,6 +303,16 @@ const Sidebar = () => {
             }}
           >
             <SettingsIcon size={18} />
+          </Link>
+
+          {/* Theme factory */}
+          <Link
+            to="/themes"
+            className={`themes-toggle-btn ${location.pathname === '/themes' ? 'active' : ''}`}
+            aria-label="Themes"
+            title="Themes"
+          >
+            <Palette size={18} />
           </Link>
         </div>
 

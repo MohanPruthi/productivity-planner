@@ -1,0 +1,64 @@
+/* Theme factory page. Previews read the same variables each theme sets. */
+.tf-page-root { display: flex; flex-direction: column; gap: 1.25rem; padding-bottom: 2rem; }
+.tf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+}
+.tf-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.75rem 0.75rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.3s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+.tf-card:hover { transform: translateY(-3px); border-color: var(--hairline-strong); }
+.tf-card.active { border-color: var(--accent-primary); box-shadow: 0 0 0 1px var(--accent-primary); }
+.tf-card:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+.tf-name { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.35rem; font-weight: 700; font-size: 0.95rem; }
+.tf-current { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; font-weight: 600; color: var(--accent-primary); }
+.tf-desc { font-size: 0.8rem; line-height: 1.45; color: var(--text-secondary); }
+
+/* The preview itself: a tiny app drawn with the theme's own variables */
+.tf-preview {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  height: 130px;
+  overflow: hidden;
+  border-radius: 11px;
+  background: var(--bg-primary);
+  border: 1px solid var(--hairline);
+}
+.tf-rail {
+  width: 30px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--hairline);
+}
+.tf-logo { width: 16px; height: 16px; border-radius: 5px; background: var(--accent-primary); margin-bottom: 4px; }
+.tf-ic { width: 12px; height: 12px; border-radius: 4px; background: color-mix(in srgb, var(--text-primary) 18%, transparent); }
+.tf-ic.on { background: var(--accent-primary); }
+.tf-page { flex: 1; display: flex; flex-direction: column; gap: 5px; padding: 9px; }
+.tf-h { width: 62%; height: 9px; border-radius: 3px; background: var(--text-primary); opacity: 0.85; }
+.tf-s { width: 36%; height: 5px; border-radius: 3px; background: var(--text-secondary); opacity: 0.6; }
+.tf-tiles { flex: 1; display: grid; grid-template-columns: 1.4fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px; margin-top: 3px; }
+.tf-tile { border-radius: 6px; background: var(--surface-1); border: 1px solid var(--hairline); }
+.tf-tile.tall { grid-row: span 2; }
+.tf-zen { width: 30%; flex: none; display: grid; place-items: center; background: var(--bg-secondary); border-left: 1px solid var(--hairline); }
+.tf-ring { width: 34px; height: 34px; border-radius: 50%; border: 4px solid color-mix(in srgb, #ff453a 75%, transparent); }
+
+.tf-help { margin: 0 0 0.75rem; font-size: 0.85rem; color: var(--text-secondary); }
+.tf-split { max-width: 420px; }

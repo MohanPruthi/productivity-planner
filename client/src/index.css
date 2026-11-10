@@ -4376,3 +4376,34 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
   }
   .main-content { min-width: 0; }
 }
+
+/* ======================================================================
+   Redo 16 · Theme factory button: sits with the theme, workspace and
+   settings buttons and has the same springy tilt on hover.
+   ====================================================================== */
+.themes-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.45rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.themes-toggle-btn:hover {
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.2);
+  transform: scale(1.12) rotate(-12deg);
+}
+.themes-toggle-btn.active {
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+.themes-toggle-btn:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
