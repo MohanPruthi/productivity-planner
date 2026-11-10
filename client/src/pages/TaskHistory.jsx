@@ -3,8 +3,11 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
-import { 
-  CheckCircle2, 
+import Dialog from '../components/Dialog';
+import '../styles/board.css';
+import {
+  CalendarClock,
+  CheckCircle2,
   Circle, 
   Plus, 
   Trash2, 
@@ -246,6 +249,8 @@ const TaskHistory = () => {
   const [draggedOverDate, setDraggedOverDate] = useState(null);
   const [boardCenterOffset, setBoardCenterOffset] = useState(0);
   const [activeTooltip, setActiveTooltip] = useState(null); // { text, x, y }
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [leavingIds, setLeavingIds] = useState(() => new Set());
 
   const handleTaskTextClick = (e, text, taskId = null, category = null, sourceDate = null) => {
     e.stopPropagation();
@@ -573,6 +578,61 @@ const TaskHistory = () => {
     }
   };
 
+  // Pending = not done and dated before today (same rule as the board's overdue actions)
+  const pendingTasks = [];
+  historyData.forEach(group => {
+    if (!group.date || group.date >= todayStr) return;
+    (group.planDays || []).forEach(d => {
+      if (!d.isDone) pendingTasks.push({
+        id: d.id, category: 'planDay', date: group.date, text: d.topic,
+        tag: d.planWeek?.plan?.name || d.track || 'Plan',
+        color: d.planWeek?.plan?.color || 'var(--mod-plans)'
+      });
+    });
+    (group.normalTasks || []).forEach(t => {
+      if (!t.isDone) pendingTasks.push({
+        id: t.id, category: 'normalTask', date: group.date, text: t.text,
+        tag: 'Gen', color: 'var(--tone)'
+      });
+    });
+  });
+  pendingTasks.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+  const daysAgoLabel = (dateStr) => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const base = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const diff = Math.round((base - dt) / 86400000);
+    const short = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${short} · ${diff === 1 ? 'yesterday' : `${diff} days ago`}`;
+  };
+
+  // Fade the row(s) out, then run the existing reschedule handler
+  const movePending = (items, targetDate) => {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setLeavingIds(prev => {
+      const next = new Set(prev);
+      items.forEach(i => next.add(i.id));
+      return next;
+    });
+    setTimeout(() => {
+      items.forEach(i => handleRescheduleTask(i.id, i.category, i.date, targetDate));
+      setLeavingIds(prev => {
+        const next = new Set(prev);
+        items.forEach(i => next.delete(i.id));
+        return next;
+      });
+    }, reduce ? 0 : 220);
+  };
+
+  const pendingGroups = [];
+  pendingTasks.forEach(t => {
+    const last = pendingGroups[pendingGroups.length - 1];
+    if (last && last.date === t.date) last.items.push(t);
+    else pendingGroups.push({ date: t.date, items: [t] });
+  });
+  const pendingCount = pendingTasks.length;
+
   if (loading) {
     return <Loader text="Loading Jira Work Board..." />;
   }
@@ -595,7 +655,71 @@ const TaskHistory = () => {
             <p className="page-header-subtitle">Drag tasks between days to reschedule them</p>
           </div>
         </div>
+        {pendingCount > 0 && (
+          <div className="page-header-actions">
+            <button type="button" className="ui-btn ui-btn-secondary" onClick={() => setPendingOpen(true)}>
+              <CalendarClock size={15} />
+              Pending {pendingCount}
+            </button>
+          </div>
+        )}
       </header>
+
+      <Dialog
+        open={pendingOpen}
+        onClose={() => setPendingOpen(false)}
+        title="Pending tasks"
+        subtitle={pendingCount === 0 ? 'Nothing left over' : `${pendingCount} ${pendingCount === 1 ? 'task' : 'tasks'} from earlier days`}
+        width={560}
+        footer={
+          <>
+            <button type="button" className="ui-btn ui-btn-ghost" onClick={() => setPendingOpen(false)}>Close</button>
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              disabled={pendingCount === 0}
+              onClick={() => movePending(pendingTasks, todayStr)}
+            >
+              Move all to today
+            </button>
+          </>
+        }
+      >
+        {pendingCount === 0 ? (
+          <p className="bd-empty">All caught up.</p>
+        ) : (
+          <ul className="cc-list bd-pending">
+            {pendingGroups.map(g => (
+              <React.Fragment key={g.date}>
+                <li className="bd-group-label" role="presentation">{daysAgoLabel(g.date)}</li>
+                {g.items.map(t => (
+                  <li key={t.id} className={`cc-row bd-row${leavingIds.has(t.id) ? ' is-leaving' : ''}`}>
+                    <div className="bd-row-main">
+                      <span className="bd-row-text">{t.text}</span>
+                      <span className="bd-tag" style={{ '--tag': t.color }}>{t.tag}</span>
+                    </div>
+                    <div className="bd-row-actions">
+                      <button
+                        type="button"
+                        className="bd-act"
+                        onClick={() => movePending([t], todayStr)}
+                        aria-label={`Move "${t.text}" to today`}
+                      >
+                        Today
+                      </button>
+                      <CustomDatePickerButton
+                        label="Pick date"
+                        buttonStyle={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                        onSelectDate={(dateVal) => movePending([t], dateVal)}
+                      />
+                    </div>
+                  </li>
+                ))}
+              </React.Fragment>
+            ))}
+          </ul>
+        )}
+      </Dialog>
 
       {/* Board columns container */}
       <div 
@@ -723,8 +847,7 @@ const TaskHistory = () => {
                     <button 
                       onClick={() => handleToggleTask(day.id, 'planDay', day.isDone)}
                       className={`mirror-checkbox ${day.isDone ? 'checked-plan' : ''}`}
-                      style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)' }}
-                      style={{ width: '22px', height: '22px', flexShrink: 0, marginTop: '2px' }}
+                      style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)', width: '22px', height: '22px', flexShrink: 0, marginTop: '2px' }}
                     >
                       {day.isDone ? (
                         <CheckCircle2 size={11} />
