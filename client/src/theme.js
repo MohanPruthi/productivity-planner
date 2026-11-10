@@ -19,6 +19,12 @@ export const THEMES = [
     description: 'Neon pink and cyan over a purple night, with a grid floor scrolling toward a striped sunset.',
     mode: 'dark',
   },
+  {
+    id: 'holo',
+    name: 'Holo HUD',
+    description: 'A sci-fi heads-up display: cyan lines, square corners, corner brackets and a scan sweep.',
+    mode: 'dark',
+  },
 ];
 
 const THEME_KEY = 'ui_theme';

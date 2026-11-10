@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap');
+
+/* Holo HUD: a sci-fi heads-up display. Cyan lines on deep teal-black,
+   square corners, corner brackets that extend on hover, a scan sweep when
+   the app opens. Dark only. */
+[data-theme="holo"], [data-theme="holo"] body {
+  --bg-primary: #020b10;
+  --bg-secondary: #03121a;
+  --bg-tertiary: #062029;
+  --accent-primary: #22d3ee;
+  --text-primary: #d9fbff;
+  --text-secondary: #8ccbd8;
+  --text-muted: #5b98a6;
+  --border-light: rgba(34, 211, 238, 0.16);
+  --glass-bg: rgba(4, 22, 29, 0.85);
+  --glass-border: rgba(34, 211, 238, 0.22);
+  --surface-1: rgba(4, 22, 29, 0.85);
+  --surface-2: rgba(8, 36, 46, 0.9);
+  --hairline: rgba(34, 211, 238, 0.18);
+  --hairline-strong: rgba(34, 211, 238, 0.36);
+  --font-sans: 'Chakra Petch', sans-serif;
+  --font-display: 'Chakra Petch', sans-serif;
+  --cue: #22d3ee;
+  --cue-off: #5b98a6;
+  --timer-track-default: rgba(34, 211, 238, 0.06);
+  --cal-ring-default: rgba(34, 211, 238, 0.16);
+  --cal-track-default: rgba(34, 211, 238, 0.05);
+}
+[data-theme="holo"] body { font-family: var(--font-sans); }
+
+:root[data-theme="holo"] body {
+  background:
+    radial-gradient(900px 420px at 60% 0%, rgba(14, 116, 144, 0.45), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(34, 211, 238, 0.035) 0 1px, transparent 1px 4px),
+    #020b10;
+}
+/* One scan sweep when the app opens */
+:root[data-theme="holo"] body::after {
+  content: ''; position: fixed; z-index: -1; left: 0; right: 0; height: 160px; top: -160px; pointer-events: none;
+  background: linear-gradient(transparent, rgba(34, 211, 238, 0.14), transparent);
+  animation: holo-scan 2.4s ease-out 0.3s 1 backwards;
+}
+@keyframes holo-scan { from { top: -160px; } to { top: 100%; } }
+
+:root[data-theme="holo"] .sidebar-aside,
+:root[data-theme="holo"] .timelogger-aside { background-color: rgba(3, 18, 26, 0.9); }
+:root[data-theme="holo"] .main-content .page-header { background: rgba(2, 11, 16, 0.94); }
+
+/* Square, technical shapes */
+:root[data-theme="holo"] .main-content .glass-card,
+:root[data-theme="holo"] .cc-tile,
+:root[data-theme="holo"] .timelogger-card,
+:root[data-theme="holo"] .ui-btn,
+:root[data-theme="holo"] .ui-dialog,
+:root[data-theme="holo"] .input-control,
+:root[data-theme="holo"] .cc-days, :root[data-theme="holo"] .cc-days button,
+:root[data-theme="holo"] .cc-quick, :root[data-theme="holo"] .page-header-icon,
+:root[data-theme="holo"] .sidebar-nav .nav-link { border-radius: 4px !important; }
+:root[data-theme="holo"] .cc-check { border-radius: 3px; }
+
+/* Corner brackets that extend on hover */
+:root[data-theme="holo"] .cc-tile { position: relative; }
+:root[data-theme="holo"] .cc-tile::before,
+:root[data-theme="holo"] .cc-tile::after {
+  content: ''; position: absolute; width: 14px; height: 14px; border: 2px solid #22d3ee; pointer-events: none;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+:root[data-theme="holo"] .cc-tile::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+:root[data-theme="holo"] .cc-tile::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+:root[data-theme="holo"] .cc-tile:hover::before,
+:root[data-theme="holo"] .cc-tile:hover::after { width: 28px; height: 28px; }
+:root[data-theme="holo"] .main-content .glass-card:hover,
+:root[data-theme="holo"] .cc-tile:hover { border-color: rgba(34, 211, 238, 0.55); box-shadow: inset 0 0 24px rgba(34, 211, 238, 0.06); }
+
+:root[data-theme="holo"] .cc-tile-head h2,
+:root[data-theme="holo"] .ui-section-title { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem !important; color: var(--text-secondary); }
+:root[data-theme="holo"] .cc-greet::after { content: '_'; color: #22d3ee; animation: holo-blink 1s steps(1) 4; }
+@keyframes holo-blink { 50% { opacity: 0; } }
+:root[data-theme="holo"] .cc-row.done .cc-check { box-shadow: 0 0 10px var(--check); }
+:root[data-theme="holo"] .cc-check svg { color: #02141a; }
+:root[data-theme="holo"] .cc-figure strong { text-shadow: 0 0 18px color-mix(in srgb, var(--tone) 55%, transparent); }
+:root[data-theme="holo"] .sidebar-nav .nav-link.active { box-shadow: inset 0 0 0 1px var(--active-color), 0 0 14px -4px var(--active-color); }
+:root[data-theme="holo"] .timelogger-aside .animated-gradient-orange { background: none; -webkit-text-fill-color: #22d3ee; letter-spacing: 0.08em; text-transform: uppercase; font-size: 1rem !important; }
+
+/* Logo touch: clock-style tick marks around the ring */
+:root[data-theme="holo"] .brand-logo .bl-ticks { display: block; }
+:root[data-theme="holo"] .brand-logo .bl-ring, :root[data-theme="holo"] .brand-logo .bl-tick { stroke-width: 3.2; }
+
+@media (prefers-reduced-motion: reduce) { :root[data-theme="holo"] body::after { animation: none; display: none; } }
+
+/* Theme factory preview */
+.tf-preview[data-theme="holo"] {
+  background: radial-gradient(160px 80px at 60% 0%, rgba(14, 116, 144, 0.5), transparent 70%), repeating-linear-gradient(0deg, rgba(34, 211, 238, 0.05) 0 1px, transparent 1px 4px), #020b10;
+}
+.tf-preview[data-theme="holo"] .tf-tile, .tf-preview[data-theme="holo"] .tf-logo, .tf-preview[data-theme="holo"] .tf-ic { border-radius: 2px; }
+.tf-preview[data-theme="holo"] .tf-tile { border-color: rgba(34, 211, 238, 0.4); }
+.tf-preview[data-theme="holo"] .tf-ring { border-color: #22d3ee; box-shadow: 0 0 8px #22d3ee; }
