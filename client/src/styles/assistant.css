@@ -1,0 +1,146 @@
+/* Blipo, the voice assistant mascot. Ported from public/mascot-demos.html (mascot 1, bubble style A,
+   transcript chip). Colours come from the app's theme variables so all 5 themes restyle it. */
+.blipo {
+  --c1: var(--tone, var(--accent-primary));
+  --c2: var(--accent-primary);
+  --lvl: 0;
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 70;
+  width: 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 1100px) {
+  /* above the fixed bottom tab bar (Redo 5 / Redo 13: 64px and 68px plus the safe area) */
+  .blipo { bottom: calc(76px + env(safe-area-inset-bottom)); right: 10px; }
+}
+.blipo-ring { position: absolute; inset: 2px; border-radius: 50%; border: 2px solid var(--c1); opacity: 0; pointer-events: none; }
+.blipo-btn {
+  position: relative; width: 72px; height: 72px; border-radius: 50%; padding: 0; cursor: pointer;
+  display: grid; place-items: center; color: inherit;
+  border: 1px solid var(--hairline);
+  background: radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--c2) 30%, var(--surface-1)), var(--surface-1) 70%);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28), 0 0 0 3px color-mix(in srgb, var(--c1) 18%, transparent);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.blipo-btn:hover { transform: scale(1.05); }
+.blipo-btn:active { transform: scale(0.95); }
+.blipo-btn:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+.blipo-btn svg { width: 64px; height: 64px; overflow: visible; pointer-events: none; }
+.blipo-dots {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%); display: none; gap: 4px;
+  padding: 4px 7px; border-radius: 99px; background: var(--surface-1); border: 1px solid var(--hairline);
+}
+.blipo-dots b { width: 5px; height: 5px; border-radius: 50%; background: var(--c1); animation: blipo-dot 1s infinite ease-in-out; }
+.blipo-dots b:nth-child(2) { animation-delay: 0.15s; }
+.blipo-dots b:nth-child(3) { animation-delay: 0.3s; }
+
+.blipo .f1 { fill: var(--c1); }
+.blipo .f2 { fill: var(--c2); }
+.blipo .fw { fill: #fff; }
+.blipo .fi { fill: #15152e; }
+.blipo .si { stroke: #15152e; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+.blipo .s2 { stroke: var(--c2); fill: none; stroke-width: 3; stroke-linecap: round; }
+.blipo .rig { transform-origin: 32px 58px; }
+.blipo .eyes, .blipo .perk { transform-box: fill-box; }
+.blipo .eyes { transform-origin: center; }
+.blipo .perk { transform-origin: 50% 100%; }
+.blipo .xeyes { display: none; }
+
+.blipo[data-state=idle] .rig { animation: blipo-bob 3.2s ease-in-out infinite; }
+.blipo[data-state=idle] .eyes { animation: blipo-blink 4.2s infinite; }
+.blipo[data-state=listening] .rig { animation: blipo-lean 0.9s ease-in-out infinite alternate; }
+.blipo[data-state=listening] .perk { animation: blipo-perk 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both, blipo-wig 0.5s ease-in-out 0.45s infinite alternate; }
+.blipo[data-state=listening] .blipo-ring { opacity: 0.95; transform: scale(calc(1.02 + var(--lvl) * 0.4)); box-shadow: 0 0 calc(6px + var(--lvl) * 26px) var(--c1); }
+.blipo[data-state=listening] .blipo-ring.r2 { opacity: 0.45; transform: none; box-shadow: none; animation: blipo-ping 1.4s ease-out infinite; }
+.blipo[data-state=thinking] .rig { animation: blipo-think 1.4s ease-in-out infinite; }
+.blipo[data-state=thinking] .blipo-ring { opacity: 0.85; border-style: dashed; animation: blipo-spin 2.4s linear infinite; }
+.blipo[data-state=thinking] .blipo-dots { display: flex; }
+.blipo[data-state=done] .rig { animation: blipo-hop 0.8s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.blipo[data-state=done] .blipo-ring.r2 { animation: blipo-burst 0.7s ease-out; }
+.blipo[data-state=done] .eyes { animation: blipo-happy 0.8s both; }
+.blipo[data-state=error] .rig { animation: blipo-dizzy 0.6s ease-in-out infinite alternate; }
+.blipo[data-state=error] .eyes { display: none; }
+.blipo[data-state=error] .xeyes { display: block; }
+.blipo[data-state=error] .blipo-ring { opacity: 0.8; border-color: #ef4444; animation: blipo-ping 1.2s ease-out infinite; }
+
+@keyframes blipo-bob { 50% { transform: translateY(-2.5px); } }
+@keyframes blipo-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } }
+@keyframes blipo-lean { to { transform: rotate(-3deg) scale(1.04); } }
+@keyframes blipo-perk { from { transform: rotate(0) scaleY(1); } to { transform: rotate(-7deg) scaleY(1.28); } }
+@keyframes blipo-wig { from { transform: rotate(-7deg) scaleY(1.28); } to { transform: rotate(5deg) scaleY(1.2); } }
+@keyframes blipo-ping { from { transform: scale(1); opacity: 0.5; } to { transform: scale(1.45); opacity: 0; } }
+@keyframes blipo-burst { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.6); opacity: 0; } }
+@keyframes blipo-spin { to { transform: rotate(360deg); } }
+@keyframes blipo-think { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg) translateY(-1px); } }
+@keyframes blipo-dot { 0%, 100% { transform: translateY(0); opacity: 0.45; } 50% { transform: translateY(-3px); opacity: 1; } }
+@keyframes blipo-hop { 0% { transform: translateY(0) scale(1, 1); } 25% { transform: translateY(2px) scale(1.1, 0.88); } 55% { transform: translateY(-14px) scale(0.94, 1.1); } 80% { transform: translateY(0) scale(1.06, 0.94); } 100% { transform: none; } }
+@keyframes blipo-happy { 0%, 100% { transform: scaleY(1); } 30%, 70% { transform: scaleY(0.45); } }
+@keyframes blipo-dizzy { from { transform: rotate(-7deg) translateX(-1px); } to { transform: rotate(7deg) translateX(1px); } }
+
+/* Comic speech bubble (style A) and its error variant */
+.blipo-bubble {
+  --bb: var(--surface-2); --bi: var(--text-primary); --bd: var(--tone, var(--accent-primary));
+  position: fixed; right: 18px; bottom: 108px;
+  max-width: min(250px, calc(100vw - 36px)); z-index: 71;
+  font-weight: 600; font-size: 15px; line-height: 1.25;
+  background: var(--bb); color: var(--bi);
+  border: 2.5px solid var(--bd); border-radius: 18px 18px 4px 18px; padding: 9px 14px;
+  box-shadow: 3px 4px 0 var(--bd); transform-origin: 80% 110%;
+  animation: blipo-pop 0.5s cubic-bezier(0.2, 1.7, 0.4, 1) both;
+}
+@media (max-width: 1100px) {
+  .blipo-bubble { right: 12px; bottom: calc(168px + env(safe-area-inset-bottom)); }
+}
+.blipo-bubble::after {
+  content: ""; position: absolute; right: 30px; bottom: -11px; width: 16px; height: 16px;
+  background: var(--bb); border-right: 2.5px solid var(--bd); border-bottom: 2.5px solid var(--bd);
+  transform: rotate(45deg) skew(8deg, 8deg); border-radius: 0 0 4px 0;
+}
+.blipo-bubble.err { --bb: color-mix(in srgb, #e03131 16%, var(--surface-2)); --bd: #e03131; }
+.blipo-sub { margin-top: 4px; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--text-secondary); }
+.blipo-actions { display: flex; gap: 8px; margin-top: 9px; }
+.blipo-actions button {
+  font-weight: 600; font-size: 13px; cursor: pointer; border-radius: 999px; padding: 6px 13px;
+  border: 1px solid var(--hairline); background: var(--surface-1); color: var(--text-primary);
+}
+.blipo-actions button.primary { background: var(--tone, var(--accent-primary)); border-color: var(--tone, var(--accent-primary)); color: var(--tone-ink, #fff); }
+.blipo-actions button:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+@keyframes blipo-pop { 0% { transform: scale(0.2) rotate(-6deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+
+/* Live transcript chip */
+.blipo-chip {
+  position: fixed; right: 18px; bottom: 108px; max-width: min(320px, calc(100vw - 36px)); z-index: 71;
+  display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
+  background: var(--surface-1); border: 1px solid var(--tone, var(--accent-primary));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--tone, var(--accent-primary)) 40%, transparent);
+  color: var(--text-primary); font-weight: 500; font-size: 13px; line-height: 1.3;
+  animation: blipo-chip-in 0.2s both;
+}
+@media (max-width: 1100px) {
+  .blipo-chip { right: 12px; bottom: calc(168px + env(safe-area-inset-bottom)); }
+}
+.blipo-chip i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; animation: blipo-rec 1s infinite; }
+.blipo-chip .caret { display: inline-block; width: 2px; height: 1em; background: var(--tone, var(--accent-primary)); vertical-align: -2px; margin-left: 2px; animation: blipo-caret 0.8s steps(1) infinite; }
+.blipo-chip .hint { color: var(--text-secondary); }
+@keyframes blipo-chip-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes blipo-rec { 50% { opacity: 0.25; } }
+@keyframes blipo-caret { 50% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .blipo *, .blipo-bubble, .blipo-chip, .blipo-chip * { animation: none !important; transition: none !important; }
+  .blipo-btn:hover, .blipo-btn:active { transform: none; }
+  .blipo[data-state=thinking] .blipo-ring, .blipo[data-state=listening] .blipo-ring { opacity: 0.85; }
+}
+
+/* Desktop: sit in the page area just left of Zen Zone so Blipo never covers
+   Zen Zone's controls. Matches the 70/30 and 80/20 split widths. */
+@media (min-width: 1101px) {
+  :root { --blipo-right: calc(max((100vw - var(--rail-w, 76px)) * 0.30, 390px) + 18px); }
+  :root[data-zen-split="20"] { --blipo-right: calc(max((100vw - var(--rail-w, 76px)) * 0.20, 312px) + 18px); }
+  .blipo { right: var(--blipo-right); }
+  .blipo-bubble, .blipo-chip { right: calc(var(--blipo-right) + 2px); }
+}
