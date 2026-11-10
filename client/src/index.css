@@ -4654,3 +4654,4 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
 .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; flex-wrap: wrap; }
 .settings-row-main { display: flex; align-items: center; gap: 0.85rem; min-width: 0; }
 .settings-split { width: 180px; flex: none; }
+.settings-subrow { padding: 1rem 1.75rem 1.5rem; border-top: 1px solid var(--hairline); }

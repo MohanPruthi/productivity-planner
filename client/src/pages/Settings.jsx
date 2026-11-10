@@ -17,7 +17,6 @@ import {
   ChevronRight,
   ChevronDown,
   Flame,
-  Columns2,
   Volume2,
   Shield
 } from 'lucide-react';
@@ -244,7 +243,7 @@ const Settings = () => {
           </div>
           <div>
             <h1 className="page-header-title">Settings</h1>
-            <p className="page-header-subtitle">Focus targets, office workspace and PIN</p>
+            <p className="page-header-subtitle">Zen Zone, office workspace, PIN and Blipo</p>
           </div>
         </div>
 
@@ -297,7 +296,7 @@ const Settings = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <span className="settings-item-icon"><Flame size={17} /></span>
-            <div><h2 className="settings-item-title">Zen Zone targets</h2><p className="settings-item-desc">Daily focus goals for the Zen Zone timer</p></div>
+            <div><h2 className="settings-item-title">Zen Zone</h2><p className="settings-item-desc">Daily focus goals, timer lengths and panel width</p></div>
           </div>
 
           <div 
@@ -319,7 +318,7 @@ const Settings = () => {
         </div>
 
         {/* Inner Form: rendered when open */}
-        {isZenSectionOpen && (
+        {isZenSectionOpen && (<>
           <form 
             onSubmit={handleSaveZenZoneSettings} 
             style={{ 
@@ -460,6 +459,17 @@ const Settings = () => {
               </button>
             </div>
           </form>
+          <div className="settings-row settings-subrow">
+            <div>
+              <h3 className="settings-item-title">Zen Zone width</h3>
+              <p className="settings-item-desc">How wide screens share space between the page and Zen Zone</p>
+            </div>
+            <div className="ui-segmented settings-split" role="group" aria-label="Zen Zone width">
+              <button type="button" className={zenSplit === '30' ? 'active' : ''} aria-pressed={zenSplit === '30'} onClick={() => { applyZenSplit('30'); setZenSplit('30'); }}>70 · 30</button>
+              <button type="button" className={zenSplit === '20' ? 'active' : ''} aria-pressed={zenSplit === '20'} onClick={() => { applyZenSplit('20'); setZenSplit('20'); }}>80 · 20</button>
+            </div>
+          </div>
+          </>
         )}
       </div>
 
@@ -863,20 +873,8 @@ const Settings = () => {
       </div>
       </div>
 
-      {/* Layout and Blipo: quick one-row settings */}
+      {/* Blipo: one-row setting */}
       <div className="settings-list">
-        <div className="settings-item">
-          <div className="settings-item-head settings-row">
-            <div className="settings-row-main">
-              <span className="settings-item-icon"><Columns2 size={17} /></span>
-              <div><h2 className="settings-item-title">Zen Zone width</h2><p className="settings-item-desc">How wide screens share space between the page and Zen Zone</p></div>
-            </div>
-            <div className="ui-segmented settings-split" role="group" aria-label="Zen Zone width">
-              <button type="button" className={zenSplit === '30' ? 'active' : ''} aria-pressed={zenSplit === '30'} onClick={() => { applyZenSplit('30'); setZenSplit('30'); }}>70 · 30</button>
-              <button type="button" className={zenSplit === '20' ? 'active' : ''} aria-pressed={zenSplit === '20'} onClick={() => { applyZenSplit('20'); setZenSplit('20'); }}>80 · 20</button>
-            </div>
-          </div>
-        </div>
         <div className="settings-item">
           <div className="settings-item-head settings-row">
             <div className="settings-row-main">
