@@ -409,11 +409,13 @@ const Dashboard = () => {
                     {day.isDone && <Check size={12} strokeWidth={3} />}
                   </button>
                   <div className="cc-row-text">
+                    <span className="cc-tags">
+                      <em className="cc-tag" style={{ '--tag': day.planWeek?.plan?.color || 'var(--mod-plans)' }}>
+                        {day.planWeek?.plan?.name || `${day.track} plan`}
+                      </em>
+                      <small>Week {day.planWeek?.weekNumber}</small>
+                    </span>
                     <span>{day.topic || 'No topic set'}</span>
-                    <small>
-                      <i style={{ background: day.planWeek?.plan?.color || 'var(--mod-plans)' }} />
-                      {day.planWeek?.plan?.name || `${day.track} plan`} · week {day.planWeek?.weekNumber}
-                    </small>
                   </div>
                 </li>
               ))}
@@ -444,7 +446,10 @@ const Dashboard = () => {
                     </form>
                   ) : (
                     <>
-                      <div className="cc-row-text"><span>{task.text}</span></div>
+                      <div className="cc-row-text">
+                        <span className="cc-tags"><em className="cc-tag" title="General task">Gen</em></span>
+                        <span>{task.text}</span>
+                      </div>
                       <div className="cc-row-actions">
                         <button type="button" className="ui-icon-btn" onClick={() => handleStartEditTask(task)} aria-label="Edit task">
                           <Edit2 size={14} />

@@ -58,12 +58,12 @@
 :root[data-theme="notebook"] .cc-check { border-radius: 2px; border-color: #2a251e; }
 :root[data-theme="notebook"] .cc-row.done .cc-check { background: transparent; border-color: #2a251e; color: #c2410c; animation: none; }
 :root[data-theme="notebook"] .cc-row.done .cc-check svg { stroke-width: 3.6; }
-:root[data-theme="notebook"] .cc-row-text span { position: relative; width: fit-content; }
-:root[data-theme="notebook"] .cc-row-text span::after {
+:root[data-theme="notebook"] .cc-row-text > span:not(.cc-tags) { position: relative; width: fit-content; }
+:root[data-theme="notebook"] .cc-row-text > span:not(.cc-tags)::after {
   content: ''; position: absolute; left: -2px; top: 55%; height: 2px; width: 0; background: #2a251e; transition: width 0.4s ease 0.1s;
 }
-:root[data-theme="notebook"] .cc-row.done .cc-row-text span { text-decoration: none; }
-:root[data-theme="notebook"] .cc-row.done .cc-row-text span::after { width: calc(100% + 4px); }
+:root[data-theme="notebook"] .cc-row.done .cc-row-text > span:not(.cc-tags) { text-decoration: none; }
+:root[data-theme="notebook"] .cc-row.done .cc-row-text > span:not(.cc-tags)::after { width: calc(100% + 4px); }
 
 :root[data-theme="notebook"] .cc-figure strong { font-family: var(--font-display); font-weight: 800; color: #c2410c; }
 :root[data-theme="notebook"] .ui-progress { background: #e3d8c4; border-radius: 2px; }

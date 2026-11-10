@@ -4517,3 +4517,21 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
   /* Zen Zone's calendar needs about 390px to show all seven days */
   .timelogger-aside { min-width: 390px; }
 }
+
+/* Dashboard task tags: "Gen" for general tasks, the plan's name in its colour for plan tasks */
+.cc-row-text .cc-tags { display: flex; align-items: center; gap: 0.45rem; font-size: 0.72rem; color: var(--text-muted); }
+.cc-row-text .cc-tags small { font-size: 0.72rem; }
+.cc-tag {
+  --tag: var(--mod-dashboard);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.68rem;
+  line-height: 1;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  color: var(--tag);
+  background: color-mix(in srgb, var(--tag) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tag) 30%, transparent);
+}
+.cc-row.done .cc-tag { opacity: 0.55; }
+.cc-row.done .cc-row-text .cc-tags { text-decoration: none; }
