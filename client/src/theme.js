@@ -25,6 +25,12 @@ export const THEMES = [
     description: 'A sci-fi heads-up display: cyan lines, square corners, corner brackets and a scan sweep.',
     mode: 'dark',
   },
+  {
+    id: 'aurora',
+    name: 'Aurora glass',
+    description: 'Frosted panels over a slowly drifting aurora; cards light up under your cursor.',
+    mode: 'dark',
+  },
 ];
 
 const THEME_KEY = 'ui_theme';
