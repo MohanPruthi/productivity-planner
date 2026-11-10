@@ -200,6 +200,15 @@ const Plans = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  // Voice assistant created a plan or a week
+  useEffect(() => {
+    const onDataChanged = (e) => {
+      if (e.detail?.scope === 'plans') api('/api/plans').then(setPlans).catch(() => {});
+    };
+    window.addEventListener('data-changed', onDataChanged);
+    return () => window.removeEventListener('data-changed', onDataChanged);
+  }, []);
+
   // Personal plans disappear in the office workspace, like personal notes
   const visiblePlans = useMemo(() => (privacyMode ? plans.filter(p => !p.isPersonal) : plans), [plans, privacyMode]);
   const selectedId = searchParams.get('plan');

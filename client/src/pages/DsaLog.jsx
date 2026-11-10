@@ -84,6 +84,15 @@ const DsaLog = () => {
     fetchLogs(1);
   }, [filters]);
 
+  // Voice assistant logged a problem
+  useEffect(() => {
+    const onDataChanged = (e) => {
+      if (e.detail?.scope === 'dsa') fetchLogs(currentPage, true);
+    };
+    window.addEventListener('data-changed', onDataChanged);
+    return () => window.removeEventListener('data-changed', onDataChanged);
+  }, [filters, currentPage]);
+
   // Debounce typing in the search box
   useEffect(() => {
     const timer = setTimeout(() => {

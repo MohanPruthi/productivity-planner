@@ -67,6 +67,15 @@ const Dashboard = () => {
     return () => window.removeEventListener('tasks-changed', onTasksChanged);
   }, [activeDateStr]);
 
+  // Voice assistant changed tasks
+  useEffect(() => {
+    const onDataChanged = (e) => {
+      if (e.detail?.scope === 'tasks') fetchData(activeDateStr);
+    };
+    window.addEventListener('data-changed', onDataChanged);
+    return () => window.removeEventListener('data-changed', onDataChanged);
+  }, [activeDateStr]);
+
   useEffect(() => {
     const handleMedLogUpdated = (e) => {
       const { date, log } = e.detail || {};

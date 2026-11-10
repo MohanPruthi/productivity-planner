@@ -296,6 +296,15 @@ const Notes = () => {
     fetchNotes();
   }, []);
 
+  // Voice assistant created or changed a note
+  useEffect(() => {
+    const onDataChanged = (e) => {
+      if (e.detail?.scope === 'notes') fetchNotes();
+    };
+    window.addEventListener('data-changed', onDataChanged);
+    return () => window.removeEventListener('data-changed', onDataChanged);
+  }, []);
+
   // Filter notes based on privacy mode and search query
   const visibleNotes = useMemo(() => {
     return notes.filter(note => {
