@@ -132,15 +132,66 @@
   color: var(--text-muted);
   cursor: pointer;
 }
-.notes-move:hover { color: var(--text-primary); background: var(--hairline); }
-.notes-move:focus-within { outline: 2px solid var(--tone); outline-offset: 1px; }
-.notes-move select {
-  position: absolute;
-  inset: 0;
+.notes-move {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.notes-move:hover, .notes-move.is-open { color: var(--text-primary); background: var(--hairline); }
+.notes-move:focus-visible { outline: 2px solid var(--tone); outline-offset: 1px; }
+
+.notes-menu {
+  position: fixed;
+  z-index: 1000;
+  max-height: min(320px, 60vh);
+  overflow-y: auto;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-strong);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  transform-origin: top right;
+  animation: notes-menu-in 120ms ease-out;
+}
+@keyframes notes-menu-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+.notes-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   width: 100%;
-  height: 100%;
-  opacity: 0;
+  padding: 0.45rem 0.55rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
   cursor: pointer;
+}
+.notes-menu-item:hover, .notes-menu-item:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+}
+.notes-menu-item > svg { color: var(--text-secondary); flex-shrink: 0; }
+.notes-menu-swatch {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.notes-menu-swatch span { border-radius: 2px; background: var(--hairline-strong); }
+.notes-menu-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notes-menu-count { font-size: 0.75rem; color: var(--text-muted); }
+.notes-menu-check { display: inline-flex; width: 14px; color: var(--tone); flex-shrink: 0; }
+.notes-menu-divider { height: 1px; margin: 4px 2px; background: var(--hairline); }
+@media (prefers-reduced-motion: reduce) {
+  .notes-menu { animation: none; }
 }
 .notes-card-icon-btn {
   display: inline-flex;
