@@ -959,7 +959,7 @@ const TaskHistory = () => {
                     }}
                   >
                     <Plus size={12} />
-                    <span style={{ fontWeight: 600 }}>Create Task</span>
+                    <span style={{ fontWeight: 600 }}>Add task</span>
                   </button>
                 )}
               </div>

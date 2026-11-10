@@ -493,7 +493,7 @@ const HrDirectory = () => {
             ) : currentItems.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                 <Illustration name="contacts-empty" />
-                <p style={{ margin: 0 }}>No contacts found on this page.</p>
+                <p style={{ margin: 0 }}>No contacts match this filter.</p>
               </div>
             ) : (
               currentItems.map(contact => {

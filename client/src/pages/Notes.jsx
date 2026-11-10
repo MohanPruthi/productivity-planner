@@ -671,7 +671,7 @@ const Notes = () => {
             className="btn btn-primary"
           >
             <Plus size={16} />
-            <span>Create Note</span>
+            <span>New note</span>
           </button>
         </div>
       </header>
@@ -693,7 +693,7 @@ const Notes = () => {
           <Illustration name="notes-empty" />
           <div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '0 0 0.35rem 0' }}>
-              {searchQuery ? 'No matching notes found' : 'No notes created yet'}
+              {searchQuery ? 'No notes match your search' : 'Start your first note'}
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, maxWidth: '380px' }}>
               {searchQuery 
@@ -717,7 +717,7 @@ const Notes = () => {
                 className="btn btn-primary"
               >
                 <Plus size={16} />
-                <span>Create Note</span>
+                <span>New note</span>
               </button>
             </div>
           )}
@@ -1077,7 +1077,7 @@ const Notes = () => {
                   className="btn-save-subtle"
                 >
                   <Check size={14} strokeWidth={2.5} />
-                  <span>{submitting ? 'Creating...' : 'Create Note'}</span>
+                  <span>{submitting ? 'Creating…' : 'Create note'}</span>
                 </button>
               </div>
 

@@ -404,7 +404,7 @@ const Dashboard = () => {
             {totalTasksCount === 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.75rem' }}>
                 <Illustration name="tasks-empty" />
-                <p style={{ fontSize: '0.95rem', fontWeight: 500 }}>No tasks logged for this date.</p>
+                <p style={{ fontSize: '0.95rem', fontWeight: 500 }}>Nothing planned for this day yet. Add a task below.</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -489,7 +489,7 @@ const Dashboard = () => {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.2rem' }}>
                         <span className="badge" style={{ fontSize: '0.62rem', padding: '0.1rem 0.4rem', background: 'rgba(99, 102, 241, 0.08)', color: 'var(--accent-primary)', borderColor: 'rgba(99, 102, 241, 0.15)' }}>
-                          General Task
+                          Task
                         </span>
                       </div>
                       
@@ -571,7 +571,7 @@ const Dashboard = () => {
               />
               <button type="submit" className="mirror-btn-pill tracker-submit" style={{ padding: '0.75rem 1.5rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Plus size={16} />
-                <span style={{ fontWeight: 600 }}>Add Task</span>
+                <span style={{ fontWeight: 600 }}>Add task</span>
               </button>
             </form>
           </div>
@@ -724,7 +724,7 @@ const Dashboard = () => {
               {dailyDsaLogs.length === 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.5rem', minHeight: '180px' }}>
                   <Illustration name="dsa-empty" size={110} />
-                  <p style={{ fontSize: '0.85rem' }}>No questions logged on this date.</p>
+                  <p style={{ fontSize: '0.85rem' }}>No questions logged this day.</p>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', overflowY: 'auto', maxHeight: '260px' }}>
@@ -783,7 +783,7 @@ const Dashboard = () => {
                 onClick={() => navigate('/dsa-log')}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', fontSize: '0.85rem', marginTop: 'auto' }}
               >
-                <span style={{ fontWeight: 600 }}>Log Questions Page</span>
+                <span style={{ fontWeight: 600 }}>Open DSA log</span>
               </button>
 
             </div>
