@@ -312,7 +312,7 @@ const Meds = () => {
         </button>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '1.5rem', alignItems: 'stretch' }}>
+      <div className="meds-layout">
         
         {/* Left Side: Check-in & Stats */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -321,7 +321,7 @@ const Meds = () => {
           <div className="glass-card glow-med" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <h2 style={{ fontSize: '1.15rem', fontWeight: 600, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.45rem', margin: 0 }}>
               <Calendar size={18} color="#ff2d55" />
-              <span>Today's Log</span>
+              <span>Today's log</span>
               {currentDayNum >= 1 && currentDayNum <= totalDuration ? (
                 <span className="badge" style={{ marginLeft: 'auto', background: 'rgba(255, 45, 85, 0.08)', color: '#ff2d55', borderColor: 'rgba(255, 45, 85, 0.15)' }}>
                   Day {currentDayNum} of {totalDuration}
@@ -374,7 +374,7 @@ const Meds = () => {
                   {todayLog.morning && <Check size={14} strokeWidth={3} />}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: todayLog.morning ? '#30d158' : 'var(--text-primary)' }}>Morning Pill</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: todayLog.morning ? '#30d158' : 'var(--text-primary)' }}>Morning pill</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>Take before 12:00 PM</div>
                 </div>
               </button>
@@ -414,7 +414,7 @@ const Meds = () => {
                   {todayLog.evening && <Check size={14} strokeWidth={3} />}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: todayLog.evening ? '#30d158' : 'var(--text-primary)' }}>Dinner Pill</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: todayLog.evening ? '#30d158' : 'var(--text-primary)' }}>Dinner pill</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>Take after 8:00 PM</div>
                 </div>
               </button>
@@ -425,12 +425,12 @@ const Meds = () => {
           {/* Stats Card */}
           <div className="glass-card glow-med" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             <h3 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0, color: 'var(--text-secondary)' }}>
-              Course Statistics
+              Course stats
             </h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.25rem' }}>
               <div style={{ padding: '0.85rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Perfect Days</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Perfect days</div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 600, marginTop: '0.2rem', color: '#30d158' }}>{completedDaysCount}</div>
               </div>
               <div style={{ padding: '0.85rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px' }}>
@@ -457,10 +457,10 @@ const Meds = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <h2 style={{ fontSize: '1.15rem', fontWeight: 600, fontFamily: 'var(--font-display)', margin: 0 }}>
-                Course Timeline ({totalDuration} Days)
+                Course timeline
               </h2>
               <span className="badge" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-secondary)', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-                Days {startIndex + 1}–{endIndex}
+                Days {startIndex + 1}–{endIndex} of {totalDuration}
               </span>
             </div>
 

@@ -377,8 +377,8 @@ const Dashboard = () => {
         {/* Tasks Checklist */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>
-              Tasks Checklist
+            <h2 className="section-heading">
+              Tasks
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <button 
@@ -654,7 +654,7 @@ const Dashboard = () => {
                     }}>
                       {morningCompleted && <Check size={8} strokeWidth={4} />}
                     </div>
-                    <span>Morning Pill</span>
+                    <span>Morning pill</span>
                   </button>
 
                   {/* Dinner Pill */}
@@ -692,7 +692,7 @@ const Dashboard = () => {
                     }}>
                       {eveningCompleted && <Check size={8} strokeWidth={4} />}
                     </div>
-                    <span>Dinner Pill</span>
+                    <span>Dinner pill</span>
                   </button>
                 </div>
               </div>
@@ -703,8 +703,8 @@ const Dashboard = () => {
         {showDsaColumn && (
           /* DSA Tracker Column */
           <div className="tone-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>
-              DSA Logs
+            <h2 className="section-heading">
+              DSA practice
             </h2>
 
             <div className="glass-card glow-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', height: '100%' }}>
@@ -715,7 +715,7 @@ const Dashboard = () => {
                   <Code2 size={20} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Logged Questions</h3>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Logged today</h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Questions solved on this day</p>
                 </div>
               </div>

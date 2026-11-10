@@ -3732,3 +3732,25 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
   --hairline-strong: rgba(15, 23, 42, 0.14);
 }
 .light-theme .ui-dialog { box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18); }
+
+/* ======================================================================
+   Redo 3 · Headings and page layout: one heading size for sections,
+   sentence case, and a Meds layout that stacks on narrow screens.
+   ====================================================================== */
+.section-heading {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.main-content .glass-card h2 { font-size: var(--fs-heading) !important; font-weight: 700 !important; }
+.meds-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .meds-layout { grid-template-columns: minmax(0, 1fr); }
+}
