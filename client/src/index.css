@@ -4178,3 +4178,244 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
   .btn-logout { width: 36px; height: 36px; padding: 0; }
   .btn-logout span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 }
+
+/* ======================================================================
+   Redo 14 · Dashboard rebuilt as plain tiles: no cards inside cards,
+   no badges on every row, no icon chips. Rows are lines with a round
+   check; one large DSA number is the only loud thing on the page.
+   ====================================================================== */
+.cc-dash { display: flex; flex-direction: column; gap: 1.75rem; padding-top: 2rem; }
+.cc-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  flex-wrap: wrap;
+}
+.cc-greet {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.cc-sub { margin: 0.4rem 0 0; font-size: 0.92rem; color: var(--text-secondary); }
+.cc-head-tools { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.cc-days {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+}
+.cc-days button {
+  height: 32px;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cc-days button:hover { color: var(--text-primary); }
+.cc-days button.active { background: var(--surface-2); color: var(--text-primary); }
+.cc-days .cc-day-step { width: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
+.cc-quick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 38px;
+  padding: 0 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cc-quick:hover { border-color: var(--hairline-strong); }
+.cc-quick kbd {
+  font: inherit;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding: 0.05rem 0.35rem;
+  border-radius: 5px;
+  border: 1px solid var(--hairline-strong);
+}
+.cc-days button:focus-visible, .cc-quick:focus-visible, .cc-check:focus-visible,
+.cc-link:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+.cc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  grid-template-areas: "tasks dsa" "tasks meds" "plans plans";
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
+  align-items: stretch;
+}
+.cc-grid.single { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tasks" "plans"; }
+.cc-tasks { grid-area: tasks; }
+.cc-dsa { grid-area: dsa; }
+.cc-meds { grid-area: meds; align-self: start; }
+.cc-plans { grid-area: plans; }
+
+.cc-tile {
+  min-width: 0;
+  padding: 1.15rem 1.35rem 1.25rem;
+  border-radius: 16px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+}
+.cc-tile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.cc-tile-head h2 {
+  margin: 0;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.cc-meta { font-size: 0.8rem; color: var(--text-muted); }
+.cc-link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--tone, var(--accent-primary));
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cc-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.cc-empty { margin: 0.75rem 0 0.5rem; font-size: 0.88rem; color: var(--text-secondary); }
+
+.cc-list { list-style: none; margin: 0; padding: 0; }
+.cc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 48px;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.cc-list .cc-row:last-child { border-bottom: none; }
+.cc-check {
+  --check: var(--tone, var(--accent-primary));
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--text-muted) 80%, transparent);
+  background: transparent;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.cc-check:hover { border-color: var(--check); }
+.cc-row.done .cc-check { background: var(--check); border-color: var(--check); animation: check-pop 0.32s var(--ease-spring); }
+.cc-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.cc-row-text span { font-size: 0.92rem; color: var(--text-primary); overflow-wrap: anywhere; }
+.cc-row-text small {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+.cc-row-text small i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.cc-row.done .cc-row-text span { color: var(--text-muted); text-decoration: line-through; }
+.cc-row-actions { display: flex; gap: 0.1rem; opacity: 0; transition: opacity 0.15s ease; }
+.cc-row:hover .cc-row-actions, .cc-row:focus-within .cc-row-actions { opacity: 1; }
+@media (hover: none) { .cc-row-actions { opacity: 1; } }
+.cc-row-edit { flex: 1; display: flex; gap: 0.5rem; }
+.cc-row-edit input, .cc-add input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 0.6rem;
+  border-radius: 9px;
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.cc-add {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--hairline);
+  color: var(--text-muted);
+}
+.cc-add input { border-color: transparent; background: transparent; padding: 0 0.25rem; }
+.cc-add input:focus { outline: none; border-color: var(--hairline-strong); background: var(--surface-2); }
+.cc-add input::placeholder { color: var(--text-muted); }
+
+.cc-figure { display: flex; align-items: baseline; gap: 0.6rem; margin: 0.4rem 0 0.6rem; }
+.cc-figure strong {
+  font-size: 3.4rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--tone);
+}
+.cc-figure span { font-size: 0.9rem; color: var(--text-secondary); }
+.cc-mini-list { list-style: none; margin: 0; padding: 0; }
+.cc-mini-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.85rem;
+}
+.cc-qnum { color: var(--text-muted); }
+.cc-qtitle { flex: 1; min-width: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-diff { font-size: 0.75rem; font-weight: 600; }
+.cc-diff.easy { color: #30d158; }
+.cc-diff.medium { color: #ffcc00; }
+.cc-diff.hard { color: #ff375f; }
+
+.cc-plan-list { list-style: none; margin: 0; padding: 0; }
+.cc-plan-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.8fr) 3rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--hairline);
+}
+.cc-plan-list li:first-child { border-top: none; }
+.cc-plan-name { display: flex; flex-direction: column; min-width: 0; }
+.cc-plan-name span { font-size: 0.9rem; color: var(--text-primary); }
+.cc-plan-name small { font-size: 0.76rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-plan-pct { font-size: 0.82rem; color: var(--text-secondary); text-align: right; }
+
+@media (max-width: 900px) {
+  .cc-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tasks" "dsa" "meds" "plans"; grid-template-rows: none; }
+  .cc-greet { font-size: 1.7rem; }
+}
+@media (max-width: 720px) {
+  .cc-dash { padding-top: 0.5rem; }
+  .cc-quick { display: none; }
+  .cc-days { width: 100%; justify-content: space-between; }
+}

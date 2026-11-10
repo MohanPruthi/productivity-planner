@@ -1,26 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard as DashboardIcon } from 'lucide-react';
-import Illustration from '../components/Illustration';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
 import { openQuickAdd } from '../components/QuickAdd';
-import { 
-  CheckCircle2, 
-  Circle, 
-  Target, 
-  Flame, 
-  Code2, 
-  Trash2, 
-  ChevronLeft, 
-  ChevronRight, 
-  Plus,
-  AlertCircle,
-  Edit2,
-  Pill,
-  Check
-} from 'lucide-react';
+import { Trash2, ChevronLeft, ChevronRight, Plus, Edit2, Check } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, getAuthHeaders, privacyMode, workspaceVisibility } = useAuth();
@@ -296,12 +280,6 @@ const Dashboard = () => {
   else if (activeDateStr === yesterdayStr) dayLabel = "Yesterday's";
   else if (activeDateStr === tomorrowStr) dayLabel = "Tomorrow's";
 
-  const formattedDate = new Date(activeDateStr).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 
   const filteredPlanDays = (todayData?.planDays || []).filter(day => {
     if (privacyMode) {
@@ -340,486 +318,231 @@ const Dashboard = () => {
   const tasksLeft = totalTasksCount - completedTasksCount;
   const tasksLeftText = tasksLeft === 0 ? 'all tasks done' : `${tasksLeft} ${tasksLeft === 1 ? 'task' : 'tasks'} left`;
 
+  const isToday = activeDateStr === todayStr;
+  const shortDate = new Date(activeDateStr).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+  const dayButtons = [
+    ['yesterday', 'Yesterday', yesterdayStr],
+    ['today', 'Today', todayStr],
+    ['tomorrow', 'Tomorrow', tomorrowStr],
+  ];
+
+  // Meds for the selected day
+  const medSchedule = todayData?.meds?.schedule;
+  const medLog = todayData?.meds?.todayLog;
+  let medDay = 0;
+  if (medSchedule) {
+    const start = new Date(medSchedule.startDate);
+    start.setHours(0, 0, 0, 0);
+    const active = new Date(activeDateStr);
+    active.setHours(0, 0, 0, 0);
+    medDay = Math.floor((active.getTime() - start.getTime()) / 86400000) + 1;
+  }
+  const showMedsTile = showMedsWidget && medDay >= 1 && medDay <= medSchedule.durationDays;
+  const meds = [
+    ['morning', 'Morning pill', 'Before 12:00', !!medLog?.morning],
+    ['evening', 'Dinner pill', 'After 20:00', !!medLog?.evening],
+  ];
+
+  // Plan progress: personal space only, since plans can be personal
+  const planWeeks = !privacyMode ? (weekData?.weeklyProgress || []).slice(0, 3) : [];
+
   return (
-    <div className="dashboard-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      
-      {/* Top Header Banner */}
-      <header className="page-header tone-default">
-        <div className="page-header-main">
-          <div className="page-header-icon">
-            <DashboardIcon size={20} />
-          </div>
-          <div>
-            <h1 className="page-header-title">{headline}</h1>
-            <p className="page-header-subtitle">{formattedDate}{totalTasksCount > 0 && ` · ${tasksLeftText}`}</p>
-          </div>
+    <div className="cc-dash">
+      <header className="cc-head">
+        <div>
+          <h1 className="cc-greet">{headline}</h1>
+          <p className="cc-sub">
+            {shortDate}
+            {totalTasksCount > 0 && ` · ${tasksLeftText}`}
+            {streak > 0 && ` · ${streak}-day streak`}
+          </p>
         </div>
-        
-        {/* Streak indicator */}
-        <div className="dashboard-header-tools" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem 1rem', flexWrap: 'wrap' }}>
-          <button type="button" className="ui-btn ui-btn-secondary dash-quick-add" onClick={openQuickAdd}>
+        <div className="cc-head-tools">
+          <div className="cc-days" role="group" aria-label="Choose day">
+            <button type="button" className="cc-day-step" onClick={() => navigateDays(-1)} aria-label="Previous day">
+              <ChevronLeft size={15} />
+            </button>
+            {dayButtons.map(([key, label, str]) => (
+              <button
+                key={key}
+                type="button"
+                className={activeDateStr === str ? 'active' : ''}
+                aria-pressed={activeDateStr === str}
+                onClick={() => setDayShortcut(key)}
+              >
+                {label}
+              </button>
+            ))}
+            <button type="button" className="cc-day-step" onClick={() => navigateDays(1)} aria-label="Next day">
+              <ChevronRight size={15} />
+            </button>
+          </div>
+          <button type="button" className="cc-quick" onClick={openQuickAdd}>
             <Plus size={15} />
             <span>Quick add</span>
             <kbd>Ctrl K</kbd>
           </button>
-          {/* Day switches */}
-          <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '4px', borderRadius: '9999px', border: '1px solid var(--border-light)' }}>
-            <button 
-              className={`mirror-btn-pill ${activeDateStr === yesterdayStr ? 'checked-ai' : ''}`}
-              onClick={() => setDayShortcut('yesterday')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === yesterdayStr ? 'var(--bg-tertiary)' : 'transparent', color: activeDateStr === yesterdayStr ? 'var(--text-primary)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
-            >
-              Yesterday
-            </button>
-            <button 
-              className={`mirror-btn-pill ${activeDateStr === todayStr ? 'checked-ai' : ''}`}
-              onClick={() => setDayShortcut('today')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === todayStr ? 'var(--bg-tertiary)' : 'transparent', color: activeDateStr === todayStr ? 'var(--text-primary)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
-            >
-              Today
-            </button>
-            <button 
-              className={`mirror-btn-pill ${activeDateStr === tomorrowStr ? 'checked-ai' : ''}`}
-              onClick={() => setDayShortcut('tomorrow')}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.75rem', borderRadius: '9999px', border: 'none', background: activeDateStr === tomorrowStr ? 'var(--bg-tertiary)' : 'transparent', color: activeDateStr === tomorrowStr ? 'var(--text-primary)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
-            >
-              Tomorrow
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 1.1rem', borderRadius: '12px', border: '1px solid var(--border-light)', background: 'rgba(255, 255, 255, 0.01)' }}>
-            <Flame color={streak > 0 ? 'var(--mod-dsa)' : 'var(--text-muted)'} size={22} className={streak > 0 ? 'flame-active' : ''} />
-            <div>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Streak</div>
-              <div style={{ fontSize: '1rem', fontWeight: 600 }}>{streak} {streak === 1 ? 'day' : 'days'}</div>
-            </div>
-          </div>
         </div>
       </header>
 
-      <div className="dashboard-main-grid" style={!(showDsaColumn || showMedsWidget) ? { gridTemplateColumns: '1fr' } : {}}>
-        
-        {/* Tasks Checklist */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 className="section-heading">
-              Tasks
-            </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button 
-                onClick={() => navigateDays(-1)} 
-                className="mirror-checkbox" 
-                style={{ width: '28px', height: '28px' }}
-                title="Previous Day"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <button 
-                onClick={() => navigateDays(1)} 
-                className="mirror-checkbox" 
-                style={{ width: '28px', height: '28px' }}
-                title="Next Day"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
+      <div className={`cc-grid ${showDsaColumn || showMedsTile ? '' : 'single'}`}>
+        <section className="cc-tile cc-tasks" aria-labelledby="cc-tasks-title">
+          <div className="cc-tile-head">
+            <h2 id="cc-tasks-title">Tasks</h2>
+            {totalTasksCount > 0 && <span className="cc-meta">{completedTasksCount} of {totalTasksCount} done</span>}
           </div>
 
-          <div className="glass-card glow-tracker" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: '350px' }}>
-            {totalTasksCount === 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.75rem' }}>
-                <Illustration name="tasks-empty" />
-                <p style={{ fontSize: '0.95rem', fontWeight: 500 }}>Nothing planned for this day yet. Add a task below.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {/* Planner tasks */}
-                {filteredPlanDays.map(day => (
-                  <div 
-                    key={day.id} 
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'flex-start', 
-                      gap: '1rem', 
-                      padding: '0.85rem 1.1rem', 
-                      borderRadius: '12px', 
-                      background: day.isDone ? 'rgba(255, 255, 255, 0.005)' : 'rgba(255, 255, 255, 0.015)', 
-                      border: '1px solid var(--border-light)',
-                      transition: 'all 0.2s'
-                    }}
-                    className="task-item-dashboard"
+          {totalTasksCount === 0 ? (
+            <p className="cc-empty">Nothing planned for {isToday ? 'today' : 'this day'} yet.</p>
+          ) : (
+            <ul className="cc-list">
+              {filteredPlanDays.map((day) => (
+                <li key={day.id} className={`cc-row ${day.isDone ? 'done' : ''}`}>
+                  <button
+                    type="button"
+                    className="cc-check"
+                    style={{ '--check': day.planWeek?.plan?.color || 'var(--mod-plans)' }}
+                    aria-pressed={day.isDone}
+                    aria-label={day.isDone ? 'Mark not done' : 'Mark done'}
+                    onClick={() => handleToggleTask(day.id, day.isDone)}
                   >
-                    <button 
-                      onClick={() => handleToggleTask(day.id, day.isDone)}
-                      className={`mirror-checkbox ${day.isDone ? 'checked-plan' : ''}`}
-                      style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)', marginTop: '0.15rem' }}
-                    >
-                      {day.isDone ? (
-                        <CheckCircle2 size={16} />
-                      ) : (
-                        <Circle size={16} style={{ opacity: 0.3 }} />
-                      )}
-                    </button>
-                    
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.2rem' }}>
-                        <span className="badge plan-badge" style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)' }}>
-                          {day.planWeek?.plan?.name || `${day.track} plan`}
-                        </span>
-                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Week {day.planWeek?.weekNumber}</span>
-                      </div>
-                      
-                      <p style={{ 
-                        fontSize: '0.925rem', 
-                        fontWeight: 500, 
-                        color: day.isDone ? 'var(--text-muted)' : 'var(--text-primary)',
-                        textDecoration: day.isDone ? 'line-through' : 'none',
-                        lineHeight: '1.4'
-                      }}>
-                        {day.topic || 'No topic details entered.'}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Normal Tasks */}
-                {filteredNormalTasks.map(task => (
-                  <div 
-                    key={task.id} 
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'flex-start', 
-                      gap: '1rem', 
-                      padding: '0.85rem 1.1rem', 
-                      borderRadius: '12px', 
-                      background: task.isDone ? 'rgba(255, 255, 255, 0.005)' : 'rgba(255, 255, 255, 0.015)', 
-                      border: '1px solid var(--border-light)',
-                      transition: 'all 0.2s'
-                    }}
-                    className="task-item-dashboard"
-                  >
-                    <button 
-                      onClick={() => handleToggleNormalTask(task.id, task.isDone)}
-                      className={`mirror-checkbox ${task.isDone ? 'checked-gen' : ''}`}
-                      style={{ marginTop: '0.15rem' }}
-                    >
-                      {task.isDone ? (
-                        <CheckCircle2 size={16} />
-                      ) : (
-                        <Circle size={16} style={{ opacity: 0.3 }} />
-                      )}
-                    </button>
-                    
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.2rem' }}>
-                        <span className="badge" style={{ fontSize: '0.62rem', padding: '0.1rem 0.4rem', background: 'rgba(99, 102, 241, 0.08)', color: 'var(--accent-primary)', borderColor: 'rgba(99, 102, 241, 0.15)' }}>
-                          Task
-                        </span>
-                      </div>
-                      
-                      {editingTaskId === task.id ? (
-                        <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.25rem', alignItems: 'center' }}>
-                          <input
-                            type="text"
-                            value={editingTaskText}
-                            onChange={(e) => setEditingTaskText(e.target.value)}
-                            className="input-control"
-                            style={{ flex: 1, padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveEditTask(task.id);
-                              if (e.key === 'Escape') setEditingTaskId(null);
-                            }}
-                            autoFocus
-                          />
-                          <button 
-                            onClick={() => handleSaveEditTask(task.id)}
-                            className="mirror-btn-pill"
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}
-                          >
-                            Save
-                          </button>
-                          <button 
-                            onClick={() => setEditingTaskId(null)}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.75rem', padding: '4px' }}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <p style={{ 
-                          fontSize: '0.925rem', 
-                          fontWeight: 500, 
-                          color: task.isDone ? 'var(--text-muted)' : 'var(--text-primary)',
-                          textDecoration: task.isDone ? 'line-through' : 'none',
-                          lineHeight: '1.4'
-                        }}>
-                          {task.text}
-                        </p>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'center', alignSelf: 'flex-start', marginTop: '0.1rem' }}>
-                      <button 
-                        onClick={() => handleDeleteNormalTask(task.id)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s ease', padding: '4px' }}
-                        className="btn-trash-hover"
-                        title="Delete Task"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                      {editingTaskId !== task.id && (
-                        <button 
-                          onClick={() => handleStartEditTask(task)}
-                          style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s ease', padding: '4px' }}
-                          className="btn-edit-hover"
-                          title="Edit Task"
-                        >
-                          <Edit2 size={12} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Custom Task Addition Form */}
-            <form onSubmit={handleAddNormalTask} style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto', borderTop: '1px solid var(--border-light)', paddingTop: '1.1rem' }}>
-              <input
-                type="text"
-                placeholder="Add a new custom task for this date..."
-                className="input-control"
-                style={{ flex: 1, padding: '0.75rem 1.1rem', fontSize: '0.9rem' }}
-                value={newTaskText}
-                onChange={(e) => setNewTaskText(e.target.value)}
-              />
-              <button type="submit" className="mirror-btn-pill tracker-submit" style={{ padding: '0.75rem 1.5rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Plus size={16} />
-                <span style={{ fontWeight: 600 }}>Add task</span>
-              </button>
-            </form>
-          </div>
-
-        </div>
-
-        {(showDsaColumn || showMedsWidget) && (
-          <div className="dash-side">
-            {showDsaColumn && (
-              /* DSA Tracker Column */
-              <div className="tone-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <h2 className="section-heading">
-                  DSA practice
-                </h2>
-
-                <div className="glass-card glow-dsa dash-dsa-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              
-                  {/* Header info */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                    <div style={{ background: 'rgba(249, 115, 22, 0.08)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mod-dsa)' }}>
-                      <Code2 size={20} />
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Logged today</h3>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{dailyDsaLogs.length === 0 ? "Nothing solved yet" : `${dailyDsaLogs.length} solved this day`}</p>
-                    </div>
-                  </div>
-
-                  {/* Questions list */}
-                  {dailyDsaLogs.length === 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.5rem', minHeight: '180px' }}>
-                      <Illustration name="dsa-empty" size={110} />
-                      <p style={{ fontSize: '0.85rem' }}>No questions logged this day.</p>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', overflowY: 'auto', maxHeight: '260px' }}>
-                      {dailyDsaLogs.map(log => (
-                        <div 
-                          key={log.id}
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '0.65rem 0.85rem',
-                            background: 'rgba(255,255,255,0.01)',
-                            border: '1px solid var(--border-light)',
-                            borderRadius: '8px'
-                          }}
-                        >
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                              #{log.questionNumber} - {log.title || 'Untitled'}
-                            </span>
-                          </div>
-
-                          <span 
-                            className="badge" 
-                            style={{ 
-                              fontSize: '0.62rem',
-                              padding: '0.1rem 0.4rem',
-                              background: log.difficulty === 'Easy' 
-                                ? 'rgba(48, 209, 88, 0.08)' 
-                                : log.difficulty === 'Medium' 
-                                ? 'rgba(255, 159, 10, 0.08)' 
-                                : 'rgba(255, 69, 58, 0.08)',
-                              color: log.difficulty === 'Easy' 
-                                ? '#30d158' 
-                                : log.difficulty === 'Medium' 
-                                ? '#ff9f0a' 
-                                : '#ff453a',
-                              borderColor: log.difficulty === 'Easy' 
-                                ? 'rgba(48, 209, 88, 0.15)' 
-                                : log.difficulty === 'Medium' 
-                                ? 'rgba(255, 159, 10, 0.15)' 
-                                : 'rgba(255, 69, 58, 0.15)',
-                              fontWeight: 600
-                            }}
-                          >
-                            {log.difficulty}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Link to DSA logs */}
-                  <button 
-                    className="mirror-btn-pill dsa-submit"
-                    onClick={() => navigate('/dsa-log')}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', fontSize: '0.85rem', marginTop: 'auto' }}
-                  >
-                    <span style={{ fontWeight: 600 }}>Open DSA log</span>
+                    {day.isDone && <Check size={12} strokeWidth={3} />}
                   </button>
+                  <div className="cc-row-text">
+                    <span>{day.topic || 'No topic set'}</span>
+                    <small>
+                      <i style={{ background: day.planWeek?.plan?.color || 'var(--mod-plans)' }} />
+                      {day.planWeek?.plan?.name || `${day.track} plan`} · week {day.planWeek?.weekNumber}
+                    </small>
+                  </div>
+                </li>
+              ))}
+              {filteredNormalTasks.map((task) => (
+                <li key={task.id} className={`cc-row ${task.isDone ? 'done' : ''}`}>
+                  <button
+                    type="button"
+                    className="cc-check"
+                    aria-pressed={task.isDone}
+                    aria-label={task.isDone ? 'Mark not done' : 'Mark done'}
+                    onClick={() => handleToggleNormalTask(task.id, task.isDone)}
+                  >
+                    {task.isDone && <Check size={12} strokeWidth={3} />}
+                  </button>
+                  {editingTaskId === task.id ? (
+                    <form
+                      className="cc-row-edit"
+                      onSubmit={(e) => { e.preventDefault(); handleSaveEditTask(task.id); }}
+                    >
+                      <input
+                        autoFocus
+                        aria-label="Edit task"
+                        value={editingTaskText}
+                        onChange={(e) => setEditingTaskText(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Escape' && setEditingTaskId(null)}
+                      />
+                      <button type="submit" className="ui-btn ui-btn-ghost">Save</button>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="cc-row-text"><span>{task.text}</span></div>
+                      <div className="cc-row-actions">
+                        <button type="button" className="ui-icon-btn" onClick={() => handleStartEditTask(task)} aria-label="Edit task">
+                          <Edit2 size={14} />
+                        </button>
+                        <button type="button" className="ui-icon-btn danger" onClick={() => handleDeleteNormalTask(task.id)} aria-label="Delete task">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
 
-                </div>
-              </div>
+          <form className="cc-add" onSubmit={handleAddNormalTask}>
+            <Plus size={16} aria-hidden="true" />
+            <input
+              placeholder="Add a task"
+              aria-label="New task"
+              value={newTaskText}
+              onChange={(e) => setNewTaskText(e.target.value)}
+            />
+            {newTaskText.trim() && <button type="submit" className="ui-btn ui-btn-ghost">Add</button>}
+          </form>
+        </section>
+
+        {showDsaColumn && (
+          <section className="cc-tile cc-dsa tone-dsa" aria-labelledby="cc-dsa-title">
+            <div className="cc-tile-head">
+              <h2 id="cc-dsa-title">DSA</h2>
+              <button type="button" className="cc-link" onClick={() => navigate('/dsa-log')}>Open log</button>
+            </div>
+            <div className="cc-figure">
+              <strong>{dailyDsaLogs.length}</strong>
+              <span>solved {isToday ? 'today' : 'this day'}</span>
+            </div>
+            {dailyDsaLogs.length > 0 && (
+              <ul className="cc-mini-list">
+                {dailyDsaLogs.map((log) => (
+                  <li key={log.id}>
+                    <span className="cc-qnum">#{log.questionNumber}</span>
+                    <span className="cc-qtitle">{log.title || 'Untitled'}</span>
+                    <span className={`cc-diff ${String(log.difficulty).toLowerCase()}`}>{log.difficulty}</span>
+                  </li>
+                ))}
+              </ul>
             )}
-            {/* Meds Checklist Widget */}
-            {showMedsWidget && (() => {
-              const medSchedule = todayData?.meds?.schedule;
-              const medLogToday = todayData?.meds?.todayLog;
-              if (!medSchedule) return null;
-            
-              const start = new Date(medSchedule.startDate);
-              start.setHours(0,0,0,0);
-              const activeDate = new Date(activeDateStr);
-              activeDate.setHours(0,0,0,0);
-              const diffTime = activeDate.getTime() - start.getTime();
-              const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-            
-              const isMedsActiveForDate = diffDays >= 1 && diffDays <= medSchedule.durationDays;
-            
-              if (!isMedsActiveForDate) return null;
-            
-              const morningCompleted = medLogToday ? medLogToday.morning : false;
-              const eveningCompleted = medLogToday ? medLogToday.evening : false;
-            
-              return (
-                <div 
-                  className="tone-meds glass-card glow-med" 
-                  style={{ 
-                    padding: '0.85rem 1.1rem', 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: '0.65rem'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                      <Pill size={15} color="var(--mod-meds)" />
-                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        {medSchedule.medName}
-                      </span>
-                    </div>
-                    <span className="badge" style={{ fontSize: '0.6rem', padding: '0.1rem 0.35rem', background: 'rgba(255, 255, 255, 0.04)', color: 'var(--text-secondary)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                      Day {diffDays} of {medSchedule.durationDays}
-                    </span>
-                  </div>
-                
-                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.15rem' }}>
-                    {/* Morning Pill */}
-                    <button
-                      onClick={() => handleToggleDashboardMed('morning', morningCompleted)}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        padding: '0.45rem',
-                        borderRadius: '8px',
-                        border: '1px solid',
-                        borderColor: morningCompleted ? 'rgba(48, 209, 88, 0.25)' : 'var(--med-btn-uncompleted-border, rgba(255, 255, 255, 0.03))',
-                        background: morningCompleted ? 'rgba(48, 209, 88, 0.04)' : 'var(--med-btn-uncompleted-bg, rgba(255, 255, 255, 0.005))',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        color: morningCompleted ? '#30d158' : 'var(--text-secondary)'
-                      }}
-                    >
-                      <div style={{
-                        width: '14px',
-                        height: '14px',
-                        borderRadius: '50%',
-                        border: '1.5px solid',
-                        borderColor: morningCompleted ? '#30d158' : 'var(--med-circle-uncompleted-border, rgba(255, 255, 255, 0.2))',
-                        background: morningCompleted ? '#30d158' : 'transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#ffffff'
-                      }}>
-                        {morningCompleted && <Check size={8} strokeWidth={4} />}
-                      </div>
-                      <span>Morning pill</span>
-                    </button>
-
-                    {/* Dinner Pill */}
-                    <button
-                      onClick={() => handleToggleDashboardMed('evening', eveningCompleted)}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        padding: '0.45rem',
-                        borderRadius: '8px',
-                        border: '1px solid',
-                        borderColor: eveningCompleted ? 'rgba(48, 209, 88, 0.25)' : 'var(--med-btn-uncompleted-border, rgba(255, 255, 255, 0.03))',
-                        background: eveningCompleted ? 'rgba(48, 209, 88, 0.04)' : 'var(--med-btn-uncompleted-bg, rgba(255, 255, 255, 0.005))',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        color: eveningCompleted ? '#30d158' : 'var(--text-secondary)'
-                      }}
-                    >
-                      <div style={{
-                        width: '14px',
-                        height: '14px',
-                        borderRadius: '50%',
-                        border: '1.5px solid',
-                        borderColor: eveningCompleted ? '#30d158' : 'var(--med-circle-uncompleted-border, rgba(255, 255, 255, 0.2))',
-                        background: eveningCompleted ? '#30d158' : 'transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#ffffff'
-                      }}>
-                        {eveningCompleted && <Check size={8} strokeWidth={4} />}
-                      </div>
-                      <span>Dinner pill</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
+          </section>
         )}
 
-      </div>
+        {showMedsTile && (
+          <section className="cc-tile cc-meds tone-meds" aria-labelledby="cc-meds-title">
+            <div className="cc-tile-head">
+              <h2 id="cc-meds-title">{medSchedule.medName}</h2>
+              <span className="cc-meta">Day {medDay} of {medSchedule.durationDays}</span>
+            </div>
+            <ul className="cc-list">
+              {meds.map(([type, label, hint, done]) => (
+                <li key={type} className={`cc-row ${done ? 'done' : ''}`}>
+                  <button
+                    type="button"
+                    className="cc-check"
+                    style={{ '--check': 'var(--mod-meds)' }}
+                    aria-pressed={done}
+                    aria-label={done ? `${label}: taken` : `${label}: mark taken`}
+                    onClick={() => handleToggleDashboardMed(type, done)}
+                  >
+                    {done && <Check size={12} strokeWidth={3} />}
+                  </button>
+                  <div className="cc-row-text"><span>{label}</span><small>{hint}</small></div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
+        {planWeeks.length > 0 && (
+          <section className="cc-tile cc-plans tone-plans" aria-labelledby="cc-plans-title">
+            <div className="cc-tile-head">
+              <h2 id="cc-plans-title">This week's plans</h2>
+              <button type="button" className="cc-link" onClick={() => navigate('/plans')}>Open plans</button>
+            </div>
+            <ul className="cc-plan-list">
+              {planWeeks.map((w) => (
+                <li key={w.id}>
+                  <div className="cc-plan-name">
+                    <span>{w.planName || 'Plan'}</span>
+                    <small>Week {w.weekNumber}{w.goalText ? ` · ${w.goalText}` : ''}</small>
+                  </div>
+                  <div className="ui-progress"><div style={{ width: `${w.completionPercentage}%` }} /></div>
+                  <span className="cc-plan-pct">{w.completionPercentage}%</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
     </div>
   );
 };
