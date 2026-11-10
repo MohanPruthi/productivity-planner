@@ -5,6 +5,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
+import { openQuickAdd } from '../components/QuickAdd';
 import { 
   CheckCircle2, 
   Circle, 
@@ -22,7 +23,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { getAuthHeaders, privacyMode, workspaceVisibility } = useAuth();
+  const { user, getAuthHeaders, privacyMode, workspaceVisibility } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const dateParam = searchParams.get('date');
@@ -329,6 +330,16 @@ const Dashboard = () => {
   const showMedsWidget = todayData?.meds?.schedule && !(privacyMode && workspaceVisibility?.meds?.showInOffice === false && workspaceVisibility?.meds?.showOnDashboard === false);
   const showDsaColumn = !(privacyMode && workspaceVisibility?.dsaLog?.showInOffice === false && workspaceVisibility?.dsaLog?.showOnDashboard === false);
 
+  // Greeting on today, plain day name otherwise
+  const hour = new Date().getHours();
+  const firstName = (user?.name || '').trim().split(/\s+/)[0];
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const headline = activeDateStr === todayStr
+    ? (firstName ? `${greeting}, ${firstName}` : greeting)
+    : (dayLabel === 'Daily' ? 'Overview' : dayLabel.replace("'s", ''));
+  const tasksLeft = totalTasksCount - completedTasksCount;
+  const tasksLeftText = tasksLeft === 0 ? 'all tasks done' : `${tasksLeft} ${tasksLeft === 1 ? 'task' : 'tasks'} left`;
+
   return (
     <div className="dashboard-page" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
@@ -339,13 +350,18 @@ const Dashboard = () => {
             <DashboardIcon size={20} />
           </div>
           <div>
-            <h1 className="page-header-title">{dayLabel === 'Daily' ? 'Overview' : dayLabel.replace("'s", '')}</h1>
-            <p className="page-header-subtitle">{formattedDate}</p>
+            <h1 className="page-header-title">{headline}</h1>
+            <p className="page-header-subtitle">{formattedDate}{totalTasksCount > 0 && ` · ${tasksLeftText}`}</p>
           </div>
         </div>
         
         {/* Streak indicator */}
-        <div className="dashboard-header-tools" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem 1.5rem', flexWrap: 'wrap' }}>
+        <div className="dashboard-header-tools" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem 1rem', flexWrap: 'wrap' }}>
+          <button type="button" className="ui-btn ui-btn-secondary dash-quick-add" onClick={openQuickAdd}>
+            <Plus size={15} />
+            <span>Quick add</span>
+            <kbd>Ctrl K</kbd>
+          </button>
           {/* Day switches */}
           <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '4px', borderRadius: '9999px', border: '1px solid var(--border-light)' }}>
             <button 
@@ -381,7 +397,7 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <div className="dashboard-main-grid" style={!showDsaColumn ? { gridTemplateColumns: '1fr' } : {}}>
+      <div className="dashboard-main-grid" style={!(showDsaColumn || showMedsWidget) ? { gridTemplateColumns: '1fr' } : {}}>
         
         {/* Tasks Checklist */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -436,8 +452,7 @@ const Dashboard = () => {
                     <button 
                       onClick={() => handleToggleTask(day.id, day.isDone)}
                       className={`mirror-checkbox ${day.isDone ? 'checked-plan' : ''}`}
-                      style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)' }}
-                      style={{ marginTop: '0.15rem' }}
+                      style={{ '--tone': day.planWeek?.plan?.color || 'var(--mod-plans)', marginTop: '0.15rem' }}
                     >
                       {day.isDone ? (
                         <CheckCircle2 size={16} />
@@ -585,217 +600,221 @@ const Dashboard = () => {
             </form>
           </div>
 
-          {/* Meds Checklist Widget */}
-          {showMedsWidget && (() => {
-            const medSchedule = todayData?.meds?.schedule;
-            const medLogToday = todayData?.meds?.todayLog;
-            if (!medSchedule) return null;
-            
-            const start = new Date(medSchedule.startDate);
-            start.setHours(0,0,0,0);
-            const activeDate = new Date(activeDateStr);
-            activeDate.setHours(0,0,0,0);
-            const diffTime = activeDate.getTime() - start.getTime();
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-            
-            const isMedsActiveForDate = diffDays >= 1 && diffDays <= medSchedule.durationDays;
-            
-            if (!isMedsActiveForDate) return null;
-            
-            const morningCompleted = medLogToday ? medLogToday.morning : false;
-            const eveningCompleted = medLogToday ? medLogToday.evening : false;
-            
-            return (
-              <div 
-                className="tone-meds glass-card glow-med" 
-                style={{ 
-                  padding: '0.85rem 1.1rem', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '0.65rem'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                    <Pill size={15} color="var(--mod-meds)" />
-                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                      {medSchedule.medName}
-                    </span>
-                  </div>
-                  <span className="badge" style={{ fontSize: '0.6rem', padding: '0.1rem 0.35rem', background: 'rgba(255, 255, 255, 0.04)', color: 'var(--text-secondary)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                    Day {diffDays} of {medSchedule.durationDays}
-                  </span>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.15rem' }}>
-                  {/* Morning Pill */}
-                  <button
-                    onClick={() => handleToggleDashboardMed('morning', morningCompleted)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      padding: '0.45rem',
-                      borderRadius: '8px',
-                      border: '1px solid',
-                      borderColor: morningCompleted ? 'rgba(48, 209, 88, 0.25)' : 'var(--med-btn-uncompleted-border, rgba(255, 255, 255, 0.03))',
-                      background: morningCompleted ? 'rgba(48, 209, 88, 0.04)' : 'var(--med-btn-uncompleted-bg, rgba(255, 255, 255, 0.005))',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: morningCompleted ? '#30d158' : 'var(--text-secondary)'
-                    }}
-                  >
-                    <div style={{
-                      width: '14px',
-                      height: '14px',
-                      borderRadius: '50%',
-                      border: '1.5px solid',
-                      borderColor: morningCompleted ? '#30d158' : 'var(--med-circle-uncompleted-border, rgba(255, 255, 255, 0.2))',
-                      background: morningCompleted ? '#30d158' : 'transparent',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#ffffff'
-                    }}>
-                      {morningCompleted && <Check size={8} strokeWidth={4} />}
-                    </div>
-                    <span>Morning pill</span>
-                  </button>
-
-                  {/* Dinner Pill */}
-                  <button
-                    onClick={() => handleToggleDashboardMed('evening', eveningCompleted)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      padding: '0.45rem',
-                      borderRadius: '8px',
-                      border: '1px solid',
-                      borderColor: eveningCompleted ? 'rgba(48, 209, 88, 0.25)' : 'var(--med-btn-uncompleted-border, rgba(255, 255, 255, 0.03))',
-                      background: eveningCompleted ? 'rgba(48, 209, 88, 0.04)' : 'var(--med-btn-uncompleted-bg, rgba(255, 255, 255, 0.005))',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: eveningCompleted ? '#30d158' : 'var(--text-secondary)'
-                    }}
-                  >
-                    <div style={{
-                      width: '14px',
-                      height: '14px',
-                      borderRadius: '50%',
-                      border: '1.5px solid',
-                      borderColor: eveningCompleted ? '#30d158' : 'var(--med-circle-uncompleted-border, rgba(255, 255, 255, 0.2))',
-                      background: eveningCompleted ? '#30d158' : 'transparent',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#ffffff'
-                    }}>
-                      {eveningCompleted && <Check size={8} strokeWidth={4} />}
-                    </div>
-                    <span>Dinner pill</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })()}
         </div>
 
-        {showDsaColumn && (
-          /* DSA Tracker Column */
-          <div className="tone-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 className="section-heading">
-              DSA practice
-            </h2>
+        {(showDsaColumn || showMedsWidget) && (
+          <div className="dash-side">
+            {showDsaColumn && (
+              /* DSA Tracker Column */
+              <div className="tone-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <h2 className="section-heading">
+                  DSA practice
+                </h2>
 
-            <div className="glass-card glow-dsa" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', height: '100%' }}>
+                <div className="glass-card glow-dsa dash-dsa-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               
-              {/* Header info */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                <div style={{ background: 'rgba(249, 115, 22, 0.08)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mod-dsa)' }}>
-                  <Code2 size={20} />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Logged today</h3>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Questions solved on this day</p>
+                  {/* Header info */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                    <div style={{ background: 'rgba(249, 115, 22, 0.08)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mod-dsa)' }}>
+                      <Code2 size={20} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Logged today</h3>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{dailyDsaLogs.length === 0 ? "Nothing solved yet" : `${dailyDsaLogs.length} solved this day`}</p>
+                    </div>
+                  </div>
+
+                  {/* Questions list */}
+                  {dailyDsaLogs.length === 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.5rem', minHeight: '180px' }}>
+                      <Illustration name="dsa-empty" size={110} />
+                      <p style={{ fontSize: '0.85rem' }}>No questions logged this day.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', overflowY: 'auto', maxHeight: '260px' }}>
+                      {dailyDsaLogs.map(log => (
+                        <div 
+                          key={log.id}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '0.65rem 0.85rem',
+                            background: 'rgba(255,255,255,0.01)',
+                            border: '1px solid var(--border-light)',
+                            borderRadius: '8px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                              #{log.questionNumber} - {log.title || 'Untitled'}
+                            </span>
+                          </div>
+
+                          <span 
+                            className="badge" 
+                            style={{ 
+                              fontSize: '0.62rem',
+                              padding: '0.1rem 0.4rem',
+                              background: log.difficulty === 'Easy' 
+                                ? 'rgba(48, 209, 88, 0.08)' 
+                                : log.difficulty === 'Medium' 
+                                ? 'rgba(255, 159, 10, 0.08)' 
+                                : 'rgba(255, 69, 58, 0.08)',
+                              color: log.difficulty === 'Easy' 
+                                ? '#30d158' 
+                                : log.difficulty === 'Medium' 
+                                ? '#ff9f0a' 
+                                : '#ff453a',
+                              borderColor: log.difficulty === 'Easy' 
+                                ? 'rgba(48, 209, 88, 0.15)' 
+                                : log.difficulty === 'Medium' 
+                                ? 'rgba(255, 159, 10, 0.15)' 
+                                : 'rgba(255, 69, 58, 0.15)',
+                              fontWeight: 600
+                            }}
+                          >
+                            {log.difficulty}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Link to DSA logs */}
+                  <button 
+                    className="mirror-btn-pill dsa-submit"
+                    onClick={() => navigate('/dsa-log')}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', fontSize: '0.85rem', marginTop: 'auto' }}
+                  >
+                    <span style={{ fontWeight: 600 }}>Open DSA log</span>
+                  </button>
+
                 </div>
               </div>
-
-              {/* Questions list */}
-              {dailyDsaLogs.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-muted)', gap: '0.5rem', minHeight: '180px' }}>
-                  <Illustration name="dsa-empty" size={110} />
-                  <p style={{ fontSize: '0.85rem' }}>No questions logged this day.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', overflowY: 'auto', maxHeight: '260px' }}>
-                  {dailyDsaLogs.map(log => (
-                    <div 
-                      key={log.id}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '0.65rem 0.85rem',
-                        background: 'rgba(255,255,255,0.01)',
-                        border: '1px solid var(--border-light)',
-                        borderRadius: '8px'
-                      }}
-                    >
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                          #{log.questionNumber} - {log.title || 'Untitled'}
-                        </span>
-                      </div>
-
-                      <span 
-                        className="badge" 
-                        style={{ 
-                          fontSize: '0.62rem',
-                          padding: '0.1rem 0.4rem',
-                          background: log.difficulty === 'Easy' 
-                            ? 'rgba(48, 209, 88, 0.08)' 
-                            : log.difficulty === 'Medium' 
-                            ? 'rgba(255, 159, 10, 0.08)' 
-                            : 'rgba(255, 69, 58, 0.08)',
-                          color: log.difficulty === 'Easy' 
-                            ? '#30d158' 
-                            : log.difficulty === 'Medium' 
-                            ? '#ff9f0a' 
-                            : '#ff453a',
-                          borderColor: log.difficulty === 'Easy' 
-                            ? 'rgba(48, 209, 88, 0.15)' 
-                            : log.difficulty === 'Medium' 
-                            ? 'rgba(255, 159, 10, 0.15)' 
-                            : 'rgba(255, 69, 58, 0.15)',
-                          fontWeight: 600
-                        }}
-                      >
-                        {log.difficulty}
+            )}
+            {/* Meds Checklist Widget */}
+            {showMedsWidget && (() => {
+              const medSchedule = todayData?.meds?.schedule;
+              const medLogToday = todayData?.meds?.todayLog;
+              if (!medSchedule) return null;
+            
+              const start = new Date(medSchedule.startDate);
+              start.setHours(0,0,0,0);
+              const activeDate = new Date(activeDateStr);
+              activeDate.setHours(0,0,0,0);
+              const diffTime = activeDate.getTime() - start.getTime();
+              const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            
+              const isMedsActiveForDate = diffDays >= 1 && diffDays <= medSchedule.durationDays;
+            
+              if (!isMedsActiveForDate) return null;
+            
+              const morningCompleted = medLogToday ? medLogToday.morning : false;
+              const eveningCompleted = medLogToday ? medLogToday.evening : false;
+            
+              return (
+                <div 
+                  className="tone-meds glass-card glow-med" 
+                  style={{ 
+                    padding: '0.85rem 1.1rem', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '0.65rem'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      <Pill size={15} color="var(--mod-meds)" />
+                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        {medSchedule.medName}
                       </span>
                     </div>
-                  ))}
+                    <span className="badge" style={{ fontSize: '0.6rem', padding: '0.1rem 0.35rem', background: 'rgba(255, 255, 255, 0.04)', color: 'var(--text-secondary)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                      Day {diffDays} of {medSchedule.durationDays}
+                    </span>
+                  </div>
+                
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.15rem' }}>
+                    {/* Morning Pill */}
+                    <button
+                      onClick={() => handleToggleDashboardMed('morning', morningCompleted)}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '0.45rem',
+                        borderRadius: '8px',
+                        border: '1px solid',
+                        borderColor: morningCompleted ? 'rgba(48, 209, 88, 0.25)' : 'var(--med-btn-uncompleted-border, rgba(255, 255, 255, 0.03))',
+                        background: morningCompleted ? 'rgba(48, 209, 88, 0.04)' : 'var(--med-btn-uncompleted-bg, rgba(255, 255, 255, 0.005))',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: morningCompleted ? '#30d158' : 'var(--text-secondary)'
+                      }}
+                    >
+                      <div style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        border: '1.5px solid',
+                        borderColor: morningCompleted ? '#30d158' : 'var(--med-circle-uncompleted-border, rgba(255, 255, 255, 0.2))',
+                        background: morningCompleted ? '#30d158' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#ffffff'
+                      }}>
+                        {morningCompleted && <Check size={8} strokeWidth={4} />}
+                      </div>
+                      <span>Morning pill</span>
+                    </button>
+
+                    {/* Dinner Pill */}
+                    <button
+                      onClick={() => handleToggleDashboardMed('evening', eveningCompleted)}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '0.45rem',
+                        borderRadius: '8px',
+                        border: '1px solid',
+                        borderColor: eveningCompleted ? 'rgba(48, 209, 88, 0.25)' : 'var(--med-btn-uncompleted-border, rgba(255, 255, 255, 0.03))',
+                        background: eveningCompleted ? 'rgba(48, 209, 88, 0.04)' : 'var(--med-btn-uncompleted-bg, rgba(255, 255, 255, 0.005))',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: eveningCompleted ? '#30d158' : 'var(--text-secondary)'
+                      }}
+                    >
+                      <div style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        border: '1.5px solid',
+                        borderColor: eveningCompleted ? '#30d158' : 'var(--med-circle-uncompleted-border, rgba(255, 255, 255, 0.2))',
+                        background: eveningCompleted ? '#30d158' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#ffffff'
+                      }}>
+                        {eveningCompleted && <Check size={8} strokeWidth={4} />}
+                      </div>
+                      <span>Dinner pill</span>
+                    </button>
+                  </div>
                 </div>
-              )}
-
-              {/* Link to DSA logs */}
-              <button 
-                className="mirror-btn-pill dsa-submit"
-                onClick={() => navigate('/dsa-log')}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', fontSize: '0.85rem', marginTop: 'auto' }}
-              >
-                <span style={{ fontWeight: 600 }}>Open DSA log</span>
-              </button>
-
-            </div>
+              );
+            })()}
           </div>
         )}
 

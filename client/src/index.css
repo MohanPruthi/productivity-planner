@@ -4057,3 +4057,33 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
   .rail-quick-add { margin: 0 0 0 auto; width: 36px; height: 36px; padding: 0; }
   .rail-quick-add span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 }
+
+/* ======================================================================
+   Redo 11 · Command center Dashboard: greeting with tasks left, a quick
+   add button, tasks on the left and DSA + Meds tiles stacked on the right.
+   ====================================================================== */
+.dashboard-page { gap: 1.5rem !important; }
+.dashboard-page .page-header-title { font-size: 1.75rem; }
+.dashboard-main-grid {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.dash-side { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.dash-side > .tone-dsa { gap: 0.9rem !important; }
+.dash-dsa-card { min-height: 0; }
+.dash-quick-add { gap: 0.5rem; }
+.dash-quick-add kbd {
+  font: inherit;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding: 0.05rem 0.35rem;
+  border-radius: 5px;
+  border: 1px solid var(--hairline-strong);
+}
+@media (max-width: 900px) {
+  .dashboard-main-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .dash-quick-add { display: none; }
+}
