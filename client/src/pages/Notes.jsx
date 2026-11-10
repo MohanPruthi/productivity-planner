@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import '../styles/notes.css';
 import Illustration from '../components/Illustration';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
@@ -86,6 +87,138 @@ const GroupNameField = ({ name, autoFocus, onCommit }) => {
         if (e.key === 'Escape') { setDraft(name); e.currentTarget.blur(); }
       }}
     />
+  );
+};
+
+// Custom "Move to group" menu (portal popover, keyboard accessible)
+const MENU_WIDTH = 220;
+const MoveToGroupMenu = ({ note, groups, onMove, onNew }) => {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState(null);
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+  const current = groups.find(g => g.id === note.groupId) || null;
+
+  const close = useCallback((refocus) => {
+    setOpen(false);
+    if (refocus && btnRef.current) btnRef.current.focus();
+  }, []);
+
+  const place = useCallback(() => {
+    if (!btnRef.current) return;
+    const r = btnRef.current.getBoundingClientRect();
+    const h = menuRef.current ? menuRef.current.offsetHeight : 0;
+    const left = Math.max(8, Math.min(r.right - MENU_WIDTH, window.innerWidth - MENU_WIDTH - 8));
+    const flip = h > 0 && r.bottom + 6 + h > window.innerHeight - 8 && r.top - 6 - h > 8;
+    setPos({ left, top: flip ? r.top - 6 - h : r.bottom + 6 });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    place();
+    const items = menuRef.current ? menuRef.current.querySelectorAll('[role^="menuitem"]') : [];
+    if (items[0]) items[0].focus();
+    const onDown = (e) => {
+      if (menuRef.current && menuRef.current.contains(e.target)) return;
+      if (btnRef.current && btnRef.current.contains(e.target)) return;
+      setOpen(false);
+    };
+    const onScrollResize = () => place();
+    document.addEventListener('mousedown', onDown);
+    window.addEventListener('resize', onScrollResize);
+    window.addEventListener('scroll', onScrollResize, true);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      window.removeEventListener('resize', onScrollResize);
+      window.removeEventListener('scroll', onScrollResize, true);
+    };
+  }, [open, place]);
+
+  const onMenuKeyDown = (e) => {
+    const items = Array.from(menuRef.current.querySelectorAll('[role^="menuitem"]'));
+    const i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
+    else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); }
+    else if (e.key === 'Tab') { close(false); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.activeElement.click(); }
+  };
+
+  const choose = (fn) => { close(true); fn(); };
+  const stop = (e) => e.stopPropagation();
+
+  const menu = open ? (
+    <div
+      ref={menuRef}
+      className="notes-menu"
+      role="menu"
+      aria-label="Move to group"
+      style={{ left: pos ? pos.left : -9999, top: pos ? pos.top : -9999, width: MENU_WIDTH }}
+      onKeyDown={onMenuKeyDown}
+      onClick={stop}
+      onMouseDown={stop}
+    >
+      {groups.map(g => {
+        const members = g.memberNotes || [];
+        const checked = g.id === note.groupId;
+        return (
+          <button
+            key={g.id}
+            type="button"
+            role="menuitemradio"
+            aria-checked={checked}
+            className="notes-menu-item"
+            onClick={() => (checked ? close(true) : choose(() => onMove(g.id)))}
+          >
+            <span className="notes-menu-swatch" aria-hidden="true">
+              {[0, 1, 2, 3].map(i => (
+                <span key={i} style={members[i] ? { background: members[i].colorTag || '#eab308' } : undefined} />
+              ))}
+            </span>
+            <span className="notes-menu-name" title={g.name}>{g.name}</span>
+            <span className="notes-menu-count">{members.length}</span>
+            <span className="notes-menu-check" aria-hidden="true">{checked && <Check size={14} />}</span>
+          </button>
+        );
+      })}
+      {groups.length > 0 && <div className="notes-menu-divider" role="separator" />}
+      {note.groupId && (
+        <button type="button" role="menuitem" className="notes-menu-item" onClick={() => choose(() => onMove(null))}>
+          <FolderMinus size={14} aria-hidden="true" />
+          <span className="notes-menu-name">No group</span>
+        </button>
+      )}
+      <button type="button" role="menuitem" className="notes-menu-item" onClick={() => choose(onNew)}>
+        <Plus size={14} aria-hidden="true" />
+        <span className="notes-menu-name">New group</span>
+      </button>
+    </div>
+  ) : null;
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        type="button"
+        className={`notes-move${open ? ' is-open' : ''}`}
+        title={current ? `In group: ${current.name}` : 'Move to group'}
+        aria-label="Move to group"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        draggable={false}
+        onMouseDown={stop}
+        onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === 'ArrowDown' && !open) { e.preventDefault(); setOpen(true); }
+        }}
+      >
+        <FolderInput size={14} />
+      </button>
+      {menu && createPortal(menu, document.body)}
+    </>
   );
 };
 
@@ -192,7 +325,9 @@ const Notes = () => {
 
   // Groups offered in the "Move to group" menu (ignores search, respects office mode)
   const movableGroups = useMemo(() => {
-    return groups.filter(g => notes.some(n => n.groupId === g.id && !(privacyMode && n.isPersonal)));
+    return groups
+      .map(g => ({ ...g, memberNotes: notes.filter(n => n.groupId === g.id && !(privacyMode && n.isPersonal)) }))
+      .filter(g => g.memberNotes.length > 0);
   }, [groups, notes, privacyMode]);
 
   // Separate pinned and unpinned notes (grouped notes live inside their group)
@@ -471,14 +606,6 @@ const Notes = () => {
       console.error(err);
       showToast('Could not delete group');
     }
-  };
-
-  const handleMoveSelect = (e, note) => {
-    e.stopPropagation();
-    const v = e.target.value;
-    if (v === '__new') createGroupWith([note.id]);
-    else if (v === '__none') moveNote(note.id, null);
-    else if (v) moveNote(note.id, v);
   };
 
   // ---- Drag and drop ----
@@ -764,21 +891,12 @@ const Notes = () => {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             {/* Move to group (keyboard / touch friendly) */}
-            <label className="notes-move" title="Move to group" onClick={(e) => e.stopPropagation()}>
-              <FolderInput size={14} />
-              <select
-                aria-label={`Move "${note.title}" to group`}
-                value=""
-                onChange={(e) => handleMoveSelect(e, note)}
-              >
-                <option value="">Move to group</option>
-                {note.groupId && <option value="__none">No group</option>}
-                {movableGroups.filter(g => g.id !== note.groupId).map(g => (
-                  <option key={g.id} value={g.id}>{g.name}</option>
-                ))}
-                <option value="__new">New group</option>
-              </select>
-            </label>
+            <MoveToGroupMenu
+              note={note}
+              groups={movableGroups}
+              onMove={(gid) => moveNote(note.id, gid)}
+              onNew={() => createGroupWith([note.id])}
+            />
 
             {inGroup && (
               <button
