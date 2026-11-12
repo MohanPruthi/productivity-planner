@@ -1,10 +1,17 @@
 // API key pools with in-memory rotation and cooldowns. Missing env vars just give an empty pool.
 
+// Keys come from either a comma-separated list (GEMINI_API_KEYS=a,b) or numbered
+// variables (GEMINI_API_KEY_1, GEMINI_API_KEY_2, ...), tried in that order: list
+// first, then _1, _2, _3... Duplicates are dropped.
 function parseKeys(envName) {
-  return String(process.env[envName] || '')
-    .split(',')
-    .map((k) => k.trim())
-    .filter(Boolean);
+  const list = String(process.env[envName] || '').split(',');
+  const base = envName.replace(/_KEYS$/, '_KEY');
+  const numbered = Object.keys(process.env)
+    .map((k) => k.match(new RegExp(`^${base}_([0-9]+)$`)))
+    .filter(Boolean)
+    .sort((a, b) => Number(a[1]) - Number(b[1]))
+    .map((m) => process.env[m[0]]);
+  return [...new Set([...list, ...numbered].map((k) => String(k || '').trim()).filter(Boolean))];
 }
 
 function nextUtcMidnight() {
