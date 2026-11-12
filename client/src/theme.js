@@ -40,7 +40,6 @@ export const THEMES = [
 ];
 
 const THEME_KEY = 'ui_theme';
-const SPLIT_KEY = 'zen_split';
 
 const read = (key, fallback) => {
   try {
@@ -62,7 +61,6 @@ export const getThemeId = () => {
   return THEMES.some((t) => t.id === id) ? id : 'classic';
 };
 export const getTheme = () => THEMES.find((t) => t.id === getThemeId()) || THEMES[0];
-export const getZenSplit = () => (read(SPLIT_KEY, '30') === '20' ? '20' : '30');
 
 export const applyTheme = (id) => {
   const theme = THEMES.find((t) => t.id === id) || THEMES[0];
@@ -71,13 +69,7 @@ export const applyTheme = (id) => {
   window.dispatchEvent(new CustomEvent('ui-theme-changed', { detail: theme }));
 };
 
-export const applyZenSplit = (value) => {
-  const v = value === '20' ? '20' : '30';
-  document.documentElement.dataset.zenSplit = v;
-  write(SPLIT_KEY, v);
-};
 
 export const initTheme = () => {
   document.documentElement.dataset.theme = getThemeId();
-  document.documentElement.dataset.zenSplit = getZenSplit();
 };

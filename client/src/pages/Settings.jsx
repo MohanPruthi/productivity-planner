@@ -21,7 +21,6 @@ import {
   Shield
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getZenSplit, applyZenSplit } from '../theme';
 import { isMuted, setMuted, play } from '../components/assistant/sfx';
 import { API_BASE_URL } from '../config';
 import PinModal from '../components/PinModal';
@@ -35,7 +34,6 @@ const Settings = () => {
   const [isZenSectionOpen, setIsZenSectionOpen] = useState(false);
   const [isVisibilitySectionOpen, setIsVisibilitySectionOpen] = useState(false);
   const [isPinSectionOpen, setIsPinSectionOpen] = useState(false);
-  const [zenSplit, setZenSplit] = useState(getZenSplit);
   const [sfxOn, setSfxOn] = useState(() => !isMuted());
 
   // 1. ZEN ZONE SETTINGS STATES
@@ -296,7 +294,7 @@ const Settings = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <span className="settings-item-icon"><Flame size={17} /></span>
-            <div><h2 className="settings-item-title">Zen Zone</h2><p className="settings-item-desc">Daily focus goals, timer lengths and panel width</p></div>
+            <div><h2 className="settings-item-title">Zen Zone</h2><p className="settings-item-desc">Daily focus goals and timer lengths</p></div>
           </div>
 
           <div 
@@ -318,7 +316,7 @@ const Settings = () => {
         </div>
 
         {/* Inner Form: rendered when open */}
-        {isZenSectionOpen && (<>
+        {isZenSectionOpen && (
           <form 
             onSubmit={handleSaveZenZoneSettings} 
             style={{ 
@@ -459,17 +457,6 @@ const Settings = () => {
               </button>
             </div>
           </form>
-          <div className="settings-row settings-subrow">
-            <div>
-              <h3 className="settings-item-title">Zen Zone width</h3>
-              <p className="settings-item-desc">How wide screens share space between the page and Zen Zone</p>
-            </div>
-            <div className="ui-segmented settings-split" role="group" aria-label="Zen Zone width">
-              <button type="button" className={zenSplit === '30' ? 'active' : ''} aria-pressed={zenSplit === '30'} onClick={() => { applyZenSplit('30'); setZenSplit('30'); }}>70 · 30</button>
-              <button type="button" className={zenSplit === '20' ? 'active' : ''} aria-pressed={zenSplit === '20'} onClick={() => { applyZenSplit('20'); setZenSplit('20'); }}>80 · 20</button>
-            </div>
-          </div>
-          </>
         )}
       </div>
 

@@ -144,3 +144,8 @@
   .blipo { right: var(--blipo-right); }
   .blipo-bubble, .blipo-chip { right: calc(var(--blipo-right) + 2px); }
 }
+
+/* Zen Zone is a fixed width now (see index.css): keep Blipo just left of it */
+@media (min-width: 1101px) {
+  :root, :root[data-zen-split="20"] { --blipo-right: calc(clamp(392px, 27vw, 460px) + 18px); }
+}
