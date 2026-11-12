@@ -4670,3 +4670,10 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
     pointer-events: none;
   }
 }
+
+/* Note detail has no pinned page header, so on desktop it needs its own top
+   gutter (other pages get it from the header bar); keeps the note's top bar
+   from sitting flush against the top edge. */
+@media (min-width: 1101px) {
+  .main-content .note-detail-page { padding-top: 1.4rem; }
+}
