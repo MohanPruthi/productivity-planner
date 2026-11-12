@@ -4677,3 +4677,20 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
 @media (min-width: 1101px) {
   .main-content .note-detail-page { padding-top: 1.4rem; }
 }
+
+/* Note editor: the formatting toolbar pins to the top while you scroll a long
+   note, with the page gutter above it, on a solid theme-coloured background so
+   text scrolling under it never shows through. Stays below dialogs and Blipo. */
+.note-detail-page .editor-toolbar {
+  position: sticky;
+  top: 1rem;
+  z-index: 25;
+  background-color: color-mix(in srgb, var(--bg-primary) 94%, transparent);
+  border-color: var(--hairline-strong);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.45);
+}
+.light-theme .note-detail-page .editor-toolbar { box-shadow: 0 10px 24px -14px rgba(15, 23, 42, 0.25); }
+@media (max-width: 1100px) {
+  /* The whole page scrolls here and the slim top bar is sticky: sit just below it */
+  .note-detail-page .editor-toolbar { top: 4.5rem; }
+}
