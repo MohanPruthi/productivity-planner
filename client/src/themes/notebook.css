@@ -38,7 +38,7 @@
 }
 :root[data-theme="notebook"] .sidebar-aside { background-color: #efe8da; border-right: 1px dashed #cdbfa6; }
 :root[data-theme="notebook"] .timelogger-aside { background: #efe8da !important; border-left: 1px dashed #cdbfa6 !important; }
-:root[data-theme="notebook"] .main-content .page-header { background: #f4efe4; border-bottom: 2px solid #2a251e; }
+:root[data-theme="notebook"] .main-content .page-header { background: #f4efe4; border-bottom: 2px solid #2a251e; --header-rule: #2a251e; --header-rule-h: 2px; }
 
 :root[data-theme="notebook"] h1, :root[data-theme="notebook"] h2, :root[data-theme="notebook"] h3,
 :root[data-theme="notebook"] .cc-greet, :root[data-theme="notebook"] .page-header-title { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.015em; }
