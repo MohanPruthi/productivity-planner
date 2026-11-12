@@ -17,9 +17,11 @@ import {
   ChevronRight,
   ChevronDown,
   Flame,
+  Volume2,
   Shield
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { isMuted, setMuted, play } from '../components/assistant/sfx';
 import { API_BASE_URL } from '../config';
 import PinModal from '../components/PinModal';
 
@@ -32,6 +34,7 @@ const Settings = () => {
   const [isZenSectionOpen, setIsZenSectionOpen] = useState(false);
   const [isVisibilitySectionOpen, setIsVisibilitySectionOpen] = useState(false);
   const [isPinSectionOpen, setIsPinSectionOpen] = useState(false);
+  const [sfxOn, setSfxOn] = useState(() => !isMuted());
 
   // 1. ZEN ZONE SETTINGS STATES
   const [weekdayTarget, setWeekdayTarget] = useState(() => {
@@ -238,7 +241,7 @@ const Settings = () => {
           </div>
           <div>
             <h1 className="page-header-title">Settings</h1>
-            <p className="page-header-subtitle">Focus targets, office workspace and PIN</p>
+            <p className="page-header-subtitle">Zen Zone, office workspace, PIN and Blipo</p>
           </div>
         </div>
 
@@ -291,7 +294,7 @@ const Settings = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <span className="settings-item-icon"><Flame size={17} /></span>
-            <div><h2 className="settings-item-title">Zen Zone targets</h2><p className="settings-item-desc">Daily focus goals for the Zen Zone timer</p></div>
+            <div><h2 className="settings-item-title">Zen Zone</h2><p className="settings-item-desc">Daily focus goals and timer lengths</p></div>
           </div>
 
           <div 
@@ -855,6 +858,25 @@ const Settings = () => {
           </form>
         )}
       </div>
+      </div>
+
+      {/* Blipo: one-row setting */}
+      <div className="settings-list">
+        <div className="settings-item">
+          <div className="settings-item-head settings-row">
+            <div className="settings-row-main">
+              <span className="settings-item-icon"><Volume2 size={17} /></span>
+              <div><h2 className="settings-item-title">Blipo sounds</h2><p className="settings-item-desc">Little bloops when Blipo listens and replies</p></div>
+            </div>
+            <button
+              type="button"
+              className={`ui-switch ${sfxOn ? 'on' : ''}`}
+              aria-pressed={sfxOn}
+              aria-label="Blipo sounds"
+              onClick={() => { const next = !sfxOn; setMuted(!next); setSfxOn(next); if (next) play('success'); }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* When NOT in Personal Space: Yellow Glass Unlock Button */}

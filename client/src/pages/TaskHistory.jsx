@@ -325,8 +325,13 @@ const TaskHistory = () => {
     fetchHistory();
     // Tasks added from Quick add (Ctrl K)
     const onTasksChanged = () => fetchHistory();
+    const onOpenPending = () => setPendingOpen(true);
     window.addEventListener('tasks-changed', onTasksChanged);
-    return () => window.removeEventListener('tasks-changed', onTasksChanged);
+    window.addEventListener('open-pending', onOpenPending);
+    return () => {
+      window.removeEventListener('tasks-changed', onTasksChanged);
+      window.removeEventListener('open-pending', onOpenPending);
+    };
   }, []);
 
   // HTML5 Drag and Drop handlers

@@ -68,6 +68,15 @@ const Meds = () => {
     fetchData();
   }, []);
 
+  // Voice assistant logged a dose
+  useEffect(() => {
+    const onDataChanged = (e) => {
+      if (e.detail?.scope === 'meds') fetchData();
+    };
+    window.addEventListener('data-changed', onDataChanged);
+    return () => window.removeEventListener('data-changed', onDataChanged);
+  }, []);
+
   // Automatically navigate to the page containing today
   useEffect(() => {
     if (schedule?.startDate) {

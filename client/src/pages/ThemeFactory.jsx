@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Palette, Check } from 'lucide-react';
-import { THEMES, getThemeId, getZenSplit, applyTheme, applyZenSplit } from '../theme';
+import { THEMES, getThemeId, applyTheme } from '../theme';
 import '../styles/theme-factory.css';
 
 // A small live preview: same markup in every card, styled by that theme's CSS
@@ -28,7 +28,6 @@ const Preview = ({ id }) => (
 
 const ThemeFactory = () => {
   const [current, setCurrent] = useState(getThemeId);
-  const [split, setSplit] = useState(getZenSplit);
 
   useEffect(() => {
     const onChange = (e) => setCurrent(e.detail.id);
@@ -39,10 +38,6 @@ const ThemeFactory = () => {
   const pick = (id) => {
     applyTheme(id);
     setCurrent(id);
-  };
-  const pickSplit = (v) => {
-    applyZenSplit(v);
-    setSplit(v);
   };
 
   return (
@@ -76,17 +71,6 @@ const ThemeFactory = () => {
         ))}
       </section>
 
-      <section className="cc-tile tf-layout" aria-labelledby="tf-split-title">
-        <div className="cc-tile-head">
-          <h2 id="tf-split-title">Zen Zone width</h2>
-          <span className="cc-meta">Wide screens only</span>
-        </div>
-        <p className="tf-help">How the screen is shared between the page and Zen Zone.</p>
-        <div className="ui-segmented tf-split" role="group" aria-label="Zen Zone width">
-          <button type="button" className={split === '30' ? 'active' : ''} aria-pressed={split === '30'} onClick={() => pickSplit('30')}>Page 70 · Zen 30</button>
-          <button type="button" className={split === '20' ? 'active' : ''} aria-pressed={split === '20'} onClick={() => pickSplit('20')}>Page 80 · Zen 20</button>
-        </div>
-      </section>
     </div>
   );
 };

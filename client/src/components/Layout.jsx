@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import TimeLogger from './TimeLogger';
 import QuickAdd from './QuickAdd';
 import MedReminder from './MedReminder';
+import AssistantButton from './assistant/AssistantButton';
 import { useAuth } from '../context/AuthContext';
 
 // Which module color themes each route (see --mod-* in index.css)
@@ -61,6 +62,7 @@ const Layout = ({ children }) => {
       <TimeLogger />
       <MedReminder />
       <QuickAdd />
+      <AssistantButton />
     </div>
   );
 };
