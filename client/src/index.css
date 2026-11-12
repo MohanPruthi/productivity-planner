@@ -4649,3 +4649,24 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
     animation-delay: 0ms !important;
   }
 }
+
+/* ======================================================================
+   Layout gap fix: page content fills the width up to Zen Zone with one
+   gutter (no 1320px cap), and the header's rule is inset to the same
+   gutter so it lines up with the cards below instead of running past
+   them.
+   ====================================================================== */
+@media (min-width: 1101px) {
+  .page-enter > * { max-width: none; }
+  .main-content .page-header { border-bottom: 0 !important; }
+  .main-content .page-header::after {
+    content: '';
+    position: absolute;
+    left: 2.25rem;
+    right: 2.25rem;
+    bottom: 0;
+    height: var(--header-rule-h, 1px);
+    background: var(--header-rule, var(--hairline));
+    pointer-events: none;
+  }
+}
