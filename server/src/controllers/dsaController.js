@@ -123,8 +123,8 @@ async function getDsaLogs(req, res) {
     todayEnd.setHours(23, 59, 59, 999);
 
     // Independent queries run together: each one is a network round trip to the DB
-    const difficultyOnly = { difficulty: true };
-    const [totalLogs, logs, weeklyLogs, monthlyLogs, overallLogs, dailyLogs] = await Promise.all([
+    const countByDifficulty = (where) => prisma.dsaLog.groupBy({ by: ['difficulty'], where, _count: true });
+    const [totalLogs, logs, weeklyCounts, monthlyCounts, overallCounts, dailyCounts] = await Promise.all([
       prisma.dsaLog.count({ where: whereClause }),
       prisma.dsaLog.findMany({
         where: whereClause,
@@ -134,52 +134,26 @@ async function getDsaLogs(req, res) {
         skip,
         take: limitNum,
       }),
-      prisma.dsaLog.findMany({
-        where: { userId, date: { gte: startOfWeek, lte: endOfWeek } },
-        select: difficultyOnly,
-      }),
-      prisma.dsaLog.findMany({
-        where: { userId, date: { gte: startOfMonth, lte: endOfMonth } },
-        select: difficultyOnly,
-      }),
-      prisma.dsaLog.findMany({
-        where: { userId },
-        select: difficultyOnly,
-      }),
-      prisma.dsaLog.findMany({
-        where: { userId, date: { gte: todayStart, lte: todayEnd } },
-        select: difficultyOnly,
-      }),
+      countByDifficulty({ userId, date: { gte: startOfWeek, lte: endOfWeek } }),
+      countByDifficulty({ userId, date: { gte: startOfMonth, lte: endOfMonth } }),
+      countByDifficulty({ userId }),
+      countByDifficulty({ userId, date: { gte: todayStart, lte: todayEnd } }),
     ]);
     const totalPages = Math.ceil(totalLogs / limitNum) || 1;
 
-    const weeklyStats = {
-      Easy: weeklyLogs.filter((l) => l.difficulty === 'Easy').length,
-      Medium: weeklyLogs.filter((l) => l.difficulty === 'Medium').length,
-      Hard: weeklyLogs.filter((l) => l.difficulty === 'Hard').length,
-      total: weeklyLogs.length,
+    const toStats = (groups) => {
+      const stats = { Easy: 0, Medium: 0, Hard: 0, total: 0 };
+      for (const g of groups) {
+        stats[g.difficulty] = g._count;
+        stats.total += g._count;
+      }
+      return stats;
     };
 
-    const monthlyStats = {
-      Easy: monthlyLogs.filter((l) => l.difficulty === 'Easy').length,
-      Medium: monthlyLogs.filter((l) => l.difficulty === 'Medium').length,
-      Hard: monthlyLogs.filter((l) => l.difficulty === 'Hard').length,
-      total: monthlyLogs.length,
-    };
-
-    const overallStats = {
-      Easy: overallLogs.filter((l) => l.difficulty === 'Easy').length,
-      Medium: overallLogs.filter((l) => l.difficulty === 'Medium').length,
-      Hard: overallLogs.filter((l) => l.difficulty === 'Hard').length,
-      total: overallLogs.length,
-    };
-
-    const dailyStats = {
-      Easy: dailyLogs.filter((l) => l.difficulty === 'Easy').length,
-      Medium: dailyLogs.filter((l) => l.difficulty === 'Medium').length,
-      Hard: dailyLogs.filter((l) => l.difficulty === 'Hard').length,
-      total: dailyLogs.length,
-    };
+    const weeklyStats = toStats(weeklyCounts);
+    const monthlyStats = toStats(monthlyCounts);
+    const overallStats = toStats(overallCounts);
+    const dailyStats = toStats(dailyCounts);
 
     res.json({
       logs,
