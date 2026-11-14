@@ -1,22 +1,25 @@
-import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useState, useContext, useLayoutEffect, useCallback, useMemo } from 'react';
 import { API_BASE_URL } from '../config';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+// The saved session, read synchronously so the first render already has the user
+const readStoredSession = () => {
+  try {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-    }
-    setLoading(false);
-  }, []);
+    if (storedUser && storedToken) return { user: JSON.parse(storedUser), token: storedToken };
+  } catch {
+    /* unreadable session: start signed out */
+  }
+  return { user: null, token: null };
+};
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => readStoredSession().user);
+  const [token, setToken] = useState(() => readStoredSession().token);
+  // Kept for consumers; the session is known before the first render, so never loading
+  const [loading] = useState(false);
 
   const login = useCallback(async (email, password) => {
     try {
@@ -67,8 +70,9 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   }, []);
 
-  // The server answers 403 only for an invalid/expired token: sign out instead of showing broken pages
-  useEffect(() => {
+  // The server answers 403 only for an invalid/expired token: sign out instead of showing broken pages.
+  // A layout effect, so it is in place before the pages' own effects make their first requests.
+  useLayoutEffect(() => {
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
       const res = await originalFetch(...args);
