@@ -277,7 +277,8 @@ body {
 
 /* Background tabs: freeze every animation (the infinite theme/background loops
    included) until the tab is visible again. main.jsx toggles data-hidden. */
-:root[data-hidden] *,
+/* (The med reminder bar is left running: it tracks a dismiss timer that keeps counting.) */
+:root[data-hidden] *:not(.med-toast-progress),
 :root[data-hidden] *::before,
 :root[data-hidden] *::after {
   animation-play-state: paused !important;
@@ -1897,6 +1898,19 @@ label {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Med reminder countdown bar: full to empty over the toast's lifetime, paused while hovered */
+.med-toast-progress {
+  width: 0%;
+  animation: med-toast-countdown 5s linear forwards;
+}
+.med-toast-progress.paused {
+  animation-play-state: paused;
+}
+@keyframes med-toast-countdown {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 
 .med-toast-close-btn:hover {
