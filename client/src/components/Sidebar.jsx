@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
-import PinModal from './PinModal';
 import { openQuickAdd } from './QuickAdd';
 import { preloadPage, preloadAllPages } from '../pageImports';
+
+// The PIN dialog is only needed when switching back to the personal workspace
+const loadPinModal = () => import('./PinModal');
+const PinModal = lazy(loadPinModal);
 import { 
   LayoutDashboard, 
   Brain, 
@@ -147,10 +150,16 @@ const Sidebar = () => {
   // Once the app is idle after the first render, fetch every page's code so later clicks are instant
   useEffect(() => {
     if ('requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(preloadAllPages, { timeout: 4000 });
+      const id = window.requestIdleCallback(() => {
+        preloadAllPages();
+        loadPinModal().catch(() => {});
+      }, { timeout: 4000 });
       return () => window.cancelIdleCallback(id);
     }
-    const id = setTimeout(preloadAllPages, 2000);
+    const id = setTimeout(() => {
+      preloadAllPages();
+      loadPinModal().catch(() => {});
+    }, 2000);
     return () => clearTimeout(id);
   }, []);
 
@@ -394,11 +403,15 @@ const Sidebar = () => {
           </Link>
         </div>
 
-        <PinModal 
-          isOpen={isPinModalOpen}
-          onClose={() => setIsPinModalOpen(false)}
-          onSuccess={togglePrivacyMode}
-        />
+        {isPinModalOpen && (
+          <Suspense fallback={null}>
+            <PinModal 
+              isOpen={isPinModalOpen}
+              onClose={() => setIsPinModalOpen(false)}
+              onSuccess={togglePrivacyMode}
+            />
+          </Suspense>
+        )}
 
         <div className="user-profile" style={{
           borderTop: '1px solid var(--border-light)',
