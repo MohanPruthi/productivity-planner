@@ -6,8 +6,43 @@ const sameDay = (a, b) => {
   return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate();
 };
 
+// Which cached pages a successful write to an API path can change. Pages update
+// themselves optimistically; this only marks the other copies stale so the next
+// page that shows them refetches (nothing is refetched right away).
+const WRITE_EFFECTS = [
+  [/^\/api\/plans?(\/|$)/, [['plans'], ['dashboard']]],
+  [/^\/api\/normal-tasks/, [['dashboard']]],
+  [/^\/api\/dsa-logs/, [['dashboard']]],
+  [/^\/api\/study-logs/, [['dashboard']]],
+  [/^\/api\/pomodoro-sessions/, [['dashboard']]],
+  [/^\/api\/meds/, [['meds'], ['dashboard']]],
+  [/^\/api\/(notes|note-groups)/, [['notes'], ['note-groups']]],
+];
+
+const markStaleAfterWrite = (input, init) => {
+  const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+  if (method === 'GET' || method === 'HEAD') return;
+  let path;
+  try {
+    path = new URL(input instanceof Request ? input.url : String(input), window.location.href).pathname;
+  } catch {
+    return;
+  }
+  for (const [pattern, keys] of WRITE_EFFECTS) {
+    if (!pattern.test(path)) continue;
+    keys.forEach((queryKey) => queryClient.invalidateQueries({ queryKey, refetchType: 'none' }));
+  }
+};
+
 // The app's existing window events, turned into cache updates so cached pages stay current
 export const installQueryEvents = () => {
+  const originalFetch = window.fetch;
+  window.fetch = async (input, init) => {
+    const res = await originalFetch(input, init);
+    if (res.ok) markStaleAfterWrite(input, init);
+    return res;
+  };
+
   // Quick add (Ctrl K) added tasks for a date
   window.addEventListener('tasks-changed', (e) => {
     if (e.detail?.date) queryClient.invalidateQueries({ queryKey: ['dashboard', 'today', e.detail.date] });
