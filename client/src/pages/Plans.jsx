@@ -5,6 +5,8 @@ import { Plus, ChevronDown, Check, Trash2, CalendarRange, Settings2, Lock } from
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
+import { apiGet } from '../lib/api';
+import { useQueryState } from '../lib/useQueryState';
 import PageHeader from '../components/PageHeader';
 import Illustration from '../components/Illustration';
 import Dialog from '../components/Dialog';
@@ -174,12 +176,20 @@ const PlanSettingsDialog = ({ open, initial, onClose, onSave, onDelete }) => {
   );
 };
 
+const NO_PLANS = [];
+
 const Plans = () => {
   const { getAuthHeaders, privacyMode } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Cached; the voice assistant's plan changes refresh it via lib/queryEvents
+  const [plansData, setPlans, plansQuery] = useQueryState({
+    queryKey: ['plans'],
+    queryFn: () => apiGet('/api/plans', 'Something went wrong'),
+  });
+  const plans = plansData || NO_PLANS;
   const [error, setError] = useState('');
+  // A failed first load shows like before; a failed background refresh keeps the plans quietly
+  const loadError = !plansData && plansQuery.error ? plansQuery.error.message : '';
   const [openPeriodId, setOpenPeriodId] = useState(null);
   const [savingStates, setSavingStates] = useState({});
   const [dialog, setDialog] = useState({ open: false, plan: null });
@@ -192,22 +202,6 @@ const Plans = () => {
     if (!res.ok) throw new Error(data.error || 'Something went wrong');
     return data;
   };
-
-  useEffect(() => {
-    api('/api/plans')
-      .then(setPlans)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  // Voice assistant created a plan or a week
-  useEffect(() => {
-    const onDataChanged = (e) => {
-      if (e.detail?.scope === 'plans') api('/api/plans').then(setPlans).catch(() => {});
-    };
-    window.addEventListener('data-changed', onDataChanged);
-    return () => window.removeEventListener('data-changed', onDataChanged);
-  }, []);
 
   // Personal plans disappear in the office workspace, like personal notes
   const visiblePlans = useMemo(() => (privacyMode ? plans.filter(p => !p.isPersonal) : plans), [plans, privacyMode]);
@@ -321,7 +315,8 @@ const Plans = () => {
     return { main: fmt(day.date, { weekday: 'short' }), sub: fmt(day.date, { month: 'short', day: 'numeric' }) };
   };
 
-  if (loading) return <Loader text="Loading plans..." />;
+  // Loader only when nothing is cached yet
+  if (plansData === undefined && !plansQuery.error) return <Loader text="Loading plans..." />;
 
   const unit = plan?.cadence === 'monthly' ? 'month' : 'week';
   const currentPeriod = plan?.periods.find(isCurrent);
@@ -343,7 +338,7 @@ const Plans = () => {
         }
       />
 
-      {error && <div className="text-error">{error}</div>}
+      {(error || loadError) && <div className="text-error">{error || loadError}</div>}
 
       {visiblePlans.length > 0 && (
         <nav className="plan-tabs" aria-label="Plans">
