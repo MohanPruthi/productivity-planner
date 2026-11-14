@@ -2,16 +2,18 @@
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
+import { useQueryState } from '../lib/useQueryState';
+import { medsScheduleQuery, medsLogsQuery } from '../lib/queries';
 import { Pill, Check, RotateCcw, Edit2, Calendar, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const PAGE_SIZE = 30;
 
 const Meds = () => {
   const { getAuthHeaders } = useAuth();
-  const [schedule, setSchedule] = useState(null);
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  // Shared with the reminder toast; the voice assistant and dose ticks elsewhere update it via lib/queryEvents
+  const [schedule, setSchedule, scheduleQuery] = useQueryState(medsScheduleQuery);
+  const [logs, setLogs, logsQuery] = useQueryState(medsLogsQuery);
+  const error = (scheduleQuery.error || logsQuery.error)?.message || '';
   const [editingName, setEditingName] = useState(false);
   const [medNameInput, setMedNameInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -38,44 +40,11 @@ const Meds = () => {
     return weekdays[d.getDay()];
   };
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const [schedRes, logsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/meds/schedule`, { headers: getAuthHeaders() }),
-        fetch(`${API_BASE_URL}/api/meds/logs`, { headers: getAuthHeaders() })
-      ]);
-
-      if (!schedRes.ok || !logsRes.ok) {
-        throw new Error('Failed to load medication details');
-      }
-
-      const schedData = await schedRes.json();
-      const logsData = await logsRes.json();
-
-      setSchedule(schedData);
-      setMedNameInput(schedData.medName);
-      setLogs(logsData);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // The name field starts from the loaded schedule
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Voice assistant logged a dose
-  useEffect(() => {
-    const onDataChanged = (e) => {
-      if (e.detail?.scope === 'meds') fetchData();
-    };
-    window.addEventListener('data-changed', onDataChanged);
-    return () => window.removeEventListener('data-changed', onDataChanged);
-  }, []);
+    if (schedule) setMedNameInput(schedule.medName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schedule?.medName]);
 
   // Automatically navigate to the page containing today
   useEffect(() => {
@@ -92,25 +61,6 @@ const Meds = () => {
       }
     }
   }, [schedule]);
-
-  useEffect(() => {
-    const handleMedLogUpdated = (e) => {
-      const { log } = e.detail || {};
-      if (log) {
-        setLogs(prev => {
-          const normalizedDateStr = getLocalDateString(new Date(log.date));
-          const exists = prev.some(l => getLocalDateString(new Date(l.date)) === normalizedDateStr);
-          if (exists) {
-            return prev.map(l => getLocalDateString(new Date(l.date)) === normalizedDateStr ? log : l);
-          } else {
-            return [...prev, log];
-          }
-        });
-      }
-    };
-    window.addEventListener('med-log-updated', handleMedLogUpdated);
-    return () => window.removeEventListener('med-log-updated', handleMedLogUpdated);
-  }, []);
 
   const handleTogglePill = async (dateStr, type, currentValue) => {
     try {
@@ -213,11 +163,12 @@ const Meds = () => {
     }
   };
 
-  if (loading) {
+  // Loader only when nothing is cached yet
+  if ((!schedule || !logs) && !error) {
     return <Loader text="Loading Meds Tracker..." />;
   }
 
-  if (error) {
+  if (error && (!schedule || !logs)) {
     return <div className="error-state">Error: {error}</div>;
   }
 
