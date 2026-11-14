@@ -33,17 +33,47 @@ const Layout = ({ children }) => {
     return () => document.body.classList.remove(cls);
   }, [tone]);
 
-  // Cards light up under the cursor: feed the pointer position to the hovered card
+  // Cards light up under the cursor: feed the pointer position to the hovered card.
+  // At most one update per frame, and the card's rect is measured once per card
+  // (again after a scroll, resize or the hover lift) instead of on every move.
   useEffect(() => {
-    const onMove = (e) => {
-      const card = e.target.closest?.('.main-content .glass-card');
+    // No hover on touch screens, so nothing to light up
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    let card = null;
+    let rect = null;
+    let frame = 0;
+    let x = 0;
+    let y = 0;
+    const paint = () => {
+      frame = 0;
       if (!card) return;
-      const rect = card.getBoundingClientRect();
-      card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-      card.style.setProperty('--my', `${e.clientY - rect.top}px`);
+      if (!rect) rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', `${x - rect.left}px`);
+      card.style.setProperty('--my', `${y - rect.top}px`);
     };
+    const onMove = (e) => {
+      const next = e.target.closest?.('.main-content .glass-card') || null;
+      if (next !== card) {
+        card = next;
+        rect = null;
+      }
+      if (!card) return;
+      x = e.clientX;
+      y = e.clientY;
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+    const forget = () => { rect = null; };
     window.addEventListener('pointermove', onMove, { passive: true });
-    return () => window.removeEventListener('pointermove', onMove);
+    window.addEventListener('scroll', forget, { passive: true, capture: true });
+    window.addEventListener('resize', forget);
+    window.addEventListener('transitionend', forget, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('scroll', forget, { capture: true });
+      window.removeEventListener('resize', forget);
+      window.removeEventListener('transitionend', forget, true);
+    };
   }, []);
 
   if (!user) {
