@@ -11,6 +11,11 @@ import './themes/notebook.css';
 
 initTheme();
 
+// Hidden tab: pause CSS animations (see :root[data-hidden] in index.css)
+const syncHidden = () => document.documentElement.toggleAttribute('data-hidden', document.hidden);
+document.addEventListener('visibilitychange', syncHidden);
+syncHidden();
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
