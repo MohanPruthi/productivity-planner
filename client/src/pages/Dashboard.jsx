@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
+import { keepPreviousData } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
 import { openQuickAdd } from '../components/QuickAdd';
+import { apiGet } from '../lib/api';
+import { useQueryState } from '../lib/useQueryState';
 import { Trash2, ChevronLeft, ChevronRight, Plus, Edit2, Check } from 'lucide-react';
 
 const Dashboard = () => {
@@ -12,10 +15,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const dateParam = searchParams.get('date');
 
-  const [todayData, setTodayData] = useState(null);
-  const [weekData, setWeekData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [newTaskText, setNewTaskText] = useState('');
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingTaskText, setEditingTaskText] = useState('');
@@ -28,80 +27,20 @@ const Dashboard = () => {
   };
 
   const activeDateStr = dateParam || getLocalDateString();
-  // Only the newest request may write state, so a slow answer for a date the user already left is dropped
-  const latestDateRef = useRef(activeDateStr);
-  const weekLoadedRef = useRef(false);
 
-  // The week summary does not depend on the date shown, so it is only fetched
-  // with the first load and when tasks change, not on every date switch.
-  const fetchData = async (dateStr, withWeek = true) => {
-    latestDateRef.current = dateStr;
-    try {
-      setLoading(true);
-      setError('');
-      const [todayRes, weekRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/dashboard/today?date=${dateStr}`, { headers: getAuthHeaders() }),
-        withWeek ? fetch(`${API_BASE_URL}/api/dashboard/week`, { headers: getAuthHeaders() }) : null
-      ]);
-
-      if (!todayRes.ok || (weekRes && !weekRes.ok)) {
-        throw new Error('Failed to load dashboard data');
-      }
-
-      const todayJson = await todayRes.json();
-      const weekJson = weekRes ? await weekRes.json() : null;
-      if (latestDateRef.current !== dateStr) return;
-
-      setTodayData(todayJson);
-      if (weekJson) {
-        setWeekData(weekJson);
-        weekLoadedRef.current = true;
-      }
-    } catch (err) {
-      if (latestDateRef.current === dateStr) setError(err.message);
-    } finally {
-      if (latestDateRef.current === dateStr) setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData(activeDateStr, !weekLoadedRef.current);
-  }, [activeDateStr]);
-
-  // Tasks added from Quick add (Ctrl K)
-  useEffect(() => {
-    const onTasksChanged = (e) => {
-      if (e.detail?.date === activeDateStr) fetchData(activeDateStr);
-    };
-    window.addEventListener('tasks-changed', onTasksChanged);
-    return () => window.removeEventListener('tasks-changed', onTasksChanged);
-  }, [activeDateStr]);
-
-  // Voice assistant changed tasks
-  useEffect(() => {
-    const onDataChanged = (e) => {
-      if (e.detail?.scope === 'tasks') fetchData(activeDateStr);
-    };
-    window.addEventListener('data-changed', onDataChanged);
-    return () => window.removeEventListener('data-changed', onDataChanged);
-  }, [activeDateStr]);
-
-  useEffect(() => {
-    const handleMedLogUpdated = (e) => {
-      const { date, log } = e.detail || {};
-      if (date === activeDateStr && log) {
-        setTodayData(prev => ({
-          ...prev,
-          meds: {
-            ...prev?.meds,
-            todayLog: log
-          }
-        }));
-      }
-    };
-    window.addEventListener('med-log-updated', handleMedLogUpdated);
-    return () => window.removeEventListener('med-log-updated', handleMedLogUpdated);
-  }, [activeDateStr]);
+  // Cached per date; while another date loads, the previous one stays on screen.
+  // Quick add, the voice assistant and dose ticks elsewhere update these through lib/queryEvents.
+  const [todayData, setTodayData, todayQuery] = useQueryState({
+    queryKey: ['dashboard', 'today', activeDateStr],
+    queryFn: () => apiGet(`/api/dashboard/today?date=${activeDateStr}`, 'Failed to load dashboard data'),
+    placeholderData: keepPreviousData,
+  });
+  // The week summary does not depend on the date shown
+  const [weekData, , weekQuery] = useQueryState({
+    queryKey: ['dashboard', 'week'],
+    queryFn: () => apiGet('/api/dashboard/week', 'Failed to load dashboard data'),
+  });
+  const error = (todayQuery.error || weekQuery.error)?.message || '';
 
   const handleToggleTask = async (taskId, currentIsDone) => {
     try {
@@ -275,12 +214,12 @@ const Dashboard = () => {
     }
   };
 
-  // Full-page loader only before the first data arrives; later refetches keep the page in place
-  if (loading && !todayData) {
+  // Full-page loader only when nothing is cached yet; refetches keep the page in place
+  if (!todayData && !error) {
     return <Loader text="Aligning Zen Zone Dashboard..." />;
   }
 
-  if (error) {
+  if (error && !todayData) {
     return <div className="error-state">Error: {error}</div>;
   }
 
