@@ -7,17 +7,18 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Loader from './components/Loader';
+import { pageImports } from './pageImports';
 
 // Less-used pages load on demand so the first visit downloads less JavaScript
-const Plans = lazy(() => import('./pages/Plans'));
-const DsaLog = lazy(() => import('./pages/DsaLog'));
-const TaskHistory = lazy(() => import('./pages/TaskHistory'));
-const Meds = lazy(() => import('./pages/Meds'));
-const HrDirectory = lazy(() => import('./pages/HrDirectory'));
-const ThemeFactory = lazy(() => import('./pages/ThemeFactory'));
-const Notes = lazy(() => import('./pages/Notes'));
-const NoteDetail = lazy(() => import('./pages/NoteDetail'));
-const Settings = lazy(() => import('./pages/Settings'));
+const Plans = lazy(pageImports.plans);
+const DsaLog = lazy(pageImports.dsaLog);
+const TaskHistory = lazy(pageImports.taskHistory);
+const Meds = lazy(pageImports.meds);
+const HrDirectory = lazy(pageImports.hrDirectory);
+const ThemeFactory = lazy(pageImports.themeFactory);
+const Notes = lazy(pageImports.notes);
+const NoteDetail = lazy(pageImports.noteDetail);
+const Settings = lazy(pageImports.settings);
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
