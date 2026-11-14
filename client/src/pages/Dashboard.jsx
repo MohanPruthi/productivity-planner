@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
@@ -28,34 +28,44 @@ const Dashboard = () => {
   };
 
   const activeDateStr = dateParam || getLocalDateString();
+  // Only the newest request may write state, so a slow answer for a date the user already left is dropped
+  const latestDateRef = useRef(activeDateStr);
+  const weekLoadedRef = useRef(false);
 
-  const fetchData = async (dateStr) => {
+  // The week summary does not depend on the date shown, so it is only fetched
+  // with the first load and when tasks change, not on every date switch.
+  const fetchData = async (dateStr, withWeek = true) => {
+    latestDateRef.current = dateStr;
     try {
       setLoading(true);
       setError('');
       const [todayRes, weekRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/dashboard/today?date=${dateStr}`, { headers: getAuthHeaders() }),
-        fetch(`${API_BASE_URL}/api/dashboard/week`, { headers: getAuthHeaders() })
+        withWeek ? fetch(`${API_BASE_URL}/api/dashboard/week`, { headers: getAuthHeaders() }) : null
       ]);
 
-      if (!todayRes.ok || !weekRes.ok) {
+      if (!todayRes.ok || (weekRes && !weekRes.ok)) {
         throw new Error('Failed to load dashboard data');
       }
 
       const todayJson = await todayRes.json();
-      const weekJson = await weekRes.json();
+      const weekJson = weekRes ? await weekRes.json() : null;
+      if (latestDateRef.current !== dateStr) return;
 
       setTodayData(todayJson);
-      setWeekData(weekJson);
+      if (weekJson) {
+        setWeekData(weekJson);
+        weekLoadedRef.current = true;
+      }
     } catch (err) {
-      setError(err.message);
+      if (latestDateRef.current === dateStr) setError(err.message);
     } finally {
-      setLoading(false);
+      if (latestDateRef.current === dateStr) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData(activeDateStr);
+    fetchData(activeDateStr, !weekLoadedRef.current);
   }, [activeDateStr]);
 
   // Tasks added from Quick add (Ctrl K)
@@ -265,7 +275,8 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
+  // Full-page loader only before the first data arrives; later refetches keep the page in place
+  if (loading && !todayData) {
     return <Loader text="Aligning Zen Zone Dashboard..." />;
   }
 

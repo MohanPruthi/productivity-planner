@@ -638,7 +638,8 @@ const TaskHistory = () => {
   });
   const pendingCount = pendingTasks.length;
 
-  if (loading) {
+  // Full-page loader only before the first history arrives; refetches keep the board in place
+  if (loading && historyData.length === 0) {
     return <Loader text="Loading Jira Work Board..." />;
   }
 

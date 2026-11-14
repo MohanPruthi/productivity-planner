@@ -667,7 +667,8 @@ const Notes = () => {
     moveNote(id, null);
   };
 
-  if (loading) {
+  // Full-page loader only before the first notes arrive; refetches keep the list in place
+  if (loading && notes.length === 0) {
     return <Loader text="Loading Notes..." />;
   }
 
