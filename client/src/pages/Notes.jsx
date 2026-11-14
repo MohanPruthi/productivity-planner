@@ -235,6 +235,7 @@ const Notes = () => {
 
   // Groups + drag and drop state
   const [groups, setGroups] = useState([]);
+  const previewCacheRef = useRef(new Map()); // note id -> { updatedAt, content, html }
   const [openGroupId, setOpenGroupId] = useState(null);
   const [renameFocusId, setRenameFocusId] = useState(null);
   const [dragNoteId, setDragNoteId] = useState(null);
@@ -271,19 +272,20 @@ const Notes = () => {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`${API_BASE_URL}/api/notes`, {
-        headers: getAuthHeaders()
-      });
+      // Groups load alongside the notes; a failed groups request just means no groups
+      const [res, groupsData] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/notes`, { headers: getAuthHeaders() }),
+        fetch(`${API_BASE_URL}/api/note-groups`, { headers: getAuthHeaders() })
+          .then(async (gres) => (gres.ok ? ((await gres.json()) || []) : []))
+          .catch((gerr) => {
+            console.error(gerr);
+            return [];
+          }),
+      ]);
       if (!res.ok) throw new Error('Failed to load notes');
       const data = await res.json();
       setNotes(data || []);
-      try {
-        const gres = await fetch(`${API_BASE_URL}/api/note-groups`, { headers: getAuthHeaders() });
-        setGroups(gres.ok ? ((await gres.json()) || []) : []);
-      } catch (gerr) {
-        console.error(gerr);
-        setGroups([]);
-      }
+      setGroups(groupsData);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -676,6 +678,15 @@ const Notes = () => {
     return <div className="error-state">Error: {error}</div>;
   }
 
+  // Parsed + sanitised card previews, reused until the note changes, so typing in search doesn't re-parse every note
+  const getPreviewHtml = (note) => {
+    const cached = previewCacheRef.current.get(note.id);
+    if (cached && cached.updatedAt === note.updatedAt && cached.content === note.content) return cached.html;
+    const html = DOMPurify.sanitize(note.content.includes('<') ? note.content : marked.parse(note.content));
+    previewCacheRef.current.set(note.id, { updatedAt: note.updatedAt, content: note.content, html });
+    return html;
+  };
+
   const renderNoteCard = (note, inGroup = false) => {
     const cardColor = note.colorTag || '#eab308';
     const isTodo = note.type === 'todo';
@@ -856,11 +867,7 @@ const Notes = () => {
               {note.content ? (
                 <div
                   className="note-card-html-preview"
-                  dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(
-                      note.content.includes('<') ? note.content : marked.parse(note.content)
-                    )
-                  }}
+                  dangerouslySetInnerHTML={{ __html: getPreviewHtml(note) }}
                 />
               ) : (
                 <span style={{ fontStyle: 'italic', opacity: 0.5 }}>Empty note</span>
