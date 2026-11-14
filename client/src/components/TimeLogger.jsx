@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Play, Pause, RotateCcw, Timer, X, Flame, ChevronLeft, ChevronRight, Skull } from 'lucide-react';
+import { Play, Pause, RotateCcw, Timer, X, Flame, ChevronLeft, ChevronRight, Skull, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 // Normalize dates helper (module level, for the calendar below)
@@ -388,6 +388,27 @@ const TimeLogger = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { getAuthHeaders } = useAuth();
+
+  // Minimised Zen Zone (wide screens only): a narrow strip with just the Focus Logger. Remembered.
+  const [zenCollapsed, setZenCollapsed] = useState(() => {
+    try { return localStorage.getItem('zen_collapsed') === '1'; } catch { return false; }
+  });
+  const collapseBtnRef = useRef(null);
+  const expandBtnRef = useRef(null);
+  const zenToggledRef = useRef(false);
+  const toggleZenCollapsed = () => {
+    zenToggledRef.current = true;
+    setZenCollapsed(c => !c);
+  };
+  useEffect(() => {
+    try { localStorage.setItem('zen_collapsed', zenCollapsed ? '1' : '0'); } catch { /* storage blocked */ }
+    // On <html> so Blipo can sit just left of the narrow strip
+    if (zenCollapsed) document.documentElement.setAttribute('data-zen-collapsed', '');
+    else document.documentElement.removeAttribute('data-zen-collapsed');
+    // Keep keyboard focus on the toggle that replaced the one just pressed
+    if (zenToggledRef.current) (zenCollapsed ? expandBtnRef : collapseBtnRef).current?.focus();
+  }, [zenCollapsed]);
+  useEffect(() => () => document.documentElement.removeAttribute('data-zen-collapsed'), []);
   
   // Settings States (stored in localStorage)
   const [weekdayTarget, setWeekdayTarget] = useState(() => {
@@ -1176,13 +1197,100 @@ const TimeLogger = () => {
   }
 
   return (
-    <aside className="timelogger-aside">
-      
+    <aside className={`timelogger-aside${zenCollapsed ? ' zen-collapsed' : ''}`}>
+
+      {/* Minimised: only a compact, vertical Focus Logger (same timer state, nothing new ticking) */}
+      <div className="zen-mini">
+        <button
+          ref={expandBtnRef}
+          type="button"
+          className="zen-collapse-btn"
+          onClick={toggleZenCollapsed}
+          title="Expand Zen Zone"
+          aria-label="Expand Zen Zone"
+          aria-expanded="false"
+        >
+          <PanelRightOpen size={17} />
+        </button>
+        <Flame size={15} color={activeRingColor} aria-hidden="true" />
+        <div
+          className="zen-mini-ring"
+          role="timer"
+          aria-label={`Focus time today ${Math.floor(todaySeconds / 3600)} hours ${Math.floor((todaySeconds % 3600) / 60)} minutes, target ${currentTodayTargetHours} hours`}
+        >
+          <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+            <defs>
+              <linearGradient id="lockinGradMini" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={activeGradientStart} />
+                <stop offset="100%" stopColor={activeGradientEnd} />
+              </linearGradient>
+            </defs>
+            <circle cx="32" cy="32" r="28" stroke={activeTrackColor} strokeWidth="5" fill="transparent" />
+            <circle
+              cx="32" cy="32" r="28"
+              stroke="url(#lockinGradMini)"
+              strokeWidth="5"
+              fill="transparent"
+              strokeDasharray="175.93"
+              strokeDashoffset={175.93 - (175.93 * todayPercentage)}
+              strokeLinecap="round"
+              transform="rotate(-90 32 32)"
+              style={{
+                transition: 'stroke-dashoffset 0.4s ease-out',
+                filter: isCurrentlyTracking ? `drop-shadow(0 0 5px ${activeGlowColor})` : 'none'
+              }}
+            />
+          </svg>
+          <div
+            className="zen-mini-digits"
+            style={{ textShadow: isCurrentlyTracking ? `0 0 10px ${activeRingColor}70` : 'none' }}
+          >
+            <span>{Math.floor(todaySeconds / 3600).toString().padStart(2, '0')}</span>
+            <span>{Math.floor((todaySeconds % 3600) / 60).toString().padStart(2, '0')}</span>
+            <span className="zen-mini-secs">{(todaySeconds % 60).toString().padStart(2, '0')}</span>
+          </div>
+        </div>
+        {isCurrentlyTracking ? (
+          <button
+            className="mirror-btn start-btn zen-mini-play"
+            onClick={() => {
+              setIsMainClockRunning(false);
+              setIsPomoActive(false);
+            }}
+            title="Pause Lock-In"
+            aria-label="Pause Lock-In"
+          >
+            <Pause size={16} />
+          </button>
+        ) : (
+          <button
+            className="mirror-btn start-btn zen-mini-play"
+            onClick={() => setIsMainClockRunning(true)}
+            title="Start Lock-In"
+            aria-label="Start Lock-In"
+          >
+            <Play size={16} fill="currentColor" style={{ marginRight: '-2px' }} />
+          </button>
+        )}
+      </div>
+
+      <div className="zen-full">
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 className="animated-gradient-orange" style={{ fontSize: '1.3rem', fontFamily: 'var(--font-display)', fontWeight: 600, margin: 0 }}>
           Zen Zone
         </h2>
+        <button
+          ref={collapseBtnRef}
+          type="button"
+          className="zen-collapse-btn"
+          onClick={toggleZenCollapsed}
+          title="Minimise Zen Zone"
+          aria-label="Minimise Zen Zone"
+          aria-expanded="true"
+        >
+          <PanelRightClose size={17} />
+        </button>
       </div>
 
       {/* 1. Focus Logger */}
@@ -1482,6 +1590,7 @@ const TimeLogger = () => {
             </button>
           </div>
         </div>
+      </div>
       </div>
 
     </aside>

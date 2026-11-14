@@ -149,3 +149,9 @@
 @media (min-width: 1101px) {
   :root, :root[data-zen-split="20"] { --blipo-right: calc(clamp(392px, 27vw, 460px) + 18px); }
 }
+
+/* Zen Zone minimised to its narrow strip: Blipo follows it */
+@media (min-width: 1101px) {
+  :root[data-zen-collapsed],
+  :root[data-zen-split][data-zen-collapsed] { --blipo-right: calc(80px + 18px); }
+}
