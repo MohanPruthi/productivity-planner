@@ -6,7 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" />
+    <script>
+      // Set the saved theme before the CSS paints, so the page never flashes the default look (see src/theme.js)
+      try {
+        var t = localStorage.getItem('ui_theme');
+        if (/^[a-z-]+$/.test(t)) document.documentElement.dataset.theme = t;
+      } catch (e) { /* storage unavailable: theme.js falls back to classic */ }
+    </script>
     <title>Productivity Planner</title>
   </head>
   <body>
