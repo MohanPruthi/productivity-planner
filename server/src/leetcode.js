@@ -23,6 +23,8 @@ async function getProblem(questionNumber) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Referer: 'https://leetcode.com' },
       body: JSON.stringify({ query: QUERY, variables: { k: key } }),
+      // A slow LeetCode must not hang adding a log or the enrichment pass
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) throw new Error(`LeetCode responded ${res.status}`);
     const json = await res.json();
