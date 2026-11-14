@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
@@ -65,8 +66,19 @@ const formatRelativeTime = (dateStr) => {
   return `${d.getDate()} ${months[d.getMonth()]}`;
 };
 
+// How old the notes list's copy of a note may be and still open without a fetch
+const SEED_FRESH_MS = 30 * 1000;
+
 const NoteDetail = () => {
   const { id } = useParams();
+  const queryClient = useQueryClient();
+
+  // A saved note replaces its copy in the cached notes list (and the list refetches on its next visit)
+  const syncCachedNote = (updated) => {
+    queryClient.setQueryData(['note', updated.id], updated);
+    queryClient.setQueryData(['notes'], (prev) => prev?.map((n) => (n.id === updated.id ? updated : n)));
+    queryClient.invalidateQueries({ queryKey: ['notes'] });
+  };
   const navigate = useNavigate();
   const { getAuthHeaders, privacyMode } = useAuth();
 
@@ -120,9 +132,63 @@ const NoteDetail = () => {
     }
   }, [toastMessage]);
 
-  // Fetch single note by ID
-  useEffect(() => {
+  // Load the note. A copy the notes list fetched moments ago is current, so it is
+  // shown straight away (before paint, hence the layout effect); otherwise fetch it.
+  useLayoutEffect(() => {
     let isMounted = true;
+    const applyNote = (data) => {
+      setNote(data);
+      setTitle(data.title || '');
+      titleRef.current = data.title || '';
+      setColorTag(data.colorTag || '#eab308');
+      colorTagRef.current = data.colorTag || '#eab308';
+      setIsPersonal(Boolean(data.isPersonal));
+      isPersonalRef.current = Boolean(data.isPersonal);
+      setIsPinned(Boolean(data.isPinned));
+      isPinnedRef.current = Boolean(data.isPinned);
+
+      // Parse checklist if todo
+      let parsedChecklist = [];
+      if (Array.isArray(data.checklist)) {
+        parsedChecklist = data.checklist;
+      } else if (typeof data.checklist === 'string' && data.checklist.trim()) {
+        try {
+          parsedChecklist = JSON.parse(data.checklist);
+        } catch (e) {
+          parsedChecklist = [];
+        }
+      }
+      if (data.type === 'todo' && parsedChecklist.length === 0) {
+        parsedChecklist = [{ id: `item_${Date.now()}`, text: '', isDone: false }];
+      }
+      setChecklist(parsedChecklist);
+      checklistRef.current = parsedChecklist;
+
+      // Initial HTML for rich editor
+      const rawContent = data.content || '';
+      let initialHtml = '';
+      if (rawContent) {
+        // If content already contains HTML tags
+        if (rawContent.includes('<') && rawContent.includes('>')) {
+          initialHtml = DOMPurify.sanitize(rawContent);
+        } else {
+          // Raw text or markdown: convert to formatted HTML
+          const parsed = marked.parse(rawContent);
+          initialHtml = DOMPurify.sanitize(parsed);
+        }
+      }
+      contentRef.current = initialHtml;
+
+      // Set initial HTML once editorRef is available
+      setTimeout(() => {
+        if (editorRef.current && !isInitialLoadedRef.current) {
+          editorRef.current.innerHTML = initialHtml;
+          isInitialLoadedRef.current = true;
+        }
+      }, 50);
+
+    };
+
     const fetchNote = async () => {
       try {
         setLoading(true);
@@ -140,57 +206,8 @@ const NoteDetail = () => {
 
         const data = await res.json();
         if (!isMounted) return;
-
-        setNote(data);
-        setTitle(data.title || '');
-        titleRef.current = data.title || '';
-        setColorTag(data.colorTag || '#eab308');
-        colorTagRef.current = data.colorTag || '#eab308';
-        setIsPersonal(Boolean(data.isPersonal));
-        isPersonalRef.current = Boolean(data.isPersonal);
-        setIsPinned(Boolean(data.isPinned));
-        isPinnedRef.current = Boolean(data.isPinned);
-
-        // Parse checklist if todo
-        let parsedChecklist = [];
-        if (Array.isArray(data.checklist)) {
-          parsedChecklist = data.checklist;
-        } else if (typeof data.checklist === 'string' && data.checklist.trim()) {
-          try {
-            parsedChecklist = JSON.parse(data.checklist);
-          } catch (e) {
-            parsedChecklist = [];
-          }
-        }
-        if (data.type === 'todo' && parsedChecklist.length === 0) {
-          parsedChecklist = [{ id: `item_${Date.now()}`, text: '', isDone: false }];
-        }
-        setChecklist(parsedChecklist);
-        checklistRef.current = parsedChecklist;
-
-        // Initial HTML for rich editor
-        const rawContent = data.content || '';
-        let initialHtml = '';
-        if (rawContent) {
-          // If content already contains HTML tags
-          if (rawContent.includes('<') && rawContent.includes('>')) {
-            initialHtml = DOMPurify.sanitize(rawContent);
-          } else {
-            // Raw text or markdown: convert to formatted HTML
-            const parsed = marked.parse(rawContent);
-            initialHtml = DOMPurify.sanitize(parsed);
-          }
-        }
-        contentRef.current = initialHtml;
-
-        // Set initial HTML once editorRef is available
-        setTimeout(() => {
-          if (editorRef.current && !isInitialLoadedRef.current) {
-            editorRef.current.innerHTML = initialHtml;
-            isInitialLoadedRef.current = true;
-          }
-        }, 50);
-
+        queryClient.setQueryData(['note', id], data);
+        applyNote(data);
       } catch (err) {
         if (!isMounted) return;
         console.error(err);
@@ -199,6 +216,16 @@ const NoteDetail = () => {
         if (isMounted) setLoading(false);
       }
     };
+
+    const seeded = queryClient.getQueryState(['note', id]);
+    if (seeded?.data && Date.now() - seeded.dataUpdatedAt < SEED_FRESH_MS) {
+      setError('');
+      applyNote(seeded.data);
+      setLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
 
     fetchNote();
     return () => {
@@ -243,6 +270,7 @@ const NoteDetail = () => {
 
       const updated = await res.json();
       setNote(updated);
+      syncCachedNote(updated);
       pendingChangesRef.current = false;
       setSaveStatus('saved');
     } catch (err) {
@@ -492,6 +520,7 @@ const NoteDetail = () => {
 
       const updated = await res.json();
       setIsPinned(Boolean(updated.isPinned));
+      syncCachedNote(updated);
       showToast(updated.isPinned ? 'Note pinned to top' : 'Note unpinned');
     } catch (err) {
       console.error(err);
@@ -508,6 +537,9 @@ const NoteDetail = () => {
         headers: getAuthHeaders()
       });
       if (!res.ok) throw new Error('Failed to delete note');
+      queryClient.removeQueries({ queryKey: ['note', id] });
+      queryClient.setQueryData(['notes'], (prev) => prev?.filter((n) => n.id !== id));
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
       navigate('/notes');
     } catch (err) {
       console.error(err);

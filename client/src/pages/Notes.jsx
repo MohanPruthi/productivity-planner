@@ -6,6 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Loader from '../components/Loader';
+import { useQueryClient } from '@tanstack/react-query';
+import { apiGet } from '../lib/api';
+import { useQueryState } from '../lib/useQueryState';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { 
@@ -222,19 +225,36 @@ const MoveToGroupMenu = ({ note, groups, onMove, onNew }) => {
   );
 };
 
+const NO_NOTES = [];
+const NO_GROUPS = [];
+
+// Groups are optional: a failed groups request just means no groups
+const fetchNoteGroups = () => apiGet('/api/note-groups')
+  .then((data) => data || [])
+  .catch((err) => {
+    console.error(err);
+    return [];
+  });
+
 const Notes = () => {
   const navigate = useNavigate();
   const { getAuthHeaders, privacyMode } = useAuth();
+  const queryClient = useQueryClient();
 
-  const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  // Cached lists; the voice assistant's note changes refresh them via lib/queryEvents
+  const [notesData, setNotes, notesQuery] = useQueryState({
+    queryKey: ['notes'],
+    queryFn: () => apiGet('/api/notes', 'Failed to load notes'),
+  });
+  const [groupsData, setGroups] = useQueryState({ queryKey: ['note-groups'], queryFn: fetchNoteGroups });
+  const notes = notesData || NO_NOTES;
+  const groups = groupsData || NO_GROUPS;
+  const error = notesQuery.error?.message || '';
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const searchInputRef = useRef(null);
 
   // Groups + drag and drop state
-  const [groups, setGroups] = useState([]);
   const previewCacheRef = useRef(new Map()); // note id -> { updatedAt, content, html }
   const [openGroupId, setOpenGroupId] = useState(null);
   const [renameFocusId, setRenameFocusId] = useState(null);
@@ -267,45 +287,20 @@ const Notes = () => {
     }
   }, [toastMessage]);
 
-  // Fetch all notes
-  const fetchNotes = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      // Groups load alongside the notes; a failed groups request just means no groups
-      const [res, groupsData] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/notes`, { headers: getAuthHeaders() }),
-        fetch(`${API_BASE_URL}/api/note-groups`, { headers: getAuthHeaders() })
-          .then(async (gres) => (gres.ok ? ((await gres.json()) || []) : []))
-          .catch((gerr) => {
-            console.error(gerr);
-            return [];
-          }),
-      ]);
-      if (!res.ok) throw new Error('Failed to load notes');
-      const data = await res.json();
-      setNotes(data || []);
-      setGroups(groupsData);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  // Reload notes and groups (after a failed save, to undo the optimistic change)
+  const fetchNotes = () => {
+    queryClient.invalidateQueries({ queryKey: ['notes'] });
+    queryClient.invalidateQueries({ queryKey: ['note-groups'] });
   };
 
+  // Hand each listed note to NoteDetail's cache so opening one needs no fetch
   useEffect(() => {
-    fetchNotes();
-  }, []);
-
-  // Voice assistant created or changed a note
-  useEffect(() => {
-    const onDataChanged = (e) => {
-      if (e.detail?.scope === 'notes') fetchNotes();
-    };
-    window.addEventListener('data-changed', onDataChanged);
-    return () => window.removeEventListener('data-changed', onDataChanged);
-  }, []);
+    if (!notesData) return;
+    for (const n of notesData) {
+      queryClient.setQueryData(['note', n.id], n, { updatedAt: notesQuery.dataUpdatedAt });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notesData]);
 
   // Filter notes based on privacy mode and search query
   const visibleNotes = useMemo(() => {
@@ -425,6 +420,9 @@ const Notes = () => {
 
       const createdNote = await res.json();
       setIsCreateModalOpen(false);
+      // Opens without a fetch; the list picks the new note up on its next visit
+      queryClient.setQueryData(['note', createdNote.id], createdNote);
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
       navigate(`/note/${createdNote.id}`);
     } catch (err) {
       console.error(err);
@@ -669,12 +667,12 @@ const Notes = () => {
     moveNote(id, null);
   };
 
-  // Full-page loader only before the first notes arrive; refetches keep the list in place
-  if (loading && notes.length === 0) {
+  // Full-page loader only when nothing is cached yet; refetches keep the list in place
+  if ((notesData === undefined || groupsData === undefined) && !error) {
     return <Loader text="Loading Notes..." />;
   }
 
-  if (error) {
+  if (error && notesData === undefined) {
     return <div className="error-state">Error: {error}</div>;
   }
 

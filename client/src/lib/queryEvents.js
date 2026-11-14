@@ -22,6 +22,8 @@ export const installQueryEvents = () => {
     if (scope === 'notes') {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       queryClient.invalidateQueries({ queryKey: ['note-groups'] });
+      // Single-note copies may be out of date now: let NoteDetail fetch
+      queryClient.removeQueries({ queryKey: ['note'] });
     }
     if (scope === 'plans') queryClient.invalidateQueries({ queryKey: ['plans'] });
   });
