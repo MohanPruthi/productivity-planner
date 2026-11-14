@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useLayoutEffect, useCallback, useMemo } from 'react';
 import { API_BASE_URL } from '../config';
+import { clearQueryCache } from '../lib/queryClient';
 
 const AuthContext = createContext(null);
 
@@ -66,6 +67,8 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    // Cached pages belong to this account: drop them (memory and localStorage)
+    clearQueryCache();
     setUser(null);
     setToken(null);
   }, []);
