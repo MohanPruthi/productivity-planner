@@ -1,8 +1,388 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Play, Pause, RotateCcw, Timer, X, Flame, ChevronLeft, ChevronRight, Skull } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+
+// Normalize dates helper (module level, for the calendar below)
+const toLocalDateString = (d = new Date()) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// The target (weekday/weekend hours) in force on a date: the last history entry starting on or before it
+const targetForDate = (history, dateStr) => {
+  let activeTarget = history[0];
+  for (const entry of history) {
+    if (entry.startDate <= dateStr) {
+      activeTarget = entry;
+    } else {
+      break;
+    }
+  }
+  return {
+    weekday: activeTarget.weekday,
+    weekend: activeTarget.weekend
+  };
+};
+
+// Month calendar of study rings. Memoised and kept apart from the ticking clock,
+// so it only re-renders when its own data changes, not every second while tracking.
+const ZenCalendar = React.memo(function ZenCalendar({ calendarYear, calendarMonth, setCalendarMonth, minutesByDate, targetHistory, plannedDates, selectedDateStr, todayStr, navigate }) {
+  const year = calendarYear;
+  const month = calendarMonth;
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const firstDayIndex = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+
+  const daysArray = [];
+  for (let i = 0; i < firstDayIndex; i++) {
+    daysArray.push(null);
+  }
+  for (let d = 1; d <= totalDays; d++) {
+    daysArray.push(new Date(year, month, d));
+  }
+
+  const weekdaysHeader = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  const handlePrevMonth = () => {
+    if (calendarMonth > 0) {
+      setCalendarMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (calendarMonth < 11) {
+      setCalendarMonth(prev => prev + 1);
+    }
+  };
+
+  return (
+    <div className="calendar-widget" style={{ padding: '0' }}>
+      <div className="calendar-header-title" style={{ 
+        fontSize: '0.8rem', 
+        fontWeight: 600, 
+        color: 'var(--text-primary)', 
+        marginBottom: '0.75rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        padding: '0 0.25rem'
+      }}>
+        <button 
+          onClick={handlePrevMonth} 
+          disabled={calendarMonth === 0}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: calendarMonth === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', opacity: calendarMonth === 0 ? 0.35 : 1, transition: 'color 0.2s' }}
+          onMouseOver={(e) => { if (calendarMonth > 0) e.currentTarget.style.color = 'var(--text-primary)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <span>{monthNames[month]} {year}</span>
+        <button 
+          onClick={handleNextMonth} 
+          disabled={calendarMonth === 11}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: calendarMonth === 11 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', opacity: calendarMonth === 11 ? 0.35 : 1, transition: 'color 0.2s' }}
+          onMouseOver={(e) => { if (calendarMonth < 11) e.currentTarget.style.color = 'var(--text-primary)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.2rem', justifyItems: 'center' }}>
+        {/* Header */}
+        {weekdaysHeader.map((day, idx) => (
+          <div key={idx} style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', width: '44px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {day}
+          </div>
+        ))}
+        
+        {/* Days */}
+        {daysArray.map((dateObj, idx) => {
+          if (!dateObj) return <div key={idx} style={{ width: '44px', height: '60px' }} />;
+
+          const dayNum = dateObj.getDate();
+          const dateStr = toLocalDateString(dateObj);
+          
+          // Find study log
+          const loggedMinutes = minutesByDate.has(dateStr) ? minutesByDate.get(dateStr) : 0;
+          
+          // target targetHours
+          const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+          const targets = targetForDate(targetHistory, dateStr);
+          const targetHours = isWeekend ? targets.weekend : targets.weekday;
+          const targetMinutes = targetHours * 60;
+          
+          const rawPercentage = targetMinutes > 0 ? (loggedMinutes / targetMinutes) : 0;
+          const percentage = Math.min(rawPercentage, 1.0);
+          const hasExtra = loggedMinutes > targetMinutes;
+          const extraPercentage = (hasExtra && targetMinutes > 0) ? Math.min((loggedMinutes - targetMinutes) / targetMinutes, 1.0) : (hasExtra ? 1.0 : 0);
+
+          const isToday = dateStr === todayStr;
+          const isSelected = dateStr === selectedDateStr;
+
+          // Determine if something was planned but the user didn't study at all (only for past days)
+          const todayStart = new Date();
+          todayStart.setHours(0, 0, 0, 0);
+          const isPastDay = dateObj < todayStart;
+          const isPlanned = plannedDates.has(dateStr);
+          const isSkullDay = (isPlanned || targetMinutes > 0) && loggedMinutes === 0 && isPastDay;
+
+          // Activity colors (Dynamic color based on study completion percentage)
+          let ringColor = 'var(--cal-ring-default, rgba(255,255,255,0.06))';
+          let trackColor = 'var(--cal-track-default, rgba(255,255,255,0.04))';
+          if (isSkullDay) {
+            ringColor = 'var(--cal-ring-skull, rgba(255, 45, 85, 0.2))';
+            trackColor = 'var(--cal-track-skull, rgba(255, 45, 85, 0.05))';
+          } else if (loggedMinutes > 0) {
+            if (loggedMinutes >= targetMinutes) {
+              ringColor = '#30d158'; // Green for 100% or more target met
+              trackColor = 'var(--cal-track-completed, rgba(48, 209, 88, 0.08))';
+            } else if (rawPercentage <= 0.30) {
+              ringColor = '#ff453a'; // Red for 30% or less
+              trackColor = 'var(--cal-track-partial, rgba(255, 69, 58, 0.08))';
+            } else {
+              ringColor = '#ffd60a'; // Yellow for progress between 30% and 100%
+              trackColor = 'var(--cal-track-yellow, rgba(255, 214, 10, 0.08))';
+            }
+          }
+
+          // Calculate running head angle and coordinates for Apple Fitness style shadow
+          let headX = 22;
+          let headY = 4;
+          let showHeadShadow = false;
+          if (loggedMinutes > 0) {
+            showHeadShadow = true;
+            const shadowPercentage = hasExtra ? extraPercentage : percentage;
+            const angle = -Math.PI / 2 + shadowPercentage * 2 * Math.PI;
+            headX = 22 + 18 * Math.cos(angle);
+            headY = 22 + 18 * Math.sin(angle);
+          }
+
+          const totalHrsDecimal = (loggedMinutes / 60).toFixed(1);
+
+          return (
+            <div 
+              key={idx} 
+              onClick={() => navigate(`/?date=${dateStr}`)}
+              style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                gap: '0.25rem',
+                position: 'relative',
+                cursor: 'pointer'
+              }}
+            >
+              {/* Date above ring */}
+              <span 
+                style={{ 
+                  fontSize: '0.75rem', 
+                  fontWeight: 600, 
+                  color: isToday 
+                    ? '#f97316' 
+                    : isSelected 
+                    ? 'var(--accent-primary)' 
+                    : isSkullDay
+                    ? '#ff453a'
+                    : 'var(--text-secondary)',
+                  opacity: (isToday || isSelected || isSkullDay) ? 1 : 0.8
+                }}
+              >
+                {dayNum}
+              </span>
+
+              {/* Ring token containing ONLY the study time (e.g. 1.2h) */}
+              <div 
+                className="calendar-day-cell" 
+                style={{ 
+                  borderColor: isToday 
+                    ? '#f97316' 
+                    : isSelected 
+                    ? 'var(--accent-primary)' 
+                    : isSkullDay
+                    ? 'rgba(255, 45, 85, 0.25)'
+                    : 'rgba(255, 255, 255, 0.03)',
+                  borderWidth: (isToday || isSelected) ? '1.5px' : '1px',
+                  borderStyle: 'solid',
+                  boxShadow: isToday 
+                    ? '0 0 10px rgba(249, 115, 22, 0.4)' 
+                    : isSelected 
+                    ? '0 0 10px rgba(99, 102, 241, 0.4)' 
+                    : isSkullDay
+                    ? '0 0 8px rgba(255, 45, 85, 0.15)'
+                    : 'none',
+                  background: isSkullDay
+                    ? 'rgba(255, 45, 85, 0.03)'
+                    : isWeekend 
+                    ? 'rgba(255, 45, 85, 0.05)' 
+                    : 'rgba(255, 255, 255, 0.01)',
+                  transition: 'all 0.2s ease'
+                }}
+                title={`${totalHrsDecimal} hrs studied / ${targetHours} hrs target`}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.borderColor = isToday 
+                    ? '#f97316' 
+                    : isSkullDay
+                    ? '#ff2d55'
+                    : 'var(--accent-primary)';
+                  e.currentTarget.style.boxShadow = isToday 
+                    ? '0 0 12px rgba(249, 115, 22, 0.45)' 
+                    : isSkullDay
+                    ? '0 0 12px rgba(255, 45, 85, 0.4)'
+                    : '0 0 12px rgba(99, 102, 241, 0.35)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.borderColor = isToday 
+                    ? '#f97316' 
+                    : isSelected 
+                    ? 'var(--accent-primary)' 
+                    : isSkullDay
+                    ? 'rgba(255, 45, 85, 0.25)'
+                    : 'rgba(255, 255, 255, 0.03)';
+                  e.currentTarget.style.boxShadow = isToday 
+                    ? '0 0 10px rgba(249, 115, 22, 0.4)' 
+                    : isSelected 
+                    ? '0 0 10px rgba(99, 102, 241, 0.4)' 
+                    : isSkullDay
+                    ? '0 0 8px rgba(255, 45, 85, 0.15)'
+                    : 'none';
+                }}
+              >
+                {/* SVG Ring */}
+                <svg width="44" height="44" style={{ display: 'block', pointerEvents: 'none' }}>
+                  <defs>
+                    <filter id="cap-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feDropShadow dx="-0.4" dy="0.8" stdDeviation="0.8" floodColor="#000000" floodOpacity="0.85" />
+                    </filter>
+                  </defs>
+                  <circle
+                    cx="22"
+                    cy="22"
+                    r="18"
+                    stroke={trackColor}
+                    strokeWidth="4.5"
+                    fill="transparent"
+                  />
+                  {percentage > 0 && (
+                    <circle
+                      cx="22"
+                      cy="22"
+                      r="18"
+                      stroke={ringColor}
+                      strokeWidth="4.5"
+                      fill="transparent"
+                      strokeDasharray="113.1"
+                      strokeDashoffset={113.1 - (113.1 * percentage)}
+                      strokeLinecap="round"
+                      transform="rotate(-90 22 22)"
+                      style={{ transition: 'stroke-dashoffset 0.4s ease-out' }}
+                    />
+                  )}
+                  {hasExtra && (
+                    <circle
+                      cx="22"
+                      cy="22"
+                      r="18"
+                      stroke="#30d158" // Match base green color
+                      strokeWidth="4.5" // Match base width
+                      fill="transparent"
+                      strokeDasharray="113.1"
+                      strokeDashoffset={113.1 - (113.1 * extraPercentage)}
+                      strokeLinecap="round"
+                      transform="rotate(-90 22 22)"
+                      style={{ transition: 'stroke-dashoffset 0.4s ease-out' }}
+                    />
+                  )}
+                  {showHeadShadow && (
+                    <circle
+                      cx={headX}
+                      cy={headY}
+                      r="2.25"
+                      fill={hasExtra ? '#30d158' : ringColor}
+                      filter="url(#cap-shadow)"
+                    />
+                  )}
+                </svg>
+                
+                {/* Text overlay: ONLY study hours inside ring */}
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, pointerEvents: 'none' }}>
+                  {isSkullDay ? (
+                    <div style={{ position: 'relative', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {/* Bones SVG in the background */}
+                      <svg 
+                        viewBox="0 0 24 24" 
+                        width="22" 
+                        height="22" 
+                        style={{ 
+                          position: 'absolute',
+                          filter: 'drop-shadow(0 0 5px rgba(255, 45, 85, 0.85))',
+                          display: 'block' 
+                        }}
+                      >
+                        <defs>
+                          <linearGradient id="boneRedGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#ff453a" />
+                            <stop offset="60%" stopColor="#ff2d55" />
+                            <stop offset="100%" stopColor="#8b1e3f" />
+                          </linearGradient>
+                        </defs>
+                        
+                        {/* Bone 1 (TL to BR) */}
+                        <line x1="5.5" y1="5.5" x2="18.5" y2="18.5" stroke="url(#boneRedGrad)" strokeWidth="2.5" strokeLinecap="round" opacity="0.65" />
+                        <circle cx="4.25" cy="6.25" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
+                        <circle cx="6.25" cy="4.25" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
+                        <circle cx="17.75" cy="19.75" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
+                        <circle cx="19.75" cy="17.75" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
+
+                        {/* Bone 2 (TR to BL) */}
+                        <line x1="18.5" y1="5.5" x2="5.5" y2="18.5" stroke="url(#boneRedGrad)" strokeWidth="2.5" strokeLinecap="round" opacity="0.65" />
+                        <circle cx="19.75" cy="6.25" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
+                        <circle cx="17.75" cy="4.25" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
+                        <circle cx="6.25" cy="19.75" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
+                        <circle cx="4.25" cy="17.75" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
+
+                        {/* Mask shape to block out bone intersection under the skull */}
+                        <circle cx="12" cy="11.5" r="5.5" fill="var(--bg-secondary)" />
+                        <rect x="9" y="14.5" width="6" height="4.5" rx="1.2" fill="var(--bg-secondary)" />
+                      </svg>
+                      
+                      {/* Lucide Skull (outlined skull we had earlier) */}
+                      <Skull 
+                        size={15} 
+                        color="#ff2d55" 
+                        style={{ 
+                          zIndex: 2, 
+                          filter: 'drop-shadow(0 0 3px rgba(255, 45, 85, 0.75))',
+                          position: 'relative'
+                        }} 
+                      />
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '0.62rem', fontWeight: 600, color: loggedMinutes > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                      {totalHrsDecimal}h
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
 
 const TimeLogger = () => {
   const navigate = useNavigate();
@@ -136,6 +516,7 @@ const TimeLogger = () => {
   // Synchronize settings when updated from Settings page
   useEffect(() => {
     const handleSettingsUpdated = () => {
+      setTargetHistoryVersion((v) => v + 1);
       const savedWeekday = localStorage.getItem('target_weekday');
       if (savedWeekday) setWeekdayTarget(parseFloat(savedWeekday));
       const savedWeekend = localStorage.getItem('target_weekend');
@@ -245,22 +626,23 @@ const TimeLogger = () => {
     return fallbackHistory;
   };
 
-  const getTargetForDate = (dateObj) => {
-    const dateStr = getLocalDateString(dateObj);
-    const history = getTargetHistory();
-    let activeTarget = history[0];
-    for (const entry of history) {
-      if (entry.startDate <= dateStr) {
-        activeTarget = entry;
-      } else {
-        break;
-      }
+  // Parsed once, and again whenever the settings change (or the history is healed below)
+  const [targetHistoryVersion, setTargetHistoryVersion] = useState(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const targetHistory = useMemo(() => getTargetHistory(), [targetHistoryVersion]);
+
+  const getTargetForDate = (dateObj) => targetForDate(targetHistory, getLocalDateString(dateObj));
+
+  // Study minutes by local date (the first log wins, as before)
+  const minutesByDate = useMemo(() => {
+    const map = new Map();
+    for (const l of studyLogs) {
+      const key = getLocalDateString(new Date(l.date));
+      if (!map.has(key)) map.set(key, l.duration);
     }
-    return {
-      weekday: activeTarget.weekday,
-      weekend: activeTarget.weekend
-    };
-  };
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studyLogs]);
 
   const selectedDateStr = searchParams.get('date') || getLocalDateString(new Date());
 
@@ -282,6 +664,7 @@ const TimeLogger = () => {
     } catch (err) {
       console.error('Error auto-healing target history:', err);
     }
+    setTargetHistoryVersion((v) => v + 1);
   }, []);
 
   const [plannedDates, setPlannedDates] = useState(new Set());
@@ -725,362 +1108,6 @@ const TimeLogger = () => {
     );
   };
 
-  // Calendar rendering
-  const renderCalendar = () => {
-    const year = calendarYear;
-    const month = calendarMonth;
-
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
-    const firstDayIndex = new Date(year, month, 1).getDay();
-    const totalDays = new Date(year, month + 1, 0).getDate();
-
-    const daysArray = [];
-    for (let i = 0; i < firstDayIndex; i++) {
-      daysArray.push(null);
-    }
-    for (let d = 1; d <= totalDays; d++) {
-      daysArray.push(new Date(year, month, d));
-    }
-
-    const weekdaysHeader = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-
-    const handlePrevMonth = () => {
-      if (calendarMonth > 0) {
-        setCalendarMonth(prev => prev - 1);
-      }
-    };
-
-    const handleNextMonth = () => {
-      if (calendarMonth < 11) {
-        setCalendarMonth(prev => prev + 1);
-      }
-    };
-
-    return (
-      <div className="calendar-widget" style={{ padding: '0' }}>
-        <div className="calendar-header-title" style={{ 
-          fontSize: '0.8rem', 
-          fontWeight: 600, 
-          color: 'var(--text-primary)', 
-          marginBottom: '0.75rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          padding: '0 0.25rem'
-        }}>
-          <button 
-            onClick={handlePrevMonth} 
-            disabled={calendarMonth === 0}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: calendarMonth === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', opacity: calendarMonth === 0 ? 0.35 : 1, transition: 'color 0.2s' }}
-            onMouseOver={(e) => { if (calendarMonth > 0) e.currentTarget.style.color = 'var(--text-primary)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <span>{monthNames[month]} {year}</span>
-          <button 
-            onClick={handleNextMonth} 
-            disabled={calendarMonth === 11}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: calendarMonth === 11 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', opacity: calendarMonth === 11 ? 0.35 : 1, transition: 'color 0.2s' }}
-            onMouseOver={(e) => { if (calendarMonth < 11) e.currentTarget.style.color = 'var(--text-primary)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.2rem', justifyItems: 'center' }}>
-          {/* Header */}
-          {weekdaysHeader.map((day, idx) => (
-            <div key={idx} style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', width: '44px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {day}
-            </div>
-          ))}
-          
-          {/* Days */}
-          {daysArray.map((dateObj, idx) => {
-            if (!dateObj) return <div key={idx} style={{ width: '44px', height: '60px' }} />;
-
-            const dayNum = dateObj.getDate();
-            const dateStr = getLocalDateString(dateObj);
-            
-            // Find study log
-            const studyLog = studyLogs.find(l => getLocalDateString(new Date(l.date)) === dateStr);
-            const loggedMinutes = studyLog ? studyLog.duration : 0;
-            
-            // target targetHours
-            const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
-            const targets = getTargetForDate(dateObj);
-            const targetHours = isWeekend ? targets.weekend : targets.weekday;
-            const targetMinutes = targetHours * 60;
-            
-            const rawPercentage = targetMinutes > 0 ? (loggedMinutes / targetMinutes) : 0;
-            const percentage = Math.min(rawPercentage, 1.0);
-            const hasExtra = loggedMinutes > targetMinutes;
-            const extraPercentage = (hasExtra && targetMinutes > 0) ? Math.min((loggedMinutes - targetMinutes) / targetMinutes, 1.0) : (hasExtra ? 1.0 : 0);
-
-            const isToday = dateStr === getLocalDateString(new Date());
-            const isSelected = dateStr === selectedDateStr;
-
-            // Determine if something was planned but the user didn't study at all (only for past days)
-            const todayStart = new Date();
-            todayStart.setHours(0, 0, 0, 0);
-            const isPastDay = dateObj < todayStart;
-            const isPlanned = plannedDates.has(dateStr);
-            const isSkullDay = (isPlanned || targetMinutes > 0) && loggedMinutes === 0 && isPastDay;
-
-            // Activity colors (Dynamic color based on study completion percentage)
-            let ringColor = 'var(--cal-ring-default, rgba(255,255,255,0.06))';
-            let trackColor = 'var(--cal-track-default, rgba(255,255,255,0.04))';
-            if (isSkullDay) {
-              ringColor = 'var(--cal-ring-skull, rgba(255, 45, 85, 0.2))';
-              trackColor = 'var(--cal-track-skull, rgba(255, 45, 85, 0.05))';
-            } else if (loggedMinutes > 0) {
-              if (loggedMinutes >= targetMinutes) {
-                ringColor = '#30d158'; // Green for 100% or more target met
-                trackColor = 'var(--cal-track-completed, rgba(48, 209, 88, 0.08))';
-              } else if (rawPercentage <= 0.30) {
-                ringColor = '#ff453a'; // Red for 30% or less
-                trackColor = 'var(--cal-track-partial, rgba(255, 69, 58, 0.08))';
-              } else {
-                ringColor = '#ffd60a'; // Yellow for progress between 30% and 100%
-                trackColor = 'var(--cal-track-yellow, rgba(255, 214, 10, 0.08))';
-              }
-            }
-
-            // Calculate running head angle and coordinates for Apple Fitness style shadow
-            let headX = 22;
-            let headY = 4;
-            let showHeadShadow = false;
-            if (loggedMinutes > 0) {
-              showHeadShadow = true;
-              const shadowPercentage = hasExtra ? extraPercentage : percentage;
-              const angle = -Math.PI / 2 + shadowPercentage * 2 * Math.PI;
-              headX = 22 + 18 * Math.cos(angle);
-              headY = 22 + 18 * Math.sin(angle);
-            }
-
-            const totalHrsDecimal = (loggedMinutes / 60).toFixed(1);
-
-            return (
-              <div 
-                key={idx} 
-                onClick={() => navigate(`/?date=${dateStr}`)}
-                style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  gap: '0.25rem',
-                  position: 'relative',
-                  cursor: 'pointer'
-                }}
-              >
-                {/* Date above ring */}
-                <span 
-                  style={{ 
-                    fontSize: '0.75rem', 
-                    fontWeight: 600, 
-                    color: isToday 
-                      ? '#f97316' 
-                      : isSelected 
-                      ? 'var(--accent-primary)' 
-                      : isSkullDay
-                      ? '#ff453a'
-                      : 'var(--text-secondary)',
-                    opacity: (isToday || isSelected || isSkullDay) ? 1 : 0.8
-                  }}
-                >
-                  {dayNum}
-                </span>
-
-                {/* Ring token containing ONLY the study time (e.g. 1.2h) */}
-                <div 
-                  className="calendar-day-cell" 
-                  style={{ 
-                    borderColor: isToday 
-                      ? '#f97316' 
-                      : isSelected 
-                      ? 'var(--accent-primary)' 
-                      : isSkullDay
-                      ? 'rgba(255, 45, 85, 0.25)'
-                      : 'rgba(255, 255, 255, 0.03)',
-                    borderWidth: (isToday || isSelected) ? '1.5px' : '1px',
-                    borderStyle: 'solid',
-                    boxShadow: isToday 
-                      ? '0 0 10px rgba(249, 115, 22, 0.4)' 
-                      : isSelected 
-                      ? '0 0 10px rgba(99, 102, 241, 0.4)' 
-                      : isSkullDay
-                      ? '0 0 8px rgba(255, 45, 85, 0.15)'
-                      : 'none',
-                    background: isSkullDay
-                      ? 'rgba(255, 45, 85, 0.03)'
-                      : isWeekend 
-                      ? 'rgba(255, 45, 85, 0.05)' 
-                      : 'rgba(255, 255, 255, 0.01)',
-                    transition: 'all 0.2s ease'
-                  }}
-                  title={`${totalHrsDecimal} hrs studied / ${targetHours} hrs target`}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                    e.currentTarget.style.borderColor = isToday 
-                      ? '#f97316' 
-                      : isSkullDay
-                      ? '#ff2d55'
-                      : 'var(--accent-primary)';
-                    e.currentTarget.style.boxShadow = isToday 
-                      ? '0 0 12px rgba(249, 115, 22, 0.45)' 
-                      : isSkullDay
-                      ? '0 0 12px rgba(255, 45, 85, 0.4)'
-                      : '0 0 12px rgba(99, 102, 241, 0.35)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.borderColor = isToday 
-                      ? '#f97316' 
-                      : isSelected 
-                      ? 'var(--accent-primary)' 
-                      : isSkullDay
-                      ? 'rgba(255, 45, 85, 0.25)'
-                      : 'rgba(255, 255, 255, 0.03)';
-                    e.currentTarget.style.boxShadow = isToday 
-                      ? '0 0 10px rgba(249, 115, 22, 0.4)' 
-                      : isSelected 
-                      ? '0 0 10px rgba(99, 102, 241, 0.4)' 
-                      : isSkullDay
-                      ? '0 0 8px rgba(255, 45, 85, 0.15)'
-                      : 'none';
-                  }}
-                >
-                  {/* SVG Ring */}
-                  <svg width="44" height="44" style={{ display: 'block', pointerEvents: 'none' }}>
-                    <defs>
-                      <filter id="cap-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="-0.4" dy="0.8" stdDeviation="0.8" floodColor="#000000" floodOpacity="0.85" />
-                      </filter>
-                    </defs>
-                    <circle
-                      cx="22"
-                      cy="22"
-                      r="18"
-                      stroke={trackColor}
-                      strokeWidth="4.5"
-                      fill="transparent"
-                    />
-                    {percentage > 0 && (
-                      <circle
-                        cx="22"
-                        cy="22"
-                        r="18"
-                        stroke={ringColor}
-                        strokeWidth="4.5"
-                        fill="transparent"
-                        strokeDasharray="113.1"
-                        strokeDashoffset={113.1 - (113.1 * percentage)}
-                        strokeLinecap="round"
-                        transform="rotate(-90 22 22)"
-                        style={{ transition: 'stroke-dashoffset 0.4s ease-out' }}
-                      />
-                    )}
-                    {hasExtra && (
-                      <circle
-                        cx="22"
-                        cy="22"
-                        r="18"
-                        stroke="#30d158" // Match base green color
-                        strokeWidth="4.5" // Match base width
-                        fill="transparent"
-                        strokeDasharray="113.1"
-                        strokeDashoffset={113.1 - (113.1 * extraPercentage)}
-                        strokeLinecap="round"
-                        transform="rotate(-90 22 22)"
-                        style={{ transition: 'stroke-dashoffset 0.4s ease-out' }}
-                      />
-                    )}
-                    {showHeadShadow && (
-                      <circle
-                        cx={headX}
-                        cy={headY}
-                        r="2.25"
-                        fill={hasExtra ? '#30d158' : ringColor}
-                        filter="url(#cap-shadow)"
-                      />
-                    )}
-                  </svg>
-                  
-                  {/* Text overlay: ONLY study hours inside ring */}
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, pointerEvents: 'none' }}>
-                    {isSkullDay ? (
-                      <div style={{ position: 'relative', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {/* Bones SVG in the background */}
-                        <svg 
-                          viewBox="0 0 24 24" 
-                          width="22" 
-                          height="22" 
-                          style={{ 
-                            position: 'absolute',
-                            filter: 'drop-shadow(0 0 5px rgba(255, 45, 85, 0.85))',
-                            display: 'block' 
-                          }}
-                        >
-                          <defs>
-                            <linearGradient id="boneRedGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#ff453a" />
-                              <stop offset="60%" stopColor="#ff2d55" />
-                              <stop offset="100%" stopColor="#8b1e3f" />
-                            </linearGradient>
-                          </defs>
-                          
-                          {/* Bone 1 (TL to BR) */}
-                          <line x1="5.5" y1="5.5" x2="18.5" y2="18.5" stroke="url(#boneRedGrad)" strokeWidth="2.5" strokeLinecap="round" opacity="0.65" />
-                          <circle cx="4.25" cy="6.25" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
-                          <circle cx="6.25" cy="4.25" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
-                          <circle cx="17.75" cy="19.75" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
-                          <circle cx="19.75" cy="17.75" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
-
-                          {/* Bone 2 (TR to BL) */}
-                          <line x1="18.5" y1="5.5" x2="5.5" y2="18.5" stroke="url(#boneRedGrad)" strokeWidth="2.5" strokeLinecap="round" opacity="0.65" />
-                          <circle cx="19.75" cy="6.25" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
-                          <circle cx="17.75" cy="4.25" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
-                          <circle cx="6.25" cy="19.75" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
-                          <circle cx="4.25" cy="17.75" r="1.5" fill="url(#boneRedGrad)" opacity="0.65" />
-
-                          {/* Mask shape to block out bone intersection under the skull */}
-                          <circle cx="12" cy="11.5" r="5.5" fill="var(--bg-secondary)" />
-                          <rect x="9" y="14.5" width="6" height="4.5" rx="1.2" fill="var(--bg-secondary)" />
-                        </svg>
-                        
-                        {/* Lucide Skull (outlined skull we had earlier) */}
-                        <Skull 
-                          size={15} 
-                          color="#ff2d55" 
-                          style={{ 
-                            zIndex: 2, 
-                            filter: 'drop-shadow(0 0 3px rgba(255, 45, 85, 0.75))',
-                            position: 'relative'
-                          }} 
-                        />
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: '0.62rem', fontWeight: 600, color: loggedMinutes > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                        {totalHrsDecimal}h
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
   const todayDateObj = new Date();
   const isWeekendToday = todayDateObj.getDay() === 0 || todayDateObj.getDay() === 6;
   const todayTargets = getTargetForDate(todayDateObj);
@@ -1335,7 +1362,17 @@ const TimeLogger = () => {
 
       {/* 2. Calendar Card */}
       <div className="timelogger-card calendar-card">
-        {renderCalendar()}
+        <ZenCalendar
+          calendarYear={calendarYear}
+          calendarMonth={calendarMonth}
+          setCalendarMonth={setCalendarMonth}
+          minutesByDate={minutesByDate}
+          targetHistory={targetHistory}
+          plannedDates={plannedDates}
+          selectedDateStr={selectedDateStr}
+          todayStr={getLocalDateString()}
+          navigate={navigate}
+        />
       </div>
 
       {/* 3. Pomodoro Section Card */}
