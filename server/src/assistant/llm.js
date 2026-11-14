@@ -8,6 +8,8 @@ const GEMINI_MODELS = [
 ];
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const TIMEOUT_MS = 8000;
+// Whole planning call, across every provider, model and key
+const DEADLINE_MS = 15000;
 const MAX_TOKENS = 400;
 
 function systemPrompt({ today, route }) {
@@ -22,19 +24,23 @@ function systemPrompt({ today, route }) {
   ].join('\n');
 }
 
-async function fetchJson(url, init, label) {
+async function fetchJson(url, init, label, deadline) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
-    const res = await fetch(url, { ...init, signal: ctrl.signal });
+    const res = await fetch(url, { ...init, signal: AbortSignal.any([ctrl.signal, deadline]) });
     if (!res.ok) throw await httpError(res, label);
     return await res.json();
+  } catch (err) {
+    // This key hung past its own timeout: rest it for a minute so the next command skips it
+    if (ctrl.signal.aborted && !err.cooldown) err.cooldown = 'timeout';
+    throw err;
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function callGemini(entry, text, ctx) {
+async function callGemini(entry, text, ctx, deadline) {
   return entry.pool.run(async (key) => {
     const json = await fetchJson(
       `https://generativelanguage.googleapis.com/v1beta/models/${entry.model}:generateContent`,
@@ -49,14 +55,15 @@ async function callGemini(entry, text, ctx) {
           generationConfig: { temperature: 0, maxOutputTokens: MAX_TOKENS },
         }),
       },
-      'gemini'
+      'gemini',
+      deadline
     );
     const parts = json.candidates?.[0]?.content?.parts || [];
     return parts.filter((p) => p.functionCall).map((p) => ({ name: p.functionCall.name, args: p.functionCall.args || {} }));
-  });
+  }, deadline);
 }
 
-async function callGroq(text, ctx) {
+async function callGroq(text, ctx, deadline) {
   return pools.groq.run(async (key) => {
     const json = await fetchJson(
       'https://api.groq.com/openai/v1/chat/completions',
@@ -72,7 +79,8 @@ async function callGroq(text, ctx) {
           tool_choice: 'auto',
         }),
       },
-      'groq'
+      'groq',
+      deadline
     );
     const calls = json.choices?.[0]?.message?.tool_calls || [];
     return calls.map((c) => {
@@ -80,17 +88,22 @@ async function callGroq(text, ctx) {
       try { args = JSON.parse(c.function?.arguments || '{}'); } catch (e) { /* ignore */ }
       return { name: c.function?.name, args };
     });
-  });
+  }, deadline);
 }
 
 // Returns { calls, provider }. Throws an error with kind 'llm_quota' | 'llm_down' when every provider fails.
 async function planCalls(text, ctx) {
+  const deadline = AbortSignal.timeout(DEADLINE_MS);
   const attempts = [
-    ...GEMINI_MODELS.map((m) => ({ provider: m.model, run: () => callGemini(m, text, ctx) })),
-    { provider: 'groq', run: () => callGroq(text, ctx) },
+    ...GEMINI_MODELS.map((m) => ({ provider: m.model, run: () => callGemini(m, text, ctx, deadline) })),
+    { provider: 'groq', run: () => callGroq(text, ctx, deadline) },
   ];
   let sawDown = false;
   for (const a of attempts) {
+    if (deadline.aborted) {
+      sawDown = true;
+      break;
+    }
     try {
       const calls = await a.run();
       return { calls, provider: a.provider };

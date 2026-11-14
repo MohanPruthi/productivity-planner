@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
-import PinModal from './PinModal';
 import { openQuickAdd } from './QuickAdd';
+import { preloadPage, preloadAllPages } from '../pageImports';
+
+// The PIN dialog is only needed when switching back to the personal workspace
+const loadPinModal = () => import('./PinModal');
+const PinModal = lazy(loadPinModal);
 import { 
   LayoutDashboard, 
   Brain, 
@@ -143,6 +147,22 @@ const Sidebar = () => {
 
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
+  // Once the app is idle after the first render, fetch every page's code so later clicks are instant
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(() => {
+        preloadAllPages();
+        loadPinModal().catch(() => {});
+      }, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(() => {
+      preloadAllPages();
+      loadPinModal().catch(() => {});
+    }, 2000);
+    return () => clearTimeout(id);
+  }, []);
+
   // Desktop rail can expand to show section names; remembered between visits
   const [railOpen, setRailOpen] = useState(() => {
     try { return localStorage.getItem('rail_open') === '1'; } catch { return false; }
@@ -238,6 +258,8 @@ const Sidebar = () => {
               className={`nav-link ${isActive ? 'active' : ''}`}
               aria-current={isActive ? 'page' : undefined}
               style={isActive ? { '--active-color': item.color } : {}}
+              onMouseEnter={() => preloadPage(item.path)}
+              onFocus={() => preloadPage(item.path)}
             >
               <Icon size={20} className="nav-icon" />
               <span>{item.label}</span>
@@ -348,7 +370,9 @@ const Sidebar = () => {
             className="settings-toggle-btn"
             aria-label="Settings"
             title="Settings"
+            onFocus={() => preloadPage('/settings')}
             onMouseOver={(e) => {
+              preloadPage('/settings');
               e.currentTarget.style.color = 'var(--accent-primary)';
               e.currentTarget.style.transform = 'scale(1.12) rotate(15deg)';
               e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)';
@@ -372,16 +396,22 @@ const Sidebar = () => {
             className={`themes-toggle-btn ${location.pathname === '/themes' ? 'active' : ''}`}
             aria-label="Themes"
             title="Themes"
+            onMouseEnter={() => preloadPage('/themes')}
+            onFocus={() => preloadPage('/themes')}
           >
             <Palette size={18} />
           </Link>
         </div>
 
-        <PinModal 
-          isOpen={isPinModalOpen}
-          onClose={() => setIsPinModalOpen(false)}
-          onSuccess={togglePrivacyMode}
-        />
+        {isPinModalOpen && (
+          <Suspense fallback={null}>
+            <PinModal 
+              isOpen={isPinModalOpen}
+              onClose={() => setIsPinModalOpen(false)}
+              onSuccess={togglePrivacyMode}
+            />
+          </Suspense>
+        )}
 
         <div className="user-profile" style={{
           borderTop: '1px solid var(--border-light)',

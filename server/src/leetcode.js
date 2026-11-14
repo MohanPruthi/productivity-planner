@@ -1,5 +1,7 @@
 // Looks up LeetCode problems by their frontend number through LeetCode's GraphQL API.
 // (The old /api/problems/algorithms/ endpoint now returns 403.)
+const prisma = require('./db');
+
 const cache = new Map(); // questionNumber -> problem | null
 const MISS_RETRY_MS = 60 * 60 * 1000;
 const missedAt = new Map();
@@ -18,11 +20,27 @@ async function getProblem(questionNumber) {
   if (permanentMisses.has(key)) return null;
   if (missedAt.has(key) && Date.now() - missedAt.get(key) < MISS_RETRY_MS) return null;
 
+  // A question someone already logged is in the DB, so a cold start need not ask LeetCode again
+  try {
+    const known = await prisma.dsaLog.findFirst({
+      where: { questionNumber: key, titleSlug: { not: null } },
+      select: { title: true, titleSlug: true, difficulty: true, topics: true },
+    });
+    if (known) {
+      cache.set(key, known);
+      return known;
+    }
+  } catch (err) {
+    console.error(`Stored problem lookup failed for #${key}:`, err.message);
+  }
+
   try {
     const res = await fetch('https://leetcode.com/graphql', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Referer: 'https://leetcode.com' },
       body: JSON.stringify({ query: QUERY, variables: { k: key } }),
+      // A slow LeetCode must not hang adding a log or the enrichment pass
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) throw new Error(`LeetCode responded ${res.status}`);
     const json = await res.json();

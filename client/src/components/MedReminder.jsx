@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
+import { useQueryState } from '../lib/useQueryState';
+import { medsScheduleQuery, medsLogsQuery } from '../lib/queries';
 import { Pill, X, Check, Clock } from 'lucide-react';
 
 const DURATION_MS = 5000; // 5-second countdown
@@ -45,48 +47,24 @@ const getCurrentMedWindow = () => {
   return null;
 };
 
+const NO_LOGS = [];
+
 const MedReminder = () => {
-  const { user, token, getAuthHeaders } = useAuth();
-  const [schedule, setSchedule] = useState(null);
-  const [logs, setLogs] = useState([]);
+  const { user, getAuthHeaders } = useAuth();
+  const userId = user?.id;
+  // Shared with the Meds page (lib/queries); dose ticks anywhere patch it via lib/queryEvents
+  const [scheduleData] = useQueryState({ ...medsScheduleQuery, enabled: !!userId });
+  const [logsData, setLogs] = useQueryState({ ...medsLogsQuery, enabled: !!userId });
+  const schedule = scheduleData || null;
+  const logs = logsData || NO_LOGS;
   const [visible, setVisible] = useState(false);
   const [activeWindow, setActiveWindow] = useState(null);
-  const [progress, setProgress] = useState(100);
   const [isHovered, setIsHovered] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
   const remainingTimeRef = useRef(DURATION_MS);
-
-  // Keep the latest getAuthHeaders in a ref so unrelated context changes never trigger a refetch
-  const getAuthHeadersRef = useRef(getAuthHeaders);
-  getAuthHeadersRef.current = getAuthHeaders;
-  const userId = user?.id;
-
-  // Fetch schedule and logs from server
-  const fetchMedData = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const [schedRes, logsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/meds/schedule`, { headers: getAuthHeadersRef.current() }),
-        fetch(`${API_BASE_URL}/api/meds/logs`, { headers: getAuthHeadersRef.current() })
-      ]);
-
-      if (schedRes.ok && logsRes.ok) {
-        const schedData = await schedRes.json();
-        const logsData = await logsRes.json();
-        setSchedule(schedData);
-        setLogs(logsData || []);
-      }
-    } catch (err) {
-      console.error('Error fetching med reminder data:', err);
-    }
-  }, [userId, token]);
-
-  useEffect(() => {
-    fetchMedData();
-  }, [fetchMedData]);
 
   // Check if reminder should trigger
   const checkReminderEligibility = useCallback(() => {
@@ -128,7 +106,6 @@ const MedReminder = () => {
       if (!visible) {
         setActiveWindow(currentWin);
         remainingTimeRef.current = DURATION_MS;
-        setProgress(100);
         setVisible(true);
       }
     }
@@ -148,7 +125,7 @@ const MedReminder = () => {
       localStorage.setItem(storageKey, Date.now().toString());
     }
     setVisible(false);
-    if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) clearTimeout(timerRef.current);
   }, [activeWindow]);
 
   // Handle Mark as Taken
@@ -190,7 +167,7 @@ const MedReminder = () => {
         }));
 
         setVisible(false);
-        if (timerRef.current) clearInterval(timerRef.current);
+        if (timerRef.current) clearTimeout(timerRef.current);
       }
     } catch (err) {
       console.error('Failed to log pill from reminder:', err);
@@ -199,59 +176,41 @@ const MedReminder = () => {
     }
   };
 
-  // 5-second countdown timer management with hover pause
+  // 5-second countdown timer management with hover pause.
+  // One timeout for the dismiss; the bar itself is a CSS animation paused on hover (.med-toast-progress)
   useEffect(() => {
     if (!visible) {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
       return;
     }
 
     if (isHovered) {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
       return;
     }
 
     startTimeRef.current = Date.now();
     const initialRemaining = remainingTimeRef.current;
 
-    timerRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const newRemaining = Math.max(0, initialRemaining - elapsed);
-      remainingTimeRef.current = newRemaining;
-
-      const pct = (newRemaining / DURATION_MS) * 100;
-      setProgress(pct);
-
-      if (newRemaining <= 0) {
-        clearInterval(timerRef.current);
-        handleDismiss();
-      }
-    }, 40);
+    timerRef.current = setTimeout(() => {
+      remainingTimeRef.current = 0;
+      handleDismiss();
+    }, initialRemaining);
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      // Keep what is left for when the hover ends
+      remainingTimeRef.current = Math.max(0, initialRemaining - (Date.now() - startTimeRef.current));
     };
   }, [visible, isHovered, handleDismiss]);
 
-  // Listen for external med log updates
+  // Listen for external med log updates (the cached logs are patched in lib/queryEvents)
   useEffect(() => {
     const handleMedLogUpdated = (e) => {
-      const { date, type, value, log } = e.detail || {};
-      if (log) {
-        setLogs(prev => {
-          const normalizedDateStr = getLocalDateString(new Date(log.date));
-          const exists = prev.some(l => getLocalDateString(new Date(l.date)) === normalizedDateStr);
-          if (exists) {
-            return prev.map(l => getLocalDateString(new Date(l.date)) === normalizedDateStr ? log : l);
-          } else {
-            return [...prev, log];
-          }
-        });
-      }
-
+      const { date, type, value } = e.detail || {};
       if (activeWindow && date === activeWindow.targetDateStr && type === activeWindow.type && value) {
         setVisible(false);
-        if (timerRef.current) clearInterval(timerRef.current);
+        if (timerRef.current) clearTimeout(timerRef.current);
       }
     };
 
@@ -390,12 +349,12 @@ const MedReminder = () => {
         }}
       >
         <div
+          className={`med-toast-progress ${isHovered ? 'paused' : ''}`}
           style={{
             height: '100%',
-            width: `${progress}%`,
             background: '#ff2d55',
             boxShadow: '0 0 6px rgba(255, 45, 85, 0.4)',
-            transition: 'width 0.04s linear'
+            animationDuration: `${DURATION_MS}ms`
           }}
         />
       </div>

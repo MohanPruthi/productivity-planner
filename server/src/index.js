@@ -54,10 +54,13 @@ app.use('/api/note-groups', noteGroupsRoutes);
 app.use('/api/plans', plansRoutes);
 app.use('/api/assistant', assistantRoutes);
 
-// Health check endpoint
+// Health check endpoint (never touches the DB, so it stays fast for the host's probes)
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', database: 'connected' });
+  res.json({ status: 'OK' });
 });
+
+// Unknown API paths get a JSON 404 instead of falling through to the React app
+app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 // In production, serve the built React app and let client-side routing handle unknown paths
 if (process.env.NODE_ENV === 'production') {

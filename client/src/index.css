@@ -267,11 +267,21 @@ body {
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: var(--card-shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Only what actually changes (hover, theme switch); 'all' made the browser watch every property */
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .glass-card:hover {
   border-color: rgba(255, 255, 255, 0.08);
   transform: translateY(-1px);
+}
+
+/* Background tabs: freeze every animation (the infinite theme/background loops
+   included) until the tab is visible again. main.jsx toggles data-hidden. */
+/* (The med reminder bar is left running: it tracks a dismiss timer that keeps counting.) */
+:root[data-hidden] *:not(.med-toast-progress),
+:root[data-hidden] *::before,
+:root[data-hidden] *::after {
+  animation-play-state: paused !important;
 }
 
 /* Glow Borders */
@@ -1888,6 +1898,19 @@ label {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Med reminder countdown bar: full to empty over the toast's lifetime, paused while hovered */
+.med-toast-progress {
+  width: 0%;
+  animation: med-toast-countdown 5s linear forwards;
+}
+.med-toast-progress.paused {
+  animation-play-state: paused;
+}
+@keyframes med-toast-countdown {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 
 .med-toast-close-btn:hover {

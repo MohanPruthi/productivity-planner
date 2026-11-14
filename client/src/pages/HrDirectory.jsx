@@ -488,7 +488,7 @@ const HrDirectory = () => {
 
           {/* Block Rows Contact List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {loading ? (
+            {loading && contacts.length === 0 ? (
               <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>Loading contacts...</p>
             ) : currentItems.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>

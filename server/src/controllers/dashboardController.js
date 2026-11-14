@@ -322,18 +322,19 @@ async function getHistoryDashboard(req, res) {
   try {
     const userId = req.user.id;
 
-    // 1. Get all plan days
-    const planDays = await prisma.planDay.findMany({
-      where: { userId },
-      include: { planWeek: { include: { plan: true } } },
-      orderBy: { date: 'desc' }
-    });
-
-    // 2. Get all normal tasks
-    const normalTasks = await prisma.normalTask.findMany({
-      where: { userId },
-      orderBy: { date: 'desc' }
-    });
+    // All plan days and all normal tasks, fetched together.
+    // History only shows each plan's name and colour, so the rest of the week/plan is left out.
+    const [planDays, normalTasks] = await Promise.all([
+      prisma.planDay.findMany({
+        where: { userId },
+        include: { planWeek: { select: { plan: { select: { name: true, color: true, isPersonal: true } } } } },
+        orderBy: { date: 'desc' }
+      }),
+      prisma.normalTask.findMany({
+        where: { userId },
+        orderBy: { date: 'desc' }
+      }),
+    ]);
 
     // Group items by local date string YYYY-MM-DD
     const groups = {};

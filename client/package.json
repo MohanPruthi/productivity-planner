@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@ricky0123/vad-web": "^0.0.31",
+    "@tanstack/query-sync-storage-persister": "^5.107.1",
+    "@tanstack/react-query": "^5.107.1",
+    "@tanstack/react-query-persist-client": "^5.107.1",
     "dompurify": "^3.4.17",
     "lucide-react": "^1.26.0",
     "marked": "^18.1.1",

@@ -34,7 +34,7 @@ function createPool(envName) {
     });
   }
 
-  // kind: 'rate' (429), 'daily' (quota per day), 'auth' (401/403)
+  // kind: 'rate' (429), 'daily' (quota per day), 'auth' (401/403), 'timeout' (provider hung; sits out like a rate limit)
   function cool(key, kind, retryAfterSec) {
     let until;
     if (kind === 'auth') until = Infinity;
@@ -44,9 +44,10 @@ function createPool(envName) {
   }
 
   // Runs fn(key) over usable keys in order. fn throws an error shaped
-  // { status, cooldown: 'rate'|'daily'|'auth', retryAfter } for key problems; other errors are rethrown
+  // { status, cooldown: 'rate'|'daily'|'auth'|'timeout', retryAfter } for key problems; other errors are rethrown
   // after trying the next key and surface as the last error if every key fails.
-  async function run(fn) {
+  // Stops early once `signal` (an overall deadline) has fired.
+  async function run(fn, signal) {
     const list = usable();
     if (!list.length) {
       const e = new Error('no usable key');
@@ -55,6 +56,7 @@ function createPool(envName) {
     }
     let lastErr;
     for (const key of list) {
+      if (signal?.aborted) break;
       try {
         return await fn(key);
       } catch (err) {
@@ -62,7 +64,7 @@ function createPool(envName) {
         if (err && err.cooldown) cool(key, err.cooldown, err.retryAfter);
       }
     }
-    throw lastErr;
+    throw lastErr || signal.reason;
   }
 
   return { usable, cool, run, hasKeys: () => keys().length > 0 };
